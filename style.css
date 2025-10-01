@@ -1,56 +1,125 @@
-/* Biblioteca Fátima - estilo simple y profesional */
-:root{
-  --bg-start: #f3e8ff;
-  --bg-end: #e6f0ff;
-  --card: #ffffff;
-  --accent: #6c63ff;
-  --muted: #5b6b8a;
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f7fa;
+  margin: 0;
+  padding: 0;
+  color: #333;
 }
 
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial;
-  background: linear-gradient(90deg,var(--bg-start),var(--bg-end));
-  color: #103243;
-  padding:24px;
+header {
+  background-color: #4b6cb7;
+  background-image: linear-gradient(315deg, #4b6cb7 0%, #182848 74%);
+  color: #fff;
+  padding: 30px;
+  text-align: center;
 }
 
-header{
-  text-align:center;
-  margin-bottom:20px;
+header h1 {
+  margin: 0;
+  font-size: 2.5em;
 }
-header h1{margin:0;font-size:2.2rem}
-header p{margin:6px 0 0;color:var(--muted)}
 
-main{max-width:1000px;margin:0 auto}
-
-h2{color:var(--accent);margin:0 0 10px}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-  background:var(--card);
-  border-radius:8px;
-  overflow:hidden;
-  box-shadow: 0 6px 18px rgba(16,20,34,0.08);
+header p {
+  margin: 10px 0 0 0;
 }
-thead tr{background: linear-gradient(90deg, rgba(108,99,255,0.12), rgba(96,165,250,0.06));}
-th, td{padding:12px 10px;text-align:left;border-bottom:1px solid rgba(16,20,34,0.06)}
-tbody tr:hover{background:rgba(108,99,255,0.04);cursor:pointer;transform:translateY(-2px);transition:all .12s}
 
-select#generoSelect{padding:8px;border-radius:8px;border:1px solid rgba(16,20,34,0.06);min-width:220px}
-
-.tarjetas{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px}
-.tarjetas .card{background:var(--card);padding:12px;border-radius:10px;box-shadow:0 6px 18px rgba(16,20,34,0.06);flex:1 1 calc(33% - 12px);min-width:180px}
-
-.random{margin-top:12px;padding:12px;background:var(--card);border-radius:8px;box-shadow:0 6px 18px rgba(16,20,34,0.06);display:inline-block}
-
-footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
-@media (max-width:800px){
-  .tarjetas .card{flex:1 1 calc(50% - 12px)}
+section {
+  padding: 20px;
+  max-width: 1200px;
+  margin: auto;
 }
-@media (max-width:500px){
-  .tarjetas .card{flex:1 1 100%}
-  th, td{padding:10px}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+th, td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  cursor: pointer;
+  background-color: #e0e7ff;
+}
+
+th:hover {
+  background-color: #c7d2fe;
+}
+
+tr:hover {
+  background-color: #f1f5f9;
+}
+
+#btnRandom {
+  background-color: #4b6cb7;
+  color: white;
+  border: none;
+  padding: 15px 25px;
+  font-size: 1.2em;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+#btnRandom:hover {
+  background-color: #182848;
+}
+
+#randomLibro {
+  margin-top: 20px;
+}
+
+.card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  margin-top: 10px;
+}
+
+.card h3 {
+  margin-top: 0;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  padding-top: 100px;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 600px;
+  border-radius: 10px;
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
 }
