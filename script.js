@@ -1,15 +1,46 @@
 const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR_lN4MQGP2PigjKJFOV8ZK92MvfpQWj8aH7qqntBJHOKv6XsvLAxriHmjU3WcD7kafNvNbj3pTFqND/pub?gid=0&single=true&output=csv";
 let libros = [];
-let sortOrder = {};
+
+function showError(msg){
+  console.error(msg);
+  const tbody = document.querySelector("#tablaLibros tbody");
+  tbody.innerHTML = `<tr><td colspan="3" style="color:#b00020">${msg}</td></tr>`;
+}
 
 Papa.parse(sheetUrl, {
   download: true,
   header: true,
+  skipEmptyLines: true,
   complete: function(results) {
-    libros = results.data.filter(row => row.Título && row.Autor);
-    libros.sort((a,b) => a.Título.localeCompare(b.Título));
+    if(!results || !results.data || results.data.length === 0){
+      showError('No se pudieron cargar los datos desde Google Sheets. Verifica que la hoja esté publicada.');
+      return;
+    }
+    // Normalizar headers: intentar aceptar 'Título' o 'Titulo'
+    libros = results.data.map(r => {
+      // algunos sheets pueden tener fields with BOM or weird spaces; normalize keys
+      const clean = {};
+      for(const k in r){
+        const kk = k.trim();
+        clean[kk] = r[k] ? r[k].trim() : '';
+      }
+      return clean;
+    }).filter(r => (r['Título'] || r['Titulo'] || r['Title']));
+    if(libros.length === 0){
+      showError('No se encontraron filas con columna Título. Revisa los nombres de las columnas.');
+      return;
+    }
+    // ordenar alfabéticamente por título (intentando ambas cabeceras)
+    libros.sort((a,b) => {
+      const ta = (a['Título'] || a['Titulo'] || a['Title'] || '').toString();
+      const tb = (b['Título'] || b['Titulo'] || b['Title'] || '').toString();
+      return ta.localeCompare(tb, 'es', {sensitivity:'base'});
+    });
     mostrarTabla(libros);
-    prepararOrden();
+    llenarSelectGeneros(libros);
+  },
+  error: function(err){
+    showError('Error leyendo CSV: ' + err);
   }
 });
 
@@ -17,69 +48,78 @@ function mostrarTabla(data) {
   const tbody = document.querySelector("#tablaLibros tbody");
   tbody.innerHTML = "";
   data.forEach(libro => {
+    const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+    const autor = libro['Autor'] || libro['Author'] || '';
+    const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${libro.Título}</td>
-      <td>${libro.Autor}</td>
-      <td>${libro.Género||''}</td>
-      <td>${libro.Tono||''}</td>
-      <td>${libro.Ritmo||''}</td>`;
-    tr.addEventListener("click", () => mostrarModal(libro));
+    tr.innerHTML = `<td>${escapeHtml(titulo)}</td><td>${escapeHtml(autor)}</td><td>${escapeHtml(genero)}</td>`;
+    tr.addEventListener('click', () => showDetalle(libro));
     tbody.appendChild(tr);
   });
 }
 
-function prepararOrden(){
-  document.querySelectorAll("#tablaLibros th").forEach(th => {
-    const col = th.dataset.col;
-    sortOrder[col] = 1;
-    th.addEventListener("click", () => {
-      libros.sort((a,b)=> sortOrder[col]* ( (a[col]||'').localeCompare(b[col]||'') ));
-      sortOrder[col]*=-1;
-      mostrarTabla(libros);
-    });
+function llenarSelectGeneros(data){
+  const select = document.getElementById('generoSelect');
+  const set = new Set();
+  data.forEach(l => {
+    const raw = (l['Género'] || l['Genero'] || l['Genre'] || '') + '';
+    raw.split(',').map(s => s.trim()).filter(Boolean).forEach(g => set.add(g));
+  });
+  const generos = Array.from(set).sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'}));
+  generos.forEach(g => {
+    const option = document.createElement('option');
+    option.value = g;
+    option.textContent = g;
+    select.appendChild(option);
   });
 }
 
-function mostrarModal(libro){
-  const modal = document.getElementById("modal");
-  const modalBody = document.getElementById("modalBody");
-  modalBody.innerHTML = `
-    <div class="card">
-      <h3>${libro.Título}</h3>
-      <p><strong>Autor:</strong> ${libro.Autor}</p>
-      <p><strong>Género:</strong> ${libro.Género||''}</p>
-      <p><strong>Tono:</strong> ${libro.Tono||''}</p>
-      <p><strong>Ritmo:</strong> ${libro.Ritmo||''}</p>
-      <p><strong>Público:</strong> ${libro.Público||''}</p>
-      <p><strong>Etiquetas:</strong> ${libro.Etiquetas||''}</p>
-      <p><strong>Flags:</strong> ${libro.Flags||''}</p>
-      <p><strong>Reseña:</strong> ${libro.Reseña||''}</p>
-    </div>`;
-  modal.style.display = "block";
-}
-
-document.getElementById("cerrarModal").onclick = function() {
-  document.getElementById("modal").style.display = "none";
-}
-window.onclick = function(event) {
-  const modal = document.getElementById("modal");
-  if (event.target == modal) {
-    modal.style.display = "none";
-  }
-}
-
-document.getElementById("btnRandom").addEventListener("click", () => {
-  const random = libros[Math.floor(Math.random() * libros.length)];
-  document.getElementById("randomLibro").innerHTML = `
-    <div class="card">
-      <h3>${random.Título}</h3>
-      <p><strong>Autor:</strong> ${random.Autor}</p>
-      <p><strong>Género:</strong> ${random.Género||''}</p>
-      <p><strong>Tono:</strong> ${random.Tono||''}</p>
-      <p><strong>Ritmo:</strong> ${random.Ritmo||''}</p>
-      <p><strong>Público:</strong> ${random.Público||''}</p>
-      <p><strong>Etiquetas:</strong> ${random.Etiquetas||''}</p>
-      <p><strong>Flags:</strong> ${random.Flags||''}</p>
-      <p><strong>Reseña:</strong> ${random.Reseña||''}</p>
-    </div>`;
+document.getElementById('generoSelect').addEventListener('change', (e)=>{
+  const genero = e.target.value;
+  const filtrados = genero ? libros.filter(l => ((l['Género']||l['Genero']||'').toString().includes(genero))) : libros;
+  mostrarTarjetas(filtrados);
 });
+
+function mostrarTarjetas(data){
+  const cont = document.getElementById('tarjetasLibros');
+  cont.innerHTML = '';
+  data.forEach(libro=>{
+    const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+    const autor = libro['Autor'] || libro['Author'] || '';
+    const genero = libro['Género'] || libro['Genero'] || '';
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.innerHTML = `<strong>${escapeHtml(titulo)}</strong><br><small>${escapeHtml(autor)}</small><br><em>${escapeHtml(genero)}</em>`;
+    div.addEventListener('click', ()=> showDetalle(libro));
+    cont.appendChild(div);
+  });
+}
+
+document.getElementById('btnRandom').addEventListener('click', ()=>{
+  if(libros.length === 0) return;
+  const r = libros[Math.floor(Math.random()*libros.length)];
+  const titulo = r['Título'] || r['Titulo'] || r['Title'] || '';
+  const autor = r['Autor'] || r['Author'] || '';
+  const genero = r['Género'] || r['Genero'] || '';
+  document.getElementById('randomLibro').innerHTML = `<strong>${escapeHtml(titulo)}</strong> — ${escapeHtml(autor)} (${escapeHtml(genero)})`;
+});
+
+function showDetalle(libro){
+  const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+  const autor = libro['Autor'] || libro['Author'] || '';
+  const genero = libro['Género'] || libro['Genero'] || '';
+  const tono = libro['Tono'] || libro['Tone'] || '';
+  const ritmo = libro['Ritmo'] || '';
+  const publico = libro['Público'] || libro['Publico'] || '';
+  const etiquetas = libro['Etiquetas'] || libro['Tags'] || '';
+  const flags = libro['Flags'] || '';
+  const resena = libro['Reseña'] || libro['Resena'] || libro['Review'] || '';
+  const text = `Título: ${titulo}\nAutor: ${autor}\nGénero: ${genero}\nTono: ${tono}\nRitmo: ${ritmo}\nPúblico: ${publico}\nEtiquetas: ${etiquetas}\nFlags: ${flags}\nReseña: ${resena}`;
+  alert(text);
+}
+
+// simple escape
+function escapeHtml(s){
+  if(!s) return '';
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c]));
+}
