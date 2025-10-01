@@ -1,0 +1,56 @@
+/* Biblioteca Fátima - estilo simple y profesional */
+:root{
+  --bg-start: #f3e8ff;
+  --bg-end: #e6f0ff;
+  --card: #ffffff;
+  --accent: #6c63ff;
+  --muted: #5b6b8a;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial;
+  background: linear-gradient(90deg,var(--bg-start),var(--bg-end));
+  color: #103243;
+  padding:24px;
+}
+
+header{
+  text-align:center;
+  margin-bottom:20px;
+}
+header h1{margin:0;font-size:2.2rem}
+header p{margin:6px 0 0;color:var(--muted)}
+
+main{max-width:1000px;margin:0 auto}
+
+h2{color:var(--accent);margin:0 0 10px}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:var(--card);
+  border-radius:8px;
+  overflow:hidden;
+  box-shadow: 0 6px 18px rgba(16,20,34,0.08);
+}
+thead tr{background: linear-gradient(90deg, rgba(108,99,255,0.12), rgba(96,165,250,0.06));}
+th, td{padding:12px 10px;text-align:left;border-bottom:1px solid rgba(16,20,34,0.06)}
+tbody tr:hover{background:rgba(108,99,255,0.04);cursor:pointer;transform:translateY(-2px);transition:all .12s}
+
+select#generoSelect{padding:8px;border-radius:8px;border:1px solid rgba(16,20,34,0.06);min-width:220px}
+
+.tarjetas{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px}
+.tarjetas .card{background:var(--card);padding:12px;border-radius:10px;box-shadow:0 6px 18px rgba(16,20,34,0.06);flex:1 1 calc(33% - 12px);min-width:180px}
+
+.random{margin-top:12px;padding:12px;background:var(--card);border-radius:8px;box-shadow:0 6px 18px rgba(16,20,34,0.06);display:inline-block}
+
+footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
+@media (max-width:800px){
+  .tarjetas .card{flex:1 1 calc(50% - 12px)}
+}
+@media (max-width:500px){
+  .tarjetas .card{flex:1 1 100%}
+  th, td{padding:10px}
+}
