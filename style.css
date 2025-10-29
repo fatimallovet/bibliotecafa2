@@ -3,7 +3,7 @@
   --bg-start: #f3e8ff;
   --bg-end: #e6f0ff;
   --card: #ffffff;
-  --accent: #6c63ff;
+  --accent: #63c3ff;
   --muted: #5b6b8a;
   --text: #103243;
   --shadow: 0 6px 18px rgba(16,20,34,0.08);
@@ -13,8 +13,8 @@ body.dark{
   --bg-start: #1b1b2f;
   --bg-end: #2a2a40;
   --card: #2f2f48;
-  --accent: #9a8cff;
-  --muted: #a6b1e1;
+  --accent: #5896d7;
+  --muted: #a6cce1;
   --text: #e6e6f0;
   --shadow: 0 6px 18px rgba(0,0,0,0.4);
 }
