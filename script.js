@@ -1,4 +1,4 @@
-const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR_lN4MQGP2PigjKJFOV8ZK92MvfpQWj8aH7qqntBJHOKv6XsvLAxriHmjU3WcD7kafNvNbj3pTFqND/pub?gid=1357667123&single=true&output=csv";
+const sheetUrl = "https://script.google.com/macros/s/AKfycbwzRidouA5u8rEJrNGLqzgdxZ6_dp5NNbiVe5yLgPRAsrqlfjGG6N371OD0Vz46LwMb/exec";
 
 function showError(msg){
   console.error(msg);
@@ -11,21 +11,16 @@ Papa.parse(sheetUrl, {
   header: true,
   skipEmptyLines: true,
   complete: function(results) {
-    if(!results || !results.data || results.data.length === 0){
-      showError('No se pudieron cargar los datos desde Google Sheets.');
-      return;
-    }
     libros = results.data.map(r => {
       const clean = {};
       for(const k in r) clean[k.trim()] = r[k] ? r[k].trim() : '';
       return clean;
-    }).filter(r => (r['Título'] || r['Titulo'] || r['Title']));
-    libros.sort((a,b)=>comparar(a,b,'Título'));
+    });
     mostrarTabla(libros);
     llenarSelectGeneros(libros);
     actualizarContador(libros.length);
   },
-  error: err => showError('Error leyendo CSV: ' + err)
+  error: err => showError('Error leyendo JSON: ' + err)
 });
 
 function comparar(a,b,col){
