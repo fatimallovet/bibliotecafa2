@@ -2,73 +2,62 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Biblioteca Fátima</title>
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Nunito:wght@400;600&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header>
-    <nav class="navbar">
-      <h1>📚 Biblioteca Fátima</h1>
-      <div class="tabs">
-        <button class="tabBtn active" data-tab="tablaTab">Tabla</button>
-        <button class="tabBtn" data-tab="tarjetasTab">Tarjetas</button>
-        <button class="tabBtn" data-tab="randomTab">Random</button>
-      </div>
-    </nav>
+  <header class="site-header">
+    <h1>📚 Biblioteca Fátima</h1>
     <p>Encuentra recomendaciones de libros y su información</p>
   </header>
 
   <main>
-    <section id="tablaTab" class="tabContent active">
-      <div class="controls">
-        <input type="text" id="busquedaInput" placeholder="Buscar por título, autor o etiqueta...">
-        <span id="contadorLibros"></span>
+    <section>
+      <div class="section-header">
+        <h2>Listado de Libros</h2>
+        <input id="busqueda" type="text" placeholder="🔍 Buscar por título o autor...">
       </div>
       <table id="tablaLibros">
         <thead>
           <tr>
-            <th data-key="Título">Título &#x25B2;</th>
-            <th data-key="Autor">Autor</th>
-            <th>Género</th>
-            <th>Acciones</th>
+            <th data-sort="titulo">Título</th>
+            <th data-sort="autor">Autor</th>
+            <th data-sort="genero">Género</th>
           </tr>
         </thead>
         <tbody></tbody>
       </table>
+      <p id="contadorLibros" class="contador"></p>
     </section>
 
-    <section id="tarjetasTab" class="tabContent">
-      <div class="controls">
-        <select id="generoSelect">
-          <option value="">Todos los géneros</option>
-        </select>
-        <input type="text" id="busquedaTarjetas" placeholder="Buscar por título, autor o etiqueta...">
-        <span id="contadorTarjetas"></span>
-      </div>
+    <section>
+      <h2>Filtrar por Género</h2>
+      <select id="generoSelect">
+        <option value="">Todos</option>
+      </select>
       <div id="tarjetasLibros" class="tarjetas"></div>
-      <p id="mensajeNoLibros" class="mensajeNoLibros"></p>
     </section>
 
-    <section id="randomTab" class="tabContent">
-      <button id="btnRandom">Dame un libro random</button>
-      <div id="randomLibro" class="random"></div>
+    <section>
+      <h2>Libro al Azar</h2>
+      <button id="btnRandom">🎲 Dame un libro random</button>
+      <div id="randomLibro" class="tarjetas" style="margin-top:12px"></div>
     </section>
   </main>
-
-  <!-- Modal de detalle -->
-  <div id="modalDetalle" class="modal">
-    <div class="modal-content">
-      <span class="close">&times;</span>
-      <pre id="detalleTexto"></pre>
-    </div>
-  </div>
 
   <footer>
     <p>&copy; 2025 Biblioteca Fátima</p>
   </footer>
+
+  <!-- Modal Detalle -->
+  <div id="detalleModal" class="modal hidden">
+    <div class="modal-content">
+      <span id="cerrarModal" class="close">&times;</span>
+      <div id="detalleContenido"></div>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="script.js"></script>
