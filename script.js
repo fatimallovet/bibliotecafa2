@@ -19,9 +19,15 @@ Papa.parse(sheetUrl, {
     }
     libros = results.data.map(r => {
       const clean = {};
-      for(const k in r) clean[k.trim()] = r[k] ? r[k].trim() : '';
+      for(const k in r){ clean[k.trim()] = r[k] ? r[k].trim() : ''; }
       return clean;
     }).filter(r => (r['Título'] || r['Titulo'] || r['Title']));
+
+    if(libros.length === 0){
+      showError('No se encontraron filas con columna Título.');
+      return;
+    }
+
     libros.sort((a,b)=>comparar(a,b,'Título'));
     mostrarTabla(libros);
     llenarSelectGeneros(libros);
@@ -36,7 +42,7 @@ function comparar(a,b,col){
   return x.localeCompare(y,'es',{sensitivity:'base'});
 }
 
-function mostrarTabla(data) {
+function mostrarTabla(data){
   const tbody = document.querySelector("#tablaLibros tbody");
   tbody.innerHTML = "";
   data.forEach(libro => {
@@ -50,32 +56,6 @@ function mostrarTabla(data) {
   });
   actualizarContador(data.length);
 }
-
-// --- Buscador funcional ---
-const inputBusqueda = document.getElementById('busqueda');
-inputBusqueda.addEventListener('input', ()=>{
-  const term = inputBusqueda.value.toLowerCase();
-  const filtrados = libros.filter(l=>{
-    const t = (l['Título']||l['Titulo']||'').toLowerCase();
-    const a = (l['Autor']||'').toLowerCase();
-    return t.includes(term) || a.includes(term);
-  });
-  mostrarTabla(filtrados);
-});
-
-// --- Ordenar columnas ---
-document.querySelectorAll('#tablaLibros th').forEach(th =>{
-  th.addEventListener('click', ()=>{
-    const col = th.dataset.sort;
-    const campo = col === 'autor' ? 'Autor' : col === 'genero' ? 'Género' : 'Título';
-    if(ordenActual.col===col) ordenActual.asc=!ordenActual.asc; else ordenActual={col,asc:true};
-    libros.sort((a,b)=>{
-      const comp = comparar(a,b,campo);
-      return ordenActual.asc ? comp : -comp;
-    });
-    mostrarTabla(libros);
-  });
-});
 
 function llenarSelectGeneros(data){
   const select = document.getElementById('generoSelect');
@@ -107,31 +87,53 @@ function mostrarTarjetas(data){
     return;
   }
   data.forEach(libro=>{
-    cont.appendChild(crearCard(libro));
+    const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+    const autor = libro['Autor'] || libro['Author'] || '';
+    const genero = libro['Género'] || libro['Genero'] || '';
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.innerHTML = `<strong>${escapeHtml(titulo)}</strong><br><small>${escapeHtml(autor)}</small><br><em>${escapeHtml(genero)}</em>`;
+    div.addEventListener('click', ()=> showDetalle(libro));
+    cont.appendChild(div);
   });
 }
 
-function crearCard(libro){
-  const div = document.createElement('div');
-  div.className = 'card';
-  div.innerHTML = `
-    <strong>${escapeHtml(libro['Título'] || libro['Titulo'] || libro['Title'] || '')}</strong><br>
-    <small>${escapeHtml(libro['Autor'] || libro['Author'] || '')}</small><br>
-    <em>${escapeHtml(libro['Género'] || libro['Genero'] || '')}</em>`;
-  div.addEventListener('click', ()=> showDetalle(libro));
-  return div;
-}
-
-// --- Libro al azar ---
 document.getElementById('btnRandom').addEventListener('click', ()=>{
   if(libros.length === 0) return;
   const r = libros[Math.floor(Math.random()*libros.length)];
-  const cont = document.getElementById('randomLibro');
-  cont.innerHTML = '';
-  cont.appendChild(crearCard(r));
+  const titulo = r['Título'] || r['Titulo'] || r['Title'] || '';
+  const autor = r['Autor'] || r['Author'] || '';
+  const genero = r['Género'] || r['Genero'] || r['Genre'] || '';
+  document.getElementById('randomLibro').innerHTML = `<strong>${escapeHtml(titulo)}</strong> — ${escapeHtml(autor)} (${escapeHtml(genero)})`;
 });
 
-// --- Modal Detalle ---
+// --- Buscador ---
+const inputBusqueda = document.getElementById('busqueda');
+inputBusqueda.addEventListener('input', ()=>{
+  const term = inputBusqueda.value.toLowerCase();
+  const filtrados = libros.filter(l=>{
+    const t = (l['Título']||l['Titulo']||'').toLowerCase();
+    const a = (l['Autor']||'').toLowerCase();
+    return t.includes(term) || a.includes(term);
+  });
+  mostrarTabla(filtrados);
+});
+
+// --- Ordenar por columnas ---
+document.querySelectorAll('#tablaLibros th').forEach(th =>{
+  th.addEventListener('click', ()=>{
+    const col = th.dataset.sort;
+    const campo = col === 'autor' ? 'Autor' : col === 'genero' ? 'Género' : 'Título';
+    if(ordenActual.col===col) ordenActual.asc=!ordenActual.asc; else ordenActual={col,asc:true};
+    libros.sort((a,b)=>{
+      const comp = comparar(a,b,campo);
+      return ordenActual.asc ? comp : -comp;
+    });
+    mostrarTabla(libros);
+  });
+});
+
+// --- Modal ---
 const modal = document.getElementById('detalleModal');
 const cerrarModal = document.getElementById('cerrarModal');
 const detalleContenido = document.getElementById('detalleContenido');
@@ -143,20 +145,45 @@ function showDetalle(libro){
   const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
   const autor = libro['Autor'] || libro['Author'] || '';
   const genero = libro['Género'] || libro['Genero'] || '';
+  const tono = libro['Tono'] || libro['Tone'] || '';
+  const ritmo = libro['Ritmo'] || '';
+  const publico = libro['Público'] || libro['Publico'] || '';
+  const etiquetas = libro['Etiquetas'] || libro['Tags'] || '';
   const resena = libro['Reseña'] || libro['Resena'] || libro['Review'] || '';
+
   detalleContenido.innerHTML = `
     <h3>${escapeHtml(titulo)}</h3>
     <p><strong>Autor:</strong> ${escapeHtml(autor)}</p>
     <p><strong>Género:</strong> ${escapeHtml(genero)}</p>
-    <p style="margin-top:12px">${escapeHtml(resena)}</p>`;
+    ${tono?`<p><strong>Tono:</strong> ${escapeHtml(tono)}</p>`:''}
+    ${ritmo?`<p><strong>Ritmo:</strong> ${escapeHtml(ritmo)}</p>`:''}
+    ${publico?`<p><strong>Público:</strong> ${escapeHtml(publico)}</p>`:''}
+    ${etiquetas?`<p><strong>Etiquetas:</strong> ${escapeHtml(etiquetas)}</p>`:''}
+    <p style="margin-top:12px">${escapeHtml(resena)}</p>
+  `;
   modal.classList.remove('hidden');
 }
+
+// --- Modo claro/oscuro ---
+const btnLightDark = document.getElementById('btnLightDark');
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+if(localStorage.getItem('tema')==='oscuro' || (!localStorage.getItem('tema') && prefersDark)){
+  document.body.classList.add('dark');
+}
+
+btnLightDark.addEventListener('click', ()=>{
+  document.body.classList.toggle('dark');
+  const tema = document.body.classList.contains('dark') ? 'oscuro' : 'claro';
+  localStorage.setItem('tema', tema);
+});
 
 function actualizarContador(num){
   document.getElementById('contadorLibros').textContent = `${num} libro${num!==1?'s':''} encontrados`;
 }
 
+// simple escape
 function escapeHtml(s){
   if(!s) return '';
-  return String(s).replace(/[&<>\"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;','\\'':'&#39;'}[c]));
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;','\'':'&#39;'}[c]));
 }

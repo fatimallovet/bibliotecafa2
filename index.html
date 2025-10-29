@@ -9,7 +9,12 @@
 </head>
 <body>
   <header class="site-header">
-    <h1>📚 Biblioteca Fátima</h1>
+    <nav class="navbar">
+      <h1>📚 Biblioteca Fátima</h1>
+      <div class="nav-controls">
+        <button id="btnLightDark" title="Cambiar tema">🌙</button>
+      </div>
+    </nav>
     <p>Encuentra recomendaciones de libros y su información</p>
   </header>
 
@@ -43,7 +48,7 @@
     <section>
       <h2>Libro al Azar</h2>
       <button id="btnRandom">🎲 Dame un libro random</button>
-      <div id="randomLibro" class="tarjetas" style="margin-top:12px"></div>
+      <div id="randomLibro" class="random"></div>
     </section>
   </main>
 
