@@ -114,3 +114,21 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
 
 @media (max-width:800px){.tarjetas .card{flex:1 1 calc(50% - 12px)}}
 @media (max-width:500px){.tarjetas .card{flex:1 1 100%}th, td{padding:10px}}
+
+
+.flag-tag {
+  display: inline-block;
+  background: var(--accent);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  margin-top: 4px;
+}
+
+.stars {
+  color: gold;
+  font-size: 1.1rem;
+  margin-top: 4px;
+  display: inline-block;
+}

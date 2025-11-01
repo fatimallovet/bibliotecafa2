@@ -82,18 +82,27 @@ document.getElementById('generoSelect').addEventListener('change', (e)=>{
 function mostrarTarjetas(data){
   const cont = document.getElementById('tarjetasLibros');
   cont.innerHTML = '';
-  if(data.length===0){
+  if(data.length === 0){
     cont.innerHTML = '<p style="color:var(--muted)">No se encontraron libros en este género.</p>';
     return;
   }
-  data.forEach(libro=>{
+  data.forEach(libro => {
     const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
     const autor = libro['Autor'] || libro['Author'] || '';
-    const genero = libro['Género'] || libro['Genero'] || '';
+    const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
+    const flags = libro['Flags'] || '';
+    const estrellas = libro['Estrellas'] || libro['Stars'] || '';
+
     const div = document.createElement('div');
     div.className = 'card';
-    div.innerHTML = `<strong>${escapeHtml(titulo)}</strong><br><small>${escapeHtml(autor)}</small><br><em>${escapeHtml(genero)}</em>`;
-    div.addEventListener('click', ()=> showDetalle(libro));
+    div.innerHTML = `
+      <strong>${escapeHtml(titulo)}</strong><br>
+      <small>${escapeHtml(autor)}</small><br>
+      <em>${escapeHtml(genero)}</em><br>
+      ${flags ? `<span class="flag-tag">${escapeHtml(flags)}</span><br>` : ''}
+      ${estrellas ? `<span class="stars">${"⭐".repeat(Number(estrellas))}</span>` : ''}
+    `;
+    div.addEventListener('click', () => showDetalle(libro));
     cont.appendChild(div);
   });
 }
@@ -150,15 +159,19 @@ function showDetalle(libro){
   const publico = libro['Público'] || libro['Publico'] || '';
   const etiquetas = libro['Etiquetas'] || libro['Tags'] || '';
   const resena = libro['Reseña'] || libro['Resena'] || libro['Review'] || '';
+  const flags = libro['Flags'] || '';
+  const estrellas = libro['Estrellas'] || libro['Stars'] || '';
 
   detalleContenido.innerHTML = `
     <h3>${escapeHtml(titulo)}</h3>
     <p><strong>Autor:</strong> ${escapeHtml(autor)}</p>
     <p><strong>Género:</strong> ${escapeHtml(genero)}</p>
-    ${tono?`<p><strong>Tono:</strong> ${escapeHtml(tono)}</p>`:''}
-    ${ritmo?`<p><strong>Ritmo:</strong> ${escapeHtml(ritmo)}</p>`:''}
-    ${publico?`<p><strong>Público:</strong> ${escapeHtml(publico)}</p>`:''}
-    ${etiquetas?`<p><strong>Etiquetas:</strong> ${escapeHtml(etiquetas)}</p>`:''}
+    ${tono ? `<p><strong>Tono:</strong> ${escapeHtml(tono)}</p>` : ''}
+    ${ritmo ? `<p><strong>Ritmo:</strong> ${escapeHtml(ritmo)}</p>` : ''}
+    ${publico ? `<p><strong>Público:</strong> ${escapeHtml(publico)}</p>` : ''}
+    ${etiquetas ? `<p><strong>Etiquetas:</strong> ${escapeHtml(etiquetas)}</p>` : ''}
+    ${flags ? `<p><strong>Flags:</strong> ${escapeHtml(flags)}</p>` : ''}
+    ${estrellas ? `<p><strong>Calificación:</strong> ${"⭐".repeat(Number(estrellas))} (${estrellas})</p>` : ''}
     <p style="margin-top:12px">${escapeHtml(resena)}</p>
   `;
   modal.classList.remove('hidden');
