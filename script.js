@@ -42,20 +42,20 @@ function comparar(a,b,col){
   return x.localeCompare(y,'es',{sensitivity:'base'});
 }
 
-function mostrarTabla(data){
+function mostrarTabla(data) {
   const tbody = document.querySelector("#tablaLibros tbody");
   tbody.innerHTML = "";
   data.forEach(libro => {
-    const estrellas = libro['Calificación'] || libro['Rating'] || '';
+    const calificacion = libro['Calificación'] || libro['Estrellas'] || libro['Stars'] || '';
     const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
     const autor = libro['Autor'] || libro['Author'] || '';
     const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
     const tr = document.createElement("tr");
     tr.innerHTML = `
+      <td>${calificacion ? "⭐".repeat(Number(calificacion)) : ''}</td>
       <td>${escapeHtml(titulo)}</td>
       <td>${escapeHtml(autor)}</td>
       <td>${escapeHtml(genero)}</td>
-      <td>${estrellas ? "⭐".repeat(Number(estrellas)) : ""}</td>
     `;
     tr.addEventListener('click', () => showDetalle(libro));
     tbody.appendChild(tr);
