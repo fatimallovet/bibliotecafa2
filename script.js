@@ -46,10 +46,10 @@ function mostrarTabla(data){
   const tbody = document.querySelector("#tablaLibros tbody");
   tbody.innerHTML = "";
   data.forEach(libro => {
+    const estrellas = libro['Calificación'] || libro['Rating'] || '';
     const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
     const autor = libro['Autor'] || libro['Author'] || '';
     const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
-    const estrellas = libro['Calificación'] || libro['Rating'] || '';
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${escapeHtml(titulo)}</td>
