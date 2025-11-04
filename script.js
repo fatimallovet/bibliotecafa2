@@ -49,8 +49,14 @@ function mostrarTabla(data){
     const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
     const autor = libro['Autor'] || libro['Author'] || '';
     const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
+    const estrellas = libro['Estrellas'] || libro['Stars'] || '';
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${escapeHtml(titulo)}</td><td>${escapeHtml(autor)}</td><td>${escapeHtml(genero)}</td>`;
+    tr.innerHTML = `
+      <td>${escapeHtml(titulo)}</td>
+      <td>${escapeHtml(autor)}</td>
+      <td>${escapeHtml(genero)}</td>
+      <td>${estrellas ? "⭐".repeat(Number(estrellas)) : ""}</td>
+    `;
     tr.addEventListener('click', () => showDetalle(libro));
     tbody.appendChild(tr);
   });
