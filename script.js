@@ -36,10 +36,23 @@ Papa.parse(sheetUrl, {
   error: err => showError('Error leyendo CSV: ' + err)
 });
 
-function comparar(a,b,col){
-  const x = (a[col] || a['Titulo'] || a['Title'] || '').toLowerCase();
-  const y = (b[col] || b['Titulo'] || b['Title'] || '').toLowerCase();
-  return x.localeCompare(y,'es',{sensitivity:'base'});
+function comparar(a, b, col) {
+  // Convertimos los valores a texto minúsculo para comparar
+  const getVal = (obj, campo) => {
+    if (campo === 'Calificación' || campo === 'Estrellas' || campo === 'Stars') {
+      return Number(obj['Calificación'] || obj['Estrellas'] || obj['Stars'] || 0);
+    }
+    return (obj[campo] || obj[campo.replace('ó','o')] || '').toLowerCase();
+  };
+
+  const x = getVal(a, col);
+  const y = getVal(b, col);
+
+  if (typeof x === 'number' && typeof y === 'number') {
+    return x - y;
+  } else {
+    return x.localeCompare(y, 'es', { sensitivity: 'base' });
+  }
 }
 
 function mostrarTabla(data) {
@@ -138,7 +151,11 @@ inputBusqueda.addEventListener('input', ()=>{
 document.querySelectorAll('#tablaLibros th').forEach(th =>{
   th.addEventListener('click', ()=>{
     const col = th.dataset.sort;
-    const campo = col === 'autor' ? 'Autor' : col === 'genero' ? 'Género' : 'Título';
+    const campo = 
+  col === 'autor' ? 'Autor' :
+  col === 'genero' ? 'Género' :
+  col === 'calificacion' ? 'Calificación' :
+  'Título';
     if(ordenActual.col===col) ordenActual.asc=!ordenActual.asc; else ordenActual={col,asc:true};
     libros.sort((a,b)=>{
       const comp = comparar(a,b,campo);
