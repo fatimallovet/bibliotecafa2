@@ -49,8 +49,7 @@ function mostrarTabla(data){
     const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
     const autor = libro['Autor'] || libro['Author'] || '';
     const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
-    console.log(Object.keys(libro));
-    const estrellas = libro['Estrellas'] || libro['Stars'] || '';
+    const estrellas = libro['Calificación'] || libro['Rating'] || '';
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${escapeHtml(titulo)}</td>
