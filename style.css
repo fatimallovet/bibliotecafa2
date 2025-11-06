@@ -132,3 +132,41 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
   margin-top: 4px;
   display: inline-block;
 }
+
+.card-azar {
+  background: var(--fondo-claro, #f8f8f8);
+  border: 2px solid #cce0ff;
+  border-radius: 12px;
+  padding: 15px;
+  max-width: 400px;
+  margin: 20px auto;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  text-align: left;
+  transition: transform 0.2s;
+}
+
+.card-azar:hover {
+  transform: scale(1.02);
+}
+
+.card-azar h3 {
+  margin-top: 0;
+}
+
+.card-azar p {
+  margin: 5px 0;
+}
+
+.card-azar button {
+  background: #d8eaff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s;
+}
+
+.card-azar button:hover {
+  background: #b9d5ff;
+}

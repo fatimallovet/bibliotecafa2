@@ -223,3 +223,43 @@ function escapeHtml(s){
   if(!s) return '';
   return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;','\'':'&#39;'}[c]));
 }
+
+// --- LIBRO AL AZAR ---
+const btnRandom = document.getElementById("btnRandom");
+const randomDiv = document.getElementById("randomLibro");
+
+if (btnRandom) {
+  btnRandom.addEventListener("click", () => {
+    if (!window.librosData || window.librosData.length === 0) {
+      randomDiv.innerHTML = "<p>No hay libros disponibles todavía.</p>";
+      return;
+    }
+
+    const randomIndex = Math.floor(Math.random() * window.librosData.length);
+    const libro = window.librosData[randomIndex];
+    mostrarLibroAzar(libro);
+  });
+}
+
+function mostrarLibroAzar(libro) {
+  const titulo = escapeHtml(libro["Título"] || libro["Titulo"] || "");
+  const autor = escapeHtml(libro["Autor"] || "");
+  const genero = escapeHtml(libro["Género"] || libro["Genero"] || "");
+  const calificacion = libro["Calificación"] || libro["Estrellas"] || "";
+  const reseña = escapeHtml(libro["Reseña"] || libro["Comentario"] || libro["Review"] || "");
+
+  randomDiv.innerHTML = `
+    <div class="card-azar">
+      <h3>${titulo}</h3>
+      <p><strong>Autor:</strong> ${autor}</p>
+      <p><strong>Género:</strong> ${genero}</p>
+      <p><strong>Calificación:</strong> ${"⭐".repeat(Number(calificacion) || 0)}</p>
+      ${reseña ? `<p><strong>Reseña:</strong> ${reseña}</p>` : ""}
+      <button class="btn-detalle">📖 Ver más</button>
+    </div>
+  `;
+
+  // botón para abrir el modal con los mismos detalles
+  const btnDetalle = randomDiv.querySelector(".btn-detalle");
+  btnDetalle.addEventListener("click", () => showDetalle(libro));
+}

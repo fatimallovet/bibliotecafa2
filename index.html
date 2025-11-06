@@ -19,39 +19,52 @@
   </header>
 
   <main>
-    <section>
-      <div class="section-header">
-        <h2>Listado de Libros</h2>
-        <input id="busqueda" type="text" placeholder="🔍 Buscar por título o autor...">
+    <!-- 🔹 Sistema de pestañas -->
+    <div class="tabs">
+      <div class="tab-buttons">
+        <button class="tab-button active" data-tab="biblioteca">📖 Biblioteca</button>
+        <button class="tab-button" data-tab="extras">🎯 Extras</button>
       </div>
-      <table id="tablaLibros">
-        <thead>
-          <tr>
-            <th data-sort="calificacion">Calificación</th>
-            <th data-sort="titulo">Título</th>
-            <th data-sort="autor">Autor</th>
-            <th data-sort="genero">Género</th>
-          
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-      <p id="contadorLibros" class="contador"></p>
-    </section>
 
-    <section>
-      <h2>Filtrar por Género</h2>
-      <select id="generoSelect">
-        <option value="">Todos</option>
-      </select>
-      <div id="tarjetasLibros" class="tarjetas"></div>
-    </section>
+      <!-- 📖 Pestaña 1: Biblioteca -->
+      <div id="biblioteca" class="tab-content active">
+        <section>
+          <div class="section-header">
+            <h2>Lista de Libros</h2>
+            <input id="busqueda" type="text" placeholder="🔍 Buscar por título o autor...">
+          </div>
+          <table id="tablaLibros">
+            <thead>
+              <tr>
+                <th data-sort="calificacion">Calificación</th>
+                <th data-sort="titulo">Título</th>
+                <th data-sort="autor">Autor</th>
+                <th data-sort="genero">Género</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <p id="contadorLibros" class="contador"></p>
+        </section>
+      </div>
 
-    <section>
-      <h2>Libro al Azar</h2>
-      <button id="btnRandom">🎲 Dame un libro random</button>
-      <div id="randomLibro" class="random"></div>
-    </section>
+      <!-- 🎯 Pestaña 2: Extras -->
+      <div id="extras" class="tab-content">
+        <section>
+          <h2>Filtrar por Género</h2>
+          <select id="generoSelect">
+            <option value="">Todos</option>
+          </select>
+          <div id="tarjetasLibros" class="tarjetas"></div>
+        </section>
+
+        <section>
+          <h2>Libro al Azar</h2>
+          <button id="btnRandom">🎲 Dame un libro random</button>
+          <div id="randomLibro" class="random"></div>
+        </section>
+      </div>
+    </div>
   </main>
 
   <footer>
@@ -68,5 +81,22 @@
 
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="script.js"></script>
+
+  <!-- JS adicional para pestañas -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const buttons = document.querySelectorAll(".tab-button");
+      const contents = document.querySelectorAll(".tab-content");
+
+      buttons.forEach(btn => {
+        btn.addEventListener("click", () => {
+          buttons.forEach(b => b.classList.remove("active"));
+          contents.forEach(c => c.classList.remove("active"));
+          btn.classList.add("active");
+          document.getElementById(btn.dataset.tab).classList.add("active");
+        });
+      });
+    });
+  </script>
 </body>
 </html>
