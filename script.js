@@ -126,13 +126,30 @@ function mostrarTarjetas(data){
   });
 }
 
+
+// Botón libro random
 document.getElementById('btnRandom').addEventListener('click', ()=>{
   if(libros.length === 0) return;
   const r = libros[Math.floor(Math.random()*libros.length)];
   const titulo = r['Título'] || r['Titulo'] || r['Title'] || '';
   const autor = r['Autor'] || r['Author'] || '';
   const genero = r['Género'] || r['Genero'] || r['Genre'] || '';
-  document.getElementById('randomLibro').innerHTML = `<strong>${escapeHtml(titulo)}</strong> — ${escapeHtml(autor)} (${escapeHtml(genero)})`;
+  const flags = r['Flags'] || '';
+  const estrellas = r['Estrellas'] || r['Stars'] || '';
+
+  const div = document.getElementById('randomLibro');
+  div.innerHTML = `
+    <div class="random-card">
+      <h3>${escapeHtml(titulo)}</h3>
+      <p><strong>${escapeHtml(autor)}</strong></p>
+      <p><em>${escapeHtml(genero)}</em></p>
+      ${flags ? `<span class="flag-tag">${escapeHtml(flags)}</span><br>` : ''}
+      ${estrellas ? `<span class="stars">${"⭐".repeat(Number(estrellas))}</span>` : ''}
+    </div>
+  `;
+
+  // Al hacer clic en el libro random, mostrar el detalle completo
+  div.querySelector('.random-card').addEventListener('click', ()=> showDetalle(r));
 });
 
 // --- Buscador ---
