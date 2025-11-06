@@ -4,262 +4,24 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Biblioteca Fátima</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Source+Serif+4:wght@300;400;600&display=swap" rel="stylesheet">
-  <style>
-    /* --- Estilo general --- */
-    body {
-      font-family: 'Source Serif 4', serif;
-      background: #f9f7f3;
-      color: #3b3a36;
-      margin: 0;
-      line-height: 1.6;
-      transition: background 0.4s, color 0.4s;
-    }
-
-    body.dark {
-      background: #1b1b1b;
-      color: #e5e5e5;
-    }
-
-    header, footer {
-      background: #cbb994;
-      color: #3b3a36;
-      padding: 1.2rem;
-      text-align: center;
-      font-family: 'Playfair Display', serif;
-      letter-spacing: 0.5px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-
-    header h1 {
-      margin: 0.2rem;
-      font-size: 1.8rem;
-    }
-
-    .navbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      max-width: 950px;
-      margin: 0 auto;
-    }
-
-    .nav-controls button {
-      background: none;
-      border: 1px solid rgba(0,0,0,0.3);
-      border-radius: 50%;
-      width: 38px;
-      height: 38px;
-      cursor: pointer;
-      font-size: 1.2rem;
-      transition: all 0.3s ease;
-      color: inherit;
-    }
-
-    .nav-controls button:hover {
-      background: rgba(0,0,0,0.1);
-    }
-
-    body.dark .nav-controls button {
-      border: 1px solid rgba(255,255,255,0.4);
-    }
-
-    body.dark .nav-controls button:hover {
-      background: rgba(255,255,255,0.1);
-    }
-
-    main {
-      max-width: 950px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-    }
-
-    h2 {
-      font-family: 'Playfair Display', serif;
-      color: #5a4633;
-      border-bottom: 1px solid #d1c7b3;
-      padding-bottom: 0.3rem;
-      margin-bottom: 1rem;
-    }
-
-    body.dark h2 {
-      color: #f0e6d2;
-      border-color: #4a3b2a;
-    }
-
-    /* --- Inputs --- */
-    input, select {
-      padding: 0.5rem;
-      border: 1px solid #c8bfae;
-      border-radius: 6px;
-      width: 240px;
-      background: #fff;
-      color: #3b3a36;
-      font-family: inherit;
-      font-size: 0.95rem;
-    }
-
-    body.dark input, body.dark select {
-      background: #2a2a2a;
-      color: #e5e5e5;
-      border: 1px solid #555;
-    }
-
-    /* --- Tabla --- */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-    }
-
-    th, td {
-      text-align: left;
-      padding: 0.6rem;
-      border-bottom: 1px solid #ddd;
-    }
-
-    th {
-      font-weight: 600;
-      background: #f0ede8;
-      cursor: pointer;
-    }
-
-    body.dark th {
-      background: #2b2b2b;
-      color: #f0e6d2;
-    }
-
-    /* --- Botones elegantes --- */
-    button {
-      font-family: inherit;
-      background: #d4c3a3;
-      color: #3b3a36;
-      border: none;
-      border-radius: 8px;
-      padding: 0.6rem 1rem;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-weight: 500;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-
-    button:hover {
-      background: #c4b290;
-      transform: translateY(-1px);
-    }
-
-    body.dark button {
-      background: #544533;
-      color: #f0e6d2;
-    }
-
-    body.dark button:hover {
-      background: #6a5942;
-    }
-
-    /* --- Tarjetas --- */
-    .tarjetas, .random {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      justify-content: center;
-    }
-
-    .tarjeta {
-      background: #fffdf9;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      padding: 1.2rem;
-      width: 270px;
-      transition: transform 0.25s ease;
-      border: 1px solid #e5ddc8;
-    }
-
-    .tarjeta:hover {
-      transform: scale(1.03);
-    }
-
-    body.dark .tarjeta {
-      background: #26221c;
-      border-color: #4a3b2a;
-    }
-
-    .tarjeta h3 {
-      font-family: 'Playfair Display', serif;
-      margin-top: 0;
-      color: #4c3a2c;
-      font-size: 1.1rem;
-    }
-
-    body.dark .tarjeta h3 {
-      color: #e8dbc0;
-    }
-
-    .tarjeta p {
-      margin: 0.3rem 0;
-    }
-
-    /* --- Modal --- */
-    .modal {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0,0,0,0.4);
-      backdrop-filter: blur(3px);
-    }
-
-    .modal.hidden {
-      display: none;
-    }
-
-    .modal-content {
-      background: #fffdf9;
-      color: #3b3a36;
-      border-radius: 10px;
-      padding: 1.5rem;
-      width: 90%;
-      max-width: 500px;
-      position: relative;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-
-    body.dark .modal-content {
-      background: #2a261f;
-      color: #f0e6d2;
-    }
-
-    .close {
-      position: absolute;
-      right: 15px;
-      top: 10px;
-      font-size: 1.5rem;
-      cursor: pointer;
-    }
-
-    footer {
-      font-size: 0.9rem;
-      margin-top: 3rem;
-    }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
-  <header>
+  <header class="site-header">
     <nav class="navbar">
       <h1>Biblioteca Fátima</h1>
       <div class="nav-controls">
         <button id="btnLightDark" title="Cambiar tema">🌙</button>
       </div>
     </nav>
-    <p>Proyecto en construcción...</p>
+    <p>Proyecto en construcción......</p>
   </header>
 
   <main>
     <section>
       <div class="section-header">
-        <h2>Lista de Libros</h2>
+        <h2>Listado de Libros</h2>
         <input id="busqueda" type="text" placeholder="🔍 Buscar por título o autor...">
       </div>
       <table id="tablaLibros">
@@ -269,6 +31,7 @@
             <th data-sort="titulo">Título</th>
             <th data-sort="autor">Autor</th>
             <th data-sort="genero">Género</th>
+          
           </tr>
         </thead>
         <tbody></tbody>
@@ -303,38 +66,7 @@
     </div>
   </div>
 
-  <script>
-    const btnLightDark = document.getElementById("btnLightDark");
-    const body = document.body;
-    const btnRandom = document.getElementById("btnRandom");
-    const randomDiv = document.getElementById("randomLibro");
-
-    // Cambiar tema
-    btnLightDark.addEventListener("click", () => {
-      body.classList.toggle("dark");
-      btnLightDark.textContent = body.classList.contains("dark") ? "☀️" : "🌙";
-    });
-
-    // Ejemplo de libros
-    const libros = [
-      { titulo: "El Conde de Montecristo", autor: "Alexandre Dumas", genero: "Clásico", calificacion: "★★★★★" },
-      { titulo: "El Diluvio", autor: "Henryk Sienkiewicz", genero: "Histórico", calificacion: "★★★★★" },
-      { titulo: "Cinder", autor: "Marissa Meyer", genero: "Ciencia Ficción", calificacion: "★★★★☆" },
-      { titulo: "Blanca como la nieve, roja como la sangre", autor: "Alessandro D’Avenia", genero: "Juvenil", calificacion: "★★★★☆" }
-    ];
-
-    // Mostrar libro aleatorio
-    btnRandom.addEventListener("click", () => {
-      const random = libros[Math.floor(Math.random() * libros.length)];
-      randomDiv.innerHTML = `
-        <div class="tarjeta">
-          <h3>${random.titulo}</h3>
-          <p><strong>Autor:</strong> ${random.autor}</p>
-          <p><strong>Género:</strong> ${random.genero}</p>
-          <p><strong>Calificación:</strong> ${random.calificacion}</p>
-        </div>
-      `;
-    });
-  </script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
