@@ -154,13 +154,24 @@ document.getElementById('btnRandom').addEventListener('click', ()=>{
 
 // --- Buscador ---
 const inputBusqueda = document.getElementById('busqueda');
-inputBusqueda.addEventListener('input', ()=>{
+inputBusqueda.addEventListener('input', () => {
   const term = inputBusqueda.value.toLowerCase();
-  const filtrados = libros.filter(l=>{
-    const t = (l['Título']||l['Titulo']||'').toLowerCase();
-    const a = (l['Autor']||'').toLowerCase();
-    return t.includes(term) || a.includes(term);
+
+  const filtrados = libros.filter(l => {
+    const t = (l['Título'] || l['Titulo'] || '').toLowerCase();
+    const a = (l['Autor'] || '').toLowerCase();
+    const g = (l['Género'] || l['Genero'] || l['Genre'] || '').toLowerCase();
+    const tags = (l['Etiquetas'] || l['Tags'] || '').toLowerCase();
+
+    // Si el término aparece en alguno de estos campos, se muestra el libro
+    return (
+      t.includes(term) ||
+      a.includes(term) ||
+      g.includes(term) ||
+      tags.includes(term)
+    );
   });
+
   mostrarTabla(filtrados);
 });
 
