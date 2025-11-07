@@ -152,18 +152,17 @@ document.getElementById('btnRandom').addEventListener('click', ()=>{
   div.querySelector('.random-card').addEventListener('click', ()=> showDetalle(r));
 });
 
-// --- Buscador ---
+// --- Buscador (ahora ignora acentos) ---
 const inputBusqueda = document.getElementById('busqueda');
 inputBusqueda.addEventListener('input', () => {
-  const term = inputBusqueda.value.toLowerCase();
+  const term = normalizar(inputBusqueda.value);
 
   const filtrados = libros.filter(l => {
-    const t = (l['Título'] || l['Titulo'] || '').toLowerCase();
-    const a = (l['Autor'] || '').toLowerCase();
-    const g = (l['Género'] || l['Genero'] || l['Genre'] || '').toLowerCase();
-    const tags = (l['Etiquetas'] || l['Tags'] || '').toLowerCase();
+    const t = normalizar(l['Título'] || l['Titulo'] || '');
+    const a = normalizar(l['Autor'] || '');
+    const g = normalizar(l['Género'] || l['Genero'] || l['Genre'] || '');
+    const tags = normalizar(l['Etiquetas'] || l['Tags'] || '');
 
-    // Si el término aparece en alguno de estos campos, se muestra el libro
     return (
       t.includes(term) ||
       a.includes(term) ||
@@ -174,6 +173,14 @@ inputBusqueda.addEventListener('input', () => {
 
   mostrarTabla(filtrados);
 });
+
+// --- Función auxiliar para eliminar acentos y poner en minúsculas ---
+function normalizar(texto) {
+  return texto
+    .toLowerCase()
+    .normalize("NFD") // separa los acentos de las letras
+    .replace(/[\u0300-\u036f]/g, ""); // elimina los acentos
+}
 
 // --- Ordenar por columnas ---
 document.querySelectorAll('#tablaLibros th').forEach(th =>{
