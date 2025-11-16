@@ -20,8 +20,9 @@
 
  <main>
   <div class="tabs">
-    <button class="tab-btn active" data-tab="tabLibros">📚 Libros</button>
-    <button class="tab-btn" data-tab="tabGeneros">🎭 Géneros</button>
+    <button class="tab-btn active" data-tab="tabLibros">📚 Lista de Libros</button>
+    <button class="tab-btn" data-tab="tabGeneros">🎭 Filtrar por Géneros</button>
+    <button class="tab-btn" data-tab="tabRandom">🎲 Random</button>   <!-- NUEVO -->
   </div>
 
   <!-- Pestaña principal -->
@@ -45,12 +46,7 @@
 
     <p id="contadorLibros" class="contador"></p>
 
-    <section>
-      <h2>Libro al Azar</h2>
-      <button id="btnRandom">🎲 Dame un libro random</button>
-      <div id="randomLibro" class="random"></div>
-    </section>
-  </section>
+
 
   <!-- Pestaña de géneros -->
   <section id="tabGeneros" class="tab">
@@ -61,6 +57,12 @@
     <div id="tarjetasLibros" class="tarjetas"></div>
   </section>
 </main>
+
+<section id="tabRandom" class="tab">
+  <h2>Libro al Azar</h2>
+  <button id="btnRandom">🎲 Dame un libro random</button>
+  <div id="randomLibro" class="random"></div>
+</section>
 
   <footer>
     <p>&copy; 2025 Biblioteca Fátima</p>
