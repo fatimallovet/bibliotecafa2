@@ -18,41 +18,49 @@
     <p>Proyecto en construcción......</p>
   </header>
 
-  <main>
-    <section>
-      <div class="section-header">
-        <h2>Listado de Libros</h2>
-        <input id="busqueda" type="text" placeholder="🔍 Buscar por título, género, autor o palabras clave...">
-      </div>
-      <table id="tablaLibros">
-        <thead>
-          <tr>
-            <th data-sort="calificacion">Calificación</th>
-            <th data-sort="titulo">Título</th>
-            <th data-sort="autor">Autor</th>
-            <th data-sort="genero">Género</th>
-          
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-      <p id="contadorLibros" class="contador"></p>
-    </section>
+ <main>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="tabLibros">📚 Libros</button>
+    <button class="tab-btn" data-tab="tabGeneros">🎭 Géneros</button>
+  </div>
 
-    <section>
-      <h2>Filtrar por Género</h2>
-      <select id="generoSelect">
-        <option value="">Todos</option>
-      </select>
-      <div id="tarjetasLibros" class="tarjetas"></div>
-    </section>
+  <!-- Pestaña principal -->
+  <section id="tabLibros" class="tab active">
+    <div class="section-header">
+      <h2>Listado de Libros</h2>
+      <input id="busqueda" type="text" placeholder="🔍 Buscar por título, género, autor o palabras clave...">
+    </div>
+
+    <table id="tablaLibros">
+      <thead>
+        <tr>
+          <th data-sort="calificacion">Calificación</th>
+          <th data-sort="titulo">Título</th>
+          <th data-sort="autor">Autor</th>
+          <th data-sort="genero">Género</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <p id="contadorLibros" class="contador"></p>
 
     <section>
       <h2>Libro al Azar</h2>
       <button id="btnRandom">🎲 Dame un libro random</button>
       <div id="randomLibro" class="random"></div>
     </section>
-  </main>
+  </section>
+
+  <!-- Pestaña de géneros -->
+  <section id="tabGeneros" class="tab">
+    <h2>Filtrar por Género</h2>
+    <select id="generoSelect">
+      <option value="">Todos</option>
+    </select>
+    <div id="tarjetasLibros" class="tarjetas"></div>
+  </section>
+</main>
 
   <footer>
     <p>&copy; 2025 Biblioteca Fátima</p>
