@@ -11,15 +11,21 @@
   <header class="site-header">
     <nav class="navbar">
       <h1>Biblioteca Fátima</h1>
+      <ul class="menu">
+        <li data-tab="tabla" class="active">Tabla</li>
+        <li data-tab="tarjetas">Tarjetas</li>
+        <li data-tab="generos">Géneros</li>
+        <li data-tab="random">Random</li>
+      </ul>
       <div class="nav-controls">
         <button id="btnLightDark" title="Cambiar tema">🌙</button>
       </div>
     </nav>
-    <p>Proyecto en construcción......</p>
   </header>
 
   <main>
-    <section>
+    <!-- TAB: TABLA -->
+    <section id="tab-tabla" class="tab-section active">
       <div class="section-header">
         <h2>Listado de Libros</h2>
         <input id="busqueda" type="text" placeholder="🔍 Buscar por título, género, autor o palabras clave...">
@@ -31,7 +37,6 @@
             <th data-sort="titulo">Título</th>
             <th data-sort="autor">Autor</th>
             <th data-sort="genero">Género</th>
-          
           </tr>
         </thead>
         <tbody></tbody>
@@ -39,18 +44,23 @@
       <p id="contadorLibros" class="contador"></p>
     </section>
 
-    
-    <section>
-      
+    <!-- TAB: TARJETAS -->
+    <section id="tab-tarjetas" class="tab-section">
+      <h2>Vista en Tarjetas</h2>
+      <div id="tarjetasLibros" class="tarjetas"></div>
+    </section>
+
+    <!-- TAB: GÉNEROS -->
+    <section id="tab-generos" class="tab-section">
       <h2>Filtrar por Género</h2>
       <select id="generoSelect">
         <option value="">Todos</option>
       </select>
-      
-      <div id="tarjetasLibros" class="tarjetas"></div>
+      <div id="generoResultados" class="tarjetas"></div>
     </section>
-    
-    <section>
+
+    <!-- TAB: RANDOM -->
+    <section id="tab-random" class="tab-section">
       <h2>Libro al Azar</h2>
       <button id="btnRandom">🎲 Dame un libro random</button>
       <div id="randomLibro" class="random"></div>
