@@ -214,3 +214,15 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
     height: 40px !important;
   }
 }
+
+
+#bmc-button-top {
+  z-index: 9999;
+  pointer-events: auto;
+}
+
+/* Para los tabs */
+.tabs {
+  z-index: 1;
+  position: relative;
+}
