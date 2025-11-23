@@ -11,23 +11,20 @@
   <header class="site-header">
     <nav class="navbar">
       <h1>Biblioteca Fátima</h1>
-
-      <!-- BOTÓN BUY ME A COOKIE FIJO ARRIBA -->
-      <div id="bmc-button-top" style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
-        <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js"
+        
+      <!-- BOTÓN BUY ME A COFFEE -->
+        <script type="text/javascript"
+          src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js"
           data-name="bmc-button"
           data-slug="fatimallovet"
           data-color="#FFDD00"
-          data-emoji="🍪"
+          data-emoji="☕"
           data-font="Cookie"
-          data-text="Buy me a cookie"
+          data-text="Buy me a coffee"
           data-outline-color="#000000"
-          data-font-color="#ffffff"
-          data-coffee-color="#FFDD00">
+          data-font-color="#000000"
+          data-coffee-color="#ffffff">
         </script>
-      </div>
-
-
 
       <div class="nav-controls">
         <button id="btnLightDark" title="Cambiar tema">🌙</button>
@@ -46,13 +43,13 @@
   <!-- Pestaña principal -->
   <section id="tabLibros" class="tab active">
     <div class="section-header">
-      <h2> 🔍 </h2>
-      <input id="busqueda" type="text" placeholder="Buscar por título, género, autor o palabras clave...">
+      <h2>Listado de Libros</h2>
+      <input id="busqueda" type="text" placeholder="🔍 Buscar por título, género, autor o palabras clave...">
     </div>
 
     <table id="tablaLibros">
       <thead>
-        <tr>          
+        <tr>
           <th data-sort="calificacion">Calificación</th>
           <th data-sort="titulo">Título</th>
           <th data-sort="autor">Autor</th>
@@ -69,7 +66,6 @@
   <!-- Pestaña de géneros -->
   <section id="tabGeneros" class="tab">
     <h2>Filtrar por Género</h2>
-    
     <select id="generoSelect">
       <option value="">Todos</option>
     </select>

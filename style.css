@@ -185,3 +185,7 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
 .tab.active {
   display: block;
 }
+
+.bmc-btn-container {
+  margin-left: 20px;
+}
