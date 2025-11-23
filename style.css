@@ -208,3 +208,13 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
   height: 40px;
   line-height: 1;
 }
+
+
+/* Estilo ajustado del botón Buy Me a Coffee para móvil */
+@media (max-width: 480px) {
+  .btn-bmc {
+    font-size: 1rem;
+    height: auto;
+    padding: 10px 14px;
+  }
+}
