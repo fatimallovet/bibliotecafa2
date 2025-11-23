@@ -220,3 +220,8 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
     flex-shrink: 0;           /* evita que se aplaste */
   }
 }
+
+.tabs .btn-bmc {
+  flex-shrink: 0;       /* evita que se achique */
+  white-space: nowrap;  /* evita salto de línea */
+}
