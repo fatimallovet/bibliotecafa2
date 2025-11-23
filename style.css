@@ -247,3 +247,33 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
   color: #512fa3;
   text-shadow: 0 3px 10px rgba(120, 84, 197, 0.3);
 }
+
+
+
+
+
+.top-right-link {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  z-index: 999;
+}
+
+.top-right-link a {
+  text-decoration: none;
+  color: #6a4fbf;
+  font-weight: 600;
+  font-size: 1.1rem;
+  background: white;
+  padding: 8px 14px;
+  border-radius: 14px;
+  box-shadow: 0 5px 14px rgba(120,84,197,0.18);
+  transition: 0.25s ease;
+}
+
+.top-right-link a:hover {
+  color: #512fa3;
+  background: #f2e7ff;
+  box-shadow: 0 8px 20px rgba(120,84,197,0.28);
+  transform: translateY(-3px);
+}
