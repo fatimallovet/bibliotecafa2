@@ -195,16 +195,16 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
 .btn-bmc {
   background: #FFDD00;
   border-radius: 12px;
-  padding: 12px 18px;
-  font-size: 1.25rem;   /* Aumenta tamaño del texto */
+  padding: 10px 16px;
+  font-size: 1.15rem;   /* tamaño más moderado */
   font-family: 'Cookie', cursive;
   cursor: pointer;
   box-shadow: var(--shadow);
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   text-decoration: none;
   color: black;
   height: 40px;
-  line-height: 1;      /* evita que se vea aplastado */
+  line-height: 1;
 }
