@@ -227,4 +227,23 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
 }
 
 
+.footer-link {
+  margin-top: 60px;
+  padding: 20px 0;
+  text-align: center;
+  font-size: 1rem;
+  opacity: 0.75;
+}
 
+.footer-link a {
+  text-decoration: none;
+  color: #6a4fbf;
+  font-weight: 600;
+  transition: 0.25s ease;
+}
+
+.footer-link a:hover {
+  opacity: 1;
+  color: #512fa3;
+  text-shadow: 0 3px 10px rgba(120, 84, 197, 0.3);
+}
