@@ -189,3 +189,14 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
 .bmc-btn-container {
   margin-left: 20px;
 }
+
+
+.btn-bmc {
+  background: #FFDD00;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-weight: bold;
+  text-decoration: none;
+  color: #000;
+  margin-left: 10px;
+}
