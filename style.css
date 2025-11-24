@@ -254,3 +254,28 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
 .tab.active {
   display: block;
 }
+
+
+
+.video-link-minimal {
+  font-weight: 500;
+  text-decoration: none;
+  color: var(--accent);
+  position: relative;
+}
+
+.video-link-minimal::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  width: 0%;
+  height: 2px;
+  background: var(--accent);
+  transition: width 0.3s ease;
+  border-radius: 2px;
+}
+
+.video-link-minimal:hover::after {
+  width: 100%;
+}
