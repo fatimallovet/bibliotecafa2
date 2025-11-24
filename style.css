@@ -257,15 +257,19 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
 
 
 
-.video-icon {
-  font-size: 1.4rem;
-  opacity: 0.75;
-  transition: 0.25s ease;
+.video-pill {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(0,0,0,0.15);
   text-decoration: none;
+  font-weight: 500;
+  color: var(--accent);
+  backdrop-filter: blur(6px);
+  transition: 0.25s ease;
 }
 
-.video-icon:hover {
-  opacity: 1;
-  transform: scale(1.1);
+.video-pill:hover {
+  background: rgba(0,0,0,0.05);
+  transform: translateY(-1px);
 }
 
