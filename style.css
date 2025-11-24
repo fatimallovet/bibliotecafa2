@@ -254,3 +254,7 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
 header.site-header {
   position: relative;
 }
+
+.site-header {
+  padding-top: 25px;  /* Ajusta a tu gusto */
+}
