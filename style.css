@@ -225,3 +225,24 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
   flex-shrink: 0;       /* evita que se achique */
   white-space: nowrap;  /* evita salto de línea */
 }
+
+
+
+/* Botón Videoteca */
+.video-btn{
+  background: #d86bff;       /* Morado rosita */
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  box-shadow: var(--shadow);
+  transition: transform .15s, opacity .2s;
+}
+
+.video-btn:hover{
+  transform: translateY(-2px);
+  opacity: 0.9;
+}
