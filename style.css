@@ -246,3 +246,11 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
   transform: translateY(-2px);
   opacity: 0.9;
 }
+
+.tab {
+  display: none;
+}
+
+.tab.active {
+  display: block;
+}
