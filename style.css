@@ -32,6 +32,7 @@ body{
 .site-header{text-align:center;margin-bottom:24px}
 .navbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
 .navbar h1{margin:0;font-size:2rem}
+
 .nav-controls button{
   background:var(--accent);
   color:white;
