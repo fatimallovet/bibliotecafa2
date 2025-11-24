@@ -235,7 +235,19 @@ function showDetalle(libro){
   modal.classList.remove('hidden');
 }
 
+// --- Modo claro/oscuro ---
+const btnLightDark = document.getElementById('btnLightDark');
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
+if(localStorage.getItem('tema')==='oscuro' || (!localStorage.getItem('tema') && prefersDark)){
+  document.body.classList.add('dark');
+}
+
+btnLightDark.addEventListener('click', ()=>{
+  document.body.classList.toggle('dark');
+  const tema = document.body.classList.contains('dark') ? 'oscuro' : 'claro';
+  localStorage.setItem('tema', tema);
+});
 
 function actualizarContador(num){
   document.getElementById('contadorLibros').textContent = `${num} libro${num!==1?'s':''} encontrados`;
