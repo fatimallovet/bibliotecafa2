@@ -340,13 +340,7 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
   margin-bottom: 16px;
 }
 
-/* Botón Videoteca flotando con elegancia */
-.video-pill {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-}
+
 
 
 
