@@ -30,7 +30,7 @@ body{
 }
 
 .site-header{text-align:center;margin-bottom:24px}
-.navbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+
 .navbar h1{margin:0;font-size:2rem}
 .nav-controls button{
   background:var(--accent);
@@ -330,3 +330,40 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
   font-weight: 600;
   color: var(--text);
 }
+
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 16px;
+}
+
+/* Botón Videoteca flotando con elegancia */
+.video-pill {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+
+
+@media (max-width: 600px) {
+  .navbar {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .video-pill {
+    position: static;
+    transform: none;
+  }
+
+  .site-title.editorial {
+    font-size: 2rem;
+  }
+}
+
+
