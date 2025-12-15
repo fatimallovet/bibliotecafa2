@@ -202,10 +202,10 @@ document.querySelectorAll('#tablaLibros th').forEach(th =>{
 
 // --- Modal ---
 const modal = document.getElementById('detalleModal');
-const cerrarModal = document.getElementById('cerrarModal');
+
 const detalleContenido = document.getElementById('detalleContenido');
 
-cerrarModal.addEventListener('click', ()=> modal.classList.add('hidden'));
+
 window.addEventListener('click', e=>{ if(e.target===modal) modal.classList.add('hidden'); });
 
 function showDetalle(libro){
