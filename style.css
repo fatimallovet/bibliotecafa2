@@ -78,54 +78,16 @@ tbody tr:hover{background:rgba(108,99,255,0.08);cursor:pointer;transform:transla
 
 select#generoSelect{padding:8px;border-radius:8px;border:1px solid rgba(16,20,34,0.06);min-width:220px}
 
-/* --- Tarjetas de libros (GRID RESPONSIVO) --- */
-.tarjetas {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 14px;
-  margin-top: 12px;
-  align-items: stretch;
+.tarjetas{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px}
+.tarjetas .card{
+  background:var(--card);
+  padding:14px;
+  border-radius:12px;
+  box-shadow:var(--shadow);
+  flex:1 1 calc(33% - 12px);
+  min-width:180px;
+  transition:transform .2s, box-shadow .2s;
 }
-
-.tarjetas .card {
-  background: var(--card);
-  padding: 14px;
-  border-radius: 12px;
-  box-shadow: var(--shadow);
-  transition: transform .2s, box-shadow .2s;
-  display: flex;
-  flex-direction: column;
-  /* 🔑 Control de tamaño */
-  max-height: calc(100vh - 360px);
-  overflow: hidden;
-}
-
-.tarjetas .card p,
-.tarjetas .card small,
-.tarjetas .card em {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-@media (min-width: 900px) {
-  #tabGeneros {
-    max-height: calc(100vh - 280px);
-    overflow-y: auto;
-    padding-right: 6px;
-  }
-}
-
-@media (max-width: 600px) {
-  .tarjetas {
-    grid-template-columns: 1fr;
-  }
-
-  .tarjetas .card {
-    max-height: none;
-  }
-}
-
-
 .tarjetas .card:hover{transform:translateY(-3px);box-shadow:0 8px 22px rgba(16,20,34,0.12)}
 
 .random{margin-top:12px;padding:12px;background:var(--card);border-radius:8px;box-shadow:var(--shadow);display:inline-block}
@@ -150,7 +112,8 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
 
 @keyframes fadeIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
 
-
+@media (max-width:800px){.tarjetas .card{flex:1 1 calc(50% - 12px)}}
+@media (max-width:500px){.tarjetas .card{flex:1 1 100%}th, td{padding:10px}}
 
 
 .flag-tag {
@@ -282,32 +245,4 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
 .video-btn:hover{
   transform: translateY(-2px);
   opacity: 0.9;
-}
-
-.tab {
-  display: none;
-}
-
-.tab.active {
-  display: block;
-}
-
-
-
-.video-pill {
-  padding: 6px 14px;
-  border-radius: 15px;
-  border: 1px solid rgba(79, 144, 132, 0.15);
-  font-family: 'Cookie';
-  text-decoration: none;
-  font-weight: 550;
-  color: var(--accent);
-  background: white;          /* ← Fondo blanco */
-  box-shadow: var(--shadow);  /* ← Igual que tus otros botones */
-  transition: 0.25s ease;
-}
-
-.video-pill:hover {
-  background: rgba(255,255,255,0.9); /* Blanco con ligero hover */
-  transform: translateY(-1px);
 }
