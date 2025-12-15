@@ -246,3 +246,31 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
   transform: translateY(-2px);
   opacity: 0.9;
 }
+
+.tab {
+  display: none;
+}
+
+.tab.active {
+  display: block;
+}
+
+
+
+.video-pill {
+  padding: 6px 14px;
+  border-radius: 15px;
+  border: 1px solid rgba(79, 144, 132, 0.15);
+  font-family: 'Cookie';
+  text-decoration: none;
+  font-weight: 550;
+  color: var(--accent);
+  background: white;          /* ← Fondo blanco */
+  box-shadow: var(--shadow);  /* ← Igual que tus otros botones */
+  transition: 0.25s ease;
+}
+
+.video-pill:hover {
+  background: rgba(255,255,255,0.9); /* Blanco con ligero hover */
+  transform: translateY(-1px);
+}

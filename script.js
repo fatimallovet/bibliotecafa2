@@ -1,273 +1,276 @@
-const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR_lN4MQGP2PigjKJFOV8ZK92MvfpQWj8aH7qqntBJHOKv6XsvLAxriHmjU3WcD7kafNvNbj3pTFqND/pub?gid=0&single=true&output=csv";
-let libros = [];
-let ordenActual = {col: null, asc: true};
-
-function showError(msg){
-  console.error(msg);
-  const tbody = document.querySelector("#tablaLibros tbody");
-  tbody.innerHTML = `<tr><td colspan="3" style="color:#b00020">${msg}</td></tr>`;
+/* Biblioteca Fátima - nuevo estilo con modo oscuro, animaciones y diseño moderno */
+:root{
+  --bg-start: #f3e8ff;
+  --bg-end: #e6f0ff;
+  --card: #ffffff;
+  --accent: #2bb1bb;
+  --muted: #5b6b8a;
+  --text: #103243;
+  --shadow: 0 6px 18px rgba(16,20,34,0.08);
 }
 
-Papa.parse(sheetUrl, {
-  download: true,
-  header: true,
-  skipEmptyLines: true,
-  complete: function(results) {
-    if(!results || !results.data || results.data.length === 0){
-      showError('No se pudieron cargar los datos desde Google Sheets.');
-      return;
-    }
-    libros = results.data.map(r => {
-      const clean = {};
-      for(const k in r){ clean[k.trim()] = r[k] ? r[k].trim() : ''; }
-      return clean;
-    }).filter(r => (r['Título'] || r['Titulo'] || r['Title']));
+body.dark{
+  --bg-start: #1b1b2f;
+  --bg-end: #2a2a40;
+  --card: #2f2f48;
+  --accent: #5896d7;
+  --muted: #a6cce1;
+  --text: #e6e6f0;
+  --shadow: 0 6px 18px rgba(0,0,0,0.4);
+}
 
-    if(libros.length === 0){
-      showError('No se encontraron filas con columna Título.');
-      return;
-    }
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: 'Poppins', system-ui, sans-serif;
+  background: linear-gradient(120deg,var(--bg-start),var(--bg-end));
+  color: var(--text);
+  padding:24px;
+  transition: background .3s ease, color .3s ease;
+}
 
-    libros.sort((a,b)=>comparar(a,b,'Título'));
-    mostrarTabla(libros);
-    llenarSelectGeneros(libros);
-    actualizarContador(libros.length);
-  },
-  error: err => showError('Error leyendo CSV: ' + err)
-});
+.site-header{text-align:center;margin-bottom:24px}
+.navbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.navbar h1{margin:0;font-size:2rem}
+.nav-controls button{
+  background:var(--accent);
+  color:white;
+  border:none;
+  border-radius:50%;
+  width:36px;
+  height:36px;
+  cursor:pointer;
+  font-size:1.2rem;
+  box-shadow:var(--shadow);
+  transition:transform .2s;
+}
+.nav-controls button:hover{transform:rotate(20deg)}
+header p{margin:6px 0 0;color:var(--muted)}
 
-function comparar(a, b, col) {
-  // Convertimos los valores a texto minúsculo para comparar
-  const getVal = (obj, campo) => {
-    if (campo === 'Calificación' || campo === 'Estrellas' || campo === 'Stars') {
-      return Number(obj['Calificación'] || obj['Estrellas'] || obj['Stars'] || 0);
-    }
-    return (obj[campo] || obj[campo.replace('ó','o')] || '').toLowerCase();
-  };
+main{max-width:1000px;margin:0 auto}
+.section-header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.section-header input{
+  flex:1;
+  padding:8px 12px;
+  border-radius:8px;
+  border:1px solid rgba(16,20,34,0.06);
+  font-size:15px;
+}
 
-  const x = getVal(a, col);
-  const y = getVal(b, col);
+h2{color:var(--accent);margin:12px 0}
 
-  if (typeof x === 'number' && typeof y === 'number') {
-    return x - y;
-  } else {
-    return x.localeCompare(y, 'es', { sensitivity: 'base' });
+/* Tabla */
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:var(--card);
+  border-radius:8px;
+  overflow:hidden;
+  box-shadow:var(--shadow);
+}
+thead tr{background: linear-gradient(90deg, rgba(108,99,255,0.12), rgba(96,165,250,0.06));}
+th, td{padding:12px 10px;text-align:left;border-bottom:1px solid rgba(16,20,34,0.06)}
+th{cursor:pointer;user-select:none}
+th:hover{color:var(--accent)}
+tbody tr:hover{background:rgba(108,99,255,0.08);cursor:pointer;transform:translateY(-2px);transition:all .12s}
+
+.contador{text-align:right;color:var(--muted);font-size:0.9rem;margin-top:6px}
+
+select#generoSelect{padding:8px;border-radius:8px;border:1px solid rgba(16,20,34,0.06);min-width:220px}
+
+.tarjetas{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px}
+.tarjetas .card{
+  background:var(--card);
+  padding:14px;
+  border-radius:12px;
+  box-shadow:var(--shadow);
+  flex:1 1 calc(33% - 12px);
+  min-width:180px;
+  transition:transform .2s, box-shadow .2s;
+}
+.tarjetas .card:hover{transform:translateY(-3px);box-shadow:0 8px 22px rgba(16,20,34,0.12)}
+
+.random{margin-top:12px;padding:12px;background:var(--card);border-radius:8px;box-shadow:var(--shadow);display:inline-block}
+
+footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
+
+/* Modal */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;justify-content:center;align-items:center;z-index:10;}
+.modal.hidden{display:none}
+.modal-content{
+  background:var(--card);
+  padding:20px;
+  border-radius:12px;
+  width:90%;
+  max-width:500px;
+  box-shadow:var(--shadow);
+  animation:fadeIn .3s ease;
+}
+.modal-content h3{margin-top:0;color:var(--accent)}
+.close{float:right;font-size:22px;cursor:pointer;color:var(--muted)}
+.close:hover{color:var(--accent)}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+
+@media (max-width:800px){.tarjetas .card{flex:1 1 calc(50% - 12px)}}
+@media (max-width:500px){.tarjetas .card{flex:1 1 100%}th, td{padding:10px}}
+
+
+.flag-tag {
+  display: inline-block;
+  background: var(--accent);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  margin-top: 4px;
+}
+
+.stars {
+  color: gold;
+  font-size: 1.1rem;
+  margin-top: 4px;
+  display: inline-block;
+}
+
+
+#btnRandom {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 18px;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#btnRandom:hover {
+  background: #1fa1a8;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(16,20,34,0.15);
+}
+
+
+/* --- Tabs --- */
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.tab-btn {
+  background: var(--card);
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  font-size: 0.95rem;
+}
+
+.tab-btn.active {
+  background: var(--accent);
+  color: white;
+}
+
+.tab {
+  display: none;
+}
+
+.tab.active {
+  display: block;
+}
+
+.bmc-btn-container {
+  margin-left: 15px;
+}
+
+
+/* Estilo ajustado del botón Buy Me a Coffee */
+.btn-bmc {
+  background: #FFDD00;
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-size: 1.15rem;   /* tamaño más moderado */
+  font-family: 'Cookie', cursive;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: black;
+  height: 40px;
+  line-height: 1;
+}
+
+
+/* --- Ajustes para móvil: botón Buy Me A Coffee --- */
+@media (max-width: 768px) {
+  .tabs .btn-bmc {
+    font-size: 1rem;          /* texto más compacto */
+    height: auto !important;  /* permite crecer en altura */
+    padding: 10px 16px;
+    white-space: nowrap;      /* evita que brinque a dos líneas */
+    flex-shrink: 0;           /* evita que se aplaste */
   }
 }
 
-function mostrarTabla(data) {
-  const tbody = document.querySelector("#tablaLibros tbody");
-  tbody.innerHTML = "";
-  data.forEach(libro => {
-    const calificacion = libro['Calificación'] || libro['Estrellas'] || libro['Stars'] || '';
-    const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
-    const autor = libro['Autor'] || libro['Author'] || '';
-    const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${calificacion ? "⭐".repeat(Number(calificacion)) : ''}</td>
-      <td>${escapeHtml(titulo)}</td>
-      <td>${escapeHtml(autor)}</td>
-      <td>${escapeHtml(genero)}</td>
-    `;
-    tr.addEventListener('click', () => showDetalle(libro));
-    tbody.appendChild(tr);
-  });
-  actualizarContador(data.length);
-}
-
-function llenarSelectGeneros(data){
-  const select = document.getElementById('generoSelect');
-  const set = new Set();
-  data.forEach(l => {
-    const raw = (l['Género'] || l['Genero'] || l['Genre'] || '') + '';
-    raw.split(',').map(s => s.trim()).filter(Boolean).forEach(g => set.add(g));
-  });
-  const generos = Array.from(set).sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'}));
-  generos.forEach(g => {
-    const option = document.createElement('option');
-    option.value = g;
-    option.textContent = g;
-    select.appendChild(option);
-  });
-}
-
-document.getElementById('generoSelect').addEventListener('change', (e)=>{
-  const genero = e.target.value;
-  const filtrados = genero ? libros.filter(l => ((l['Género']||l['Genero']||'').includes(genero))) : libros;
-  mostrarTarjetas(filtrados);
-});
-
-function mostrarTarjetas(data){
-  const cont = document.getElementById('tarjetasLibros');
-  cont.innerHTML = '';
-  if(data.length === 0){
-    cont.innerHTML = '<p style="color:var(--muted)">No se encontraron libros en este género.</p>';
-    return;
-  }
-  data.forEach(libro => {
-    const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
-    const autor = libro['Autor'] || libro['Author'] || '';
-    const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
-    const flags = libro['Flags'] || '';
-    const estrellas = libro['Estrellas'] || libro['Stars'] || '';
-
-    const div = document.createElement('div');
-    div.className = 'card';
-    div.innerHTML = `
-      <strong>${escapeHtml(titulo)}</strong><br>
-      <small>${escapeHtml(autor)}</small><br>
-      <em>${escapeHtml(genero)}</em><br>
-      ${flags ? `<span class="flag-tag">${escapeHtml(flags)}</span><br>` : ''}
-      ${estrellas ? `<span class="stars">${"⭐".repeat(Number(estrellas))}</span>` : ''}
-    `;
-    div.addEventListener('click', () => showDetalle(libro));
-    cont.appendChild(div);
-  });
+.tabs .btn-bmc {
+  flex-shrink: 0;       /* evita que se achique */
+  white-space: nowrap;  /* evita salto de línea */
 }
 
 
-// Botón libro random
-document.getElementById('btnRandom').addEventListener('click', ()=>{
-  if(libros.length === 0) return;
-  const r = libros[Math.floor(Math.random()*libros.length)];
-  const titulo = r['Título'] || r['Titulo'] || r['Title'] || '';
-  const autor = r['Autor'] || r['Author'] || '';
-  const genero = r['Género'] || r['Genero'] || r['Genre'] || '';
-  const flags = r['Flags'] || '';
-  const estrellas = r['Estrellas'] || r['Stars'] || '';
 
-  const div = document.getElementById('randomLibro');
-  div.innerHTML = `
-    <div class="random-card">
-      <h3>${escapeHtml(titulo)}</h3>
-      <p><strong>${escapeHtml(autor)}</strong></p>
-      <p><em>${escapeHtml(genero)}</em></p>
-      ${flags ? `<span class="flag-tag">${escapeHtml(flags)}</span><br>` : ''}
-      ${estrellas ? `<span class="stars">${"⭐".repeat(Number(estrellas))}</span>` : ''}
-    </div>
-  `;
-
-  // Al hacer clic en el libro random, mostrar el detalle completo
-  div.querySelector('.random-card').addEventListener('click', ()=> showDetalle(r));
-});
-
-// --- Buscador (ahora ignora acentos) ---
-const inputBusqueda = document.getElementById('busqueda');
-inputBusqueda.addEventListener('input', () => {
-  const term = normalizar(inputBusqueda.value);
-
-  const filtrados = libros.filter(l => {
-    const t = normalizar(l['Título'] || l['Titulo'] || '');
-    const a = normalizar(l['Autor'] || '');
-    const g = normalizar(l['Género'] || l['Genero'] || l['Genre'] || '');
-    const tags = normalizar(l['Etiquetas'] || l['Tags'] || '');
-
-    return (
-      t.includes(term) ||
-      a.includes(term) ||
-      g.includes(term) ||
-      tags.includes(term)
-    );
-  });
-
-  mostrarTabla(filtrados);
-});
-
-// --- Función auxiliar para eliminar acentos y poner en minúsculas ---
-function normalizar(texto) {
-  return texto
-    .toLowerCase()
-    .normalize("NFD") // separa los acentos de las letras
-    .replace(/[\u0300-\u036f]/g, ""); // elimina los acentos
+/* Botón Videoteca */
+.video-btn{
+  background: #d86bff;       /* Morado rosita */
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  box-shadow: var(--shadow);
+  transition: transform .15s, opacity .2s;
 }
 
-// --- Ordenar por columnas ---
-document.querySelectorAll('#tablaLibros th').forEach(th =>{
-  th.addEventListener('click', ()=>{
-    const col = th.dataset.sort;
-    const campo = 
-  col === 'autor' ? 'Autor' :
-  col === 'genero' ? 'Género' :
-  col === 'calificacion' ? 'Calificación' :
-  'Título';
-    if(ordenActual.col===col) ordenActual.asc=!ordenActual.asc; else ordenActual={col,asc:true};
-    libros.sort((a,b)=>{
-      const comp = comparar(a,b,campo);
-      return ordenActual.asc ? comp : -comp;
-    });
-    mostrarTabla(libros);
-  });
-});
-
-// --- Modal ---
-const modal = document.getElementById('detalleModal');
-const cerrarModal = document.getElementById('cerrarModal');
-const detalleContenido = document.getElementById('detalleContenido');
-
-cerrarModal.addEventListener('click', ()=> modal.classList.add('hidden'));
-window.addEventListener('click', e=>{ if(e.target===modal) modal.classList.add('hidden'); });
-
-function showDetalle(libro){
-  const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
-  const autor = libro['Autor'] || libro['Author'] || '';
-  const genero = libro['Género'] || libro['Genero'] || '';
-  const tono = libro['Tono'] || libro['Tone'] || '';
-  const ritmo = libro['Ritmo'] || '';
-  const publico = libro['Público'] || libro['Publico'] || '';
-  const etiquetas = libro['Etiquetas'] || libro['Tags'] || '';
-  const resena = libro['Reseña'] || libro['Resena'] || libro['Review'] || '';
-  const flags = libro['Flags'] || '';
-  const estrellas = libro['Estrellas'] || libro['Stars'] || '';
-
-  detalleContenido.innerHTML = `
-    <h3>${escapeHtml(titulo)}</h3>
-    <p><strong>Autor:</strong> ${escapeHtml(autor)}</p>
-    <p><strong>Género:</strong> ${escapeHtml(genero)}</p>
-    ${tono ? `<p><strong>Tono:</strong> ${escapeHtml(tono)}</p>` : ''}
-    ${ritmo ? `<p><strong>Ritmo:</strong> ${escapeHtml(ritmo)}</p>` : ''}
-    ${publico ? `<p><strong>Público:</strong> ${escapeHtml(publico)}</p>` : ''}
-    ${etiquetas ? `<p><strong>Etiquetas:</strong> ${escapeHtml(etiquetas)}</p>` : ''}
-    ${flags ? `<p><strong>Flags:</strong> ${escapeHtml(flags)}</p>` : ''}
-    ${estrellas ? `<p><strong>Calificación:</strong> ${"⭐".repeat(Number(estrellas))} (${estrellas})</p>` : ''}
-    <p style="margin-top:12px">${escapeHtml(resena)}</p>
-  `;
-  modal.classList.remove('hidden');
+.video-btn:hover{
+  transform: translateY(-2px);
+  opacity: 0.9;
 }
 
-// --- Modo claro/oscuro ---
-const btnLightDark = document.getElementById('btnLightDark');
-const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-if(localStorage.getItem('tema')==='oscuro' || (!localStorage.getItem('tema') && prefersDark)){
-  document.body.classList.add('dark');
+.tab {
+  display: none;
 }
 
-btnLightDark.addEventListener('click', ()=>{
-  document.body.classList.toggle('dark');
-  const tema = document.body.classList.contains('dark') ? 'oscuro' : 'claro';
-  localStorage.setItem('tema', tema);
-});
-
-function actualizarContador(num){
-  document.getElementById('contadorLibros').textContent = `${num} libro${num!==1?'s':''} encontrados`;
-}
-
-// simple escape
-function escapeHtml(s){
-  if(!s) return '';
-  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;','\'':'&#39;'}[c]));
+.tab.active {
+  display: block;
 }
 
 
-// --- Tabs ---
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
 
-    const target = btn.dataset.tab;
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.getElementById(target).classList.add('active');
-  });
-});
+.video-pill {
+  padding: 6px 14px;
+  border-radius: 15px;
+  border: 1px solid rgba(79, 144, 132, 0.15);
+  font-family: 'Cookie';
+  text-decoration: none;
+  font-weight: 550;
+  color: var(--accent);
+  background: white;          /* ← Fondo blanco */
+  box-shadow: var(--shadow);  /* ← Igual que tus otros botones */
+  transition: 0.25s ease;
+}
+
+.video-pill:hover {
+  background: rgba(255,255,255,0.9); /* Blanco con ligero hover */
+  transform: translateY(-1px);
+}
