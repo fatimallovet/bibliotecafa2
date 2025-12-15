@@ -313,18 +313,20 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
 
 
 
-.site-title {
+
+
+.site-title.editorial {
   font-family: 'Poppins', system-ui, sans-serif;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  font-size: 2.1rem;
-  color: var(--text);
+  font-size: 2.2rem;
+  letter-spacing: 1px;
 }
 
+.site-title.editorial span {
+  font-weight: 300;
+  color: var(--muted);
+}
 
-.site-title.signature {
-  font-family: 'Cookie', cursive;
-  font-size: 2.6rem;
-  font-weight: 400;
+.site-title.editorial strong {
+  font-weight: 600;
   color: var(--text);
 }
