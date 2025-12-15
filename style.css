@@ -294,7 +294,9 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
 }
 
 .tab-btn:hover {
-transform: translateY(-1px);
+  background: #1fa1a8;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(16,20,34,0.15);
 }
 
 
