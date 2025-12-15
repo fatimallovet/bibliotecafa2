@@ -96,7 +96,16 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
 
 /* Modal */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;justify-content:center;align-items:center;z-index:10;}
-.modal.hidden{display:none}
+
+.modal {
+  pointer-events: auto;
+}
+
+.modal.hidden {
+  display: none;
+  pointer-events: none;
+}
+
 .modal-content{
   background: var(--card);
   padding: 20px;
@@ -385,6 +394,16 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+  position: relative;
+  z-index: 5;
+}
+
+
+.tab-btn,
+.video-pill,
+.btn-bmc {
+  position: relative;
+  z-index: 5;
 }
 
 
