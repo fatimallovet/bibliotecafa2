@@ -320,3 +320,11 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
   font-size: 2.1rem;
   color: var(--text);
 }
+
+
+.site-title.signature {
+  font-family: 'Cookie', cursive;
+  font-size: 2.6rem;
+  font-weight: 400;
+  color: var(--text);
+}
