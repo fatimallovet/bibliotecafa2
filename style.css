@@ -350,10 +350,7 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
     gap: 10px;
   }
 
-  .video-pill {
-    position: static;
-    transform: none;
-  }
+
 
   .site-title.editorial {
     font-size: 2rem;
