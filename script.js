@@ -268,3 +268,30 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     document.getElementById(target).classList.add('active');
   });
 });
+
+
+
+
+
+const resenaEl = detalleContenido.querySelector('.resena');
+
+if (resenaEl && resenaEl.textContent.length > 500) {
+  resenaEl.classList.add('collapsed');
+
+  const btn = document.createElement('button');
+  btn.textContent = 'Leer más';
+  btn.style.marginTop = '8px';
+  btn.style.background = 'none';
+  btn.style.border = 'none';
+  btn.style.color = 'var(--accent)';
+  btn.style.cursor = 'pointer';
+
+  btn.addEventListener('click', () => {
+    resenaEl.classList.toggle('collapsed');
+    btn.textContent = resenaEl.classList.contains('collapsed')
+      ? 'Leer más'
+      : 'Leer menos';
+  });
+
+  resenaEl.after(btn);
+}

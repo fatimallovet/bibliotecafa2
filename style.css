@@ -309,3 +309,29 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
   font-size: 0.95rem;
   line-height: 1.5;
 }
+
+
+
+
+/* */
+
+.resena {
+  margin-top: 14px;
+  white-space: pre-wrap;
+}
+
+.resena.collapsed {
+  max-height: 8.5em;
+  overflow: hidden;
+  position: relative;
+}
+
+.resena.collapsed::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3em;
+  background: linear-gradient(transparent, var(--card));
+}
