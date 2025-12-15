@@ -220,8 +220,13 @@ function showDetalle(libro){
   const flags = libro['Flags'] || '';
   const estrellas = libro['Estrellas'] || libro['Stars'] || '';
 
-  detalleContenido.innerHTML = `
+detalleContenido.innerHTML = `
+  <div class="modal-header">
     <h3>${escapeHtml(titulo)}</h3>
+    <span id="cerrarModalInterno" class="close">&times;</span>
+  </div>
+
+  <div class="modal-body">
     <p><strong>Autor:</strong> ${escapeHtml(autor)}</p>
     <p><strong>Género:</strong> ${escapeHtml(genero)}</p>
     ${tono ? `<p><strong>Tono:</strong> ${escapeHtml(tono)}</p>` : ''}
@@ -230,8 +235,12 @@ function showDetalle(libro){
     ${etiquetas ? `<p><strong>Etiquetas:</strong> ${escapeHtml(etiquetas)}</p>` : ''}
     ${flags ? `<p><strong>Flags:</strong> ${escapeHtml(flags)}</p>` : ''}
     ${estrellas ? `<p><strong>Calificación:</strong> ${"⭐".repeat(Number(estrellas))} (${estrellas})</p>` : ''}
-    <p style="margin-top:12px">${escapeHtml(resena)}</p>
-  `;
+    <p class="resena">${escapeHtml(resena)}</p>
+  </div>
+`;
+
+document.getElementById('cerrarModalInterno')
+  .addEventListener('click', ()=> modal.classList.add('hidden'));
   modal.classList.remove('hidden');
 }
 
