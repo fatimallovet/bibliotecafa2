@@ -78,16 +78,36 @@ tbody tr:hover{background:rgba(108,99,255,0.08);cursor:pointer;transform:transla
 
 select#generoSelect{padding:8px;border-radius:8px;border:1px solid rgba(16,20,34,0.06);min-width:220px}
 
-.tarjetas{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px}
-.tarjetas .card{
-  background:var(--card);
-  padding:14px;
-  border-radius:12px;
-  box-shadow:var(--shadow);
-  flex:1 1 calc(33% - 12px);
-  min-width:180px;
-  transition:transform .2s, box-shadow .2s;
+/* --- Tarjetas de libros (GRID RESPONSIVO) --- */
+.tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+  margin-top: 12px;
+  align-items: stretch;
 }
+
+.tarjetas .card {
+  background: var(--card);
+  padding: 14px;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  transition: transform .2s, box-shadow .2s;
+
+  /* 🔑 Control de tamaño */
+  max-height: 220px;
+  overflow: hidden;
+}
+
+@media (min-width: 900px) {
+  #tabGeneros {
+    max-height: calc(100vh - 280px);
+    overflow-y: auto;
+    padding-right: 6px;
+  }
+}
+
+
 .tarjetas .card:hover{transform:translateY(-3px);box-shadow:0 8px 22px rgba(16,20,34,0.12)}
 
 .random{margin-top:12px;padding:12px;background:var(--card);border-radius:8px;box-shadow:var(--shadow);display:inline-block}
@@ -114,6 +134,17 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
 
 @media (max-width:800px){.tarjetas .card{flex:1 1 calc(50% - 12px)}}
 @media (max-width:500px){.tarjetas .card{flex:1 1 100%}th, td{padding:10px}}
+
+
+@media (max-width: 600px) {
+  .tarjetas {
+    grid-template-columns: 1fr;
+  }
+
+  .tarjetas .card {
+    max-height: none;
+  }
+}
 
 
 .flag-tag {
