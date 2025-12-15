@@ -293,6 +293,12 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
   transform: translateY(-1px);
 }
 
+.tab-btn:hover {
+transform: translateY(-1px);
+}
+
+
+
 
 
 .modal-header {
