@@ -367,3 +367,33 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
 }
 
 
+.video-tab {
+  background: var(--card);
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  font-size: 0.95rem;
+  text-decoration: none;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.video-tab:hover {
+  background: var(--accent);
+  color: white;
+}
+
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+
