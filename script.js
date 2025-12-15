@@ -218,7 +218,7 @@ function showDetalle(libro){
   const etiquetas = libro['Etiquetas'] || libro['Tags'] || '';
   const resena = libro['Reseña'] || libro['Resena'] || libro['Review'] || '';
   const flags = libro['Flags'] || '';
-  const estrellas = libro['Estrellas'] || libro['Stars'] || '';
+  const estrellas = libro['Estrellas'] || libro['Calificación'] || '';
 
 detalleContenido.innerHTML = `
   <div class="modal-header">
