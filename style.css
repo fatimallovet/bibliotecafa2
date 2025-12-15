@@ -81,7 +81,7 @@ select#generoSelect{padding:8px;border-radius:8px;border:1px solid rgba(16,20,34
 /* --- Tarjetas de libros (GRID RESPONSIVO) --- */
 .tarjetas {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 14px;
   margin-top: 12px;
   align-items: stretch;
@@ -93,10 +93,18 @@ select#generoSelect{padding:8px;border-radius:8px;border:1px solid rgba(16,20,34
   border-radius: 12px;
   box-shadow: var(--shadow);
   transition: transform .2s, box-shadow .2s;
-
+  display: flex;
+  flex-direction: column;
   /* 🔑 Control de tamaño */
-  max-height: 220px;
+  max-height: calc(100vh - 360px);
   overflow: hidden;
+}
+
+.tarjetas .card p,
+.tarjetas .card small,
+.tarjetas .card em {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 @media (min-width: 900px) {
@@ -104,6 +112,16 @@ select#generoSelect{padding:8px;border-radius:8px;border:1px solid rgba(16,20,34
     max-height: calc(100vh - 280px);
     overflow-y: auto;
     padding-right: 6px;
+  }
+}
+
+@media (max-width: 600px) {
+  .tarjetas {
+    grid-template-columns: 1fr;
+  }
+
+  .tarjetas .card {
+    max-height: none;
   }
 }
 
@@ -132,19 +150,7 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
 
 @keyframes fadeIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
 
-@media (max-width:800px){.tarjetas .card{flex:1 1 calc(50% - 12px)}}
-@media (max-width:500px){.tarjetas .card{flex:1 1 100%}th, td{padding:10px}}
 
-
-@media (max-width: 600px) {
-  .tarjetas {
-    grid-template-columns: 1fr;
-  }
-
-  .tarjetas .card {
-    max-height: none;
-  }
-}
 
 
 .flag-tag {
