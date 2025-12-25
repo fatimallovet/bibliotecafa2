@@ -37,34 +37,36 @@ Papa.parse(sheetUrl, {
 });
 
 function comparar(a, b, col) {
-  // Convertimos los valores a texto minúsculo para comparar
   const getVal = (obj, campo) => {
     if (campo === 'Calificación' || campo === 'Estrellas' || campo === 'Stars') {
-      return Number(obj['Calificación'] || obj['Estrellas'] || obj['Stars'] || 0);
+      return Number(obj[campo] || 0);
     }
-    return (obj[campo] || obj[campo.replace('ó','o')] || '').toLowerCase();
+    if (campo === 'No.') {
+      return Number(obj['No.'] || obj['No'] || 0);
+    }
+    return (obj[campo] || '').toLowerCase();
   };
 
   const x = getVal(a, col);
   const y = getVal(b, col);
 
-  if (typeof x === 'number' && typeof y === 'number') {
-    return x - y;
-  } else {
-    return x.localeCompare(y, 'es', { sensitivity: 'base' });
-  }
+  return typeof x === 'number' && typeof y === 'number'
+    ? x - y
+    : x.localeCompare(y, 'es', { sensitivity: 'base' });
 }
 
 function mostrarTabla(data) {
   const tbody = document.querySelector("#tablaLibros tbody");
   tbody.innerHTML = "";
   data.forEach(libro => {
+    const no = libro['No.'] || libro['No'] || '';
     const calificacion = libro['Calificación'] || libro['Estrellas'] || libro['Stars'] || '';
     const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
     const autor = libro['Autor'] || libro['Author'] || '';
     const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
     const tr = document.createElement("tr");
     tr.innerHTML = `
+      <td class="col-no">${escapeHtml(no)}</td>
       <td>${calificacion ? "⭐".repeat(Number(calificacion)) : ''}</td>
       <td>${escapeHtml(titulo)}</td>
       <td>${escapeHtml(autor)}</td>
@@ -187,6 +189,7 @@ document.querySelectorAll('#tablaLibros th').forEach(th =>{
   th.addEventListener('click', ()=>{
     const col = th.dataset.sort;
     const campo = 
+  col === 'no' ? 'No.' :
   col === 'autor' ? 'Autor' :
   col === 'genero' ? 'Género' :
   col === 'calificacion' ? 'Calificación' :

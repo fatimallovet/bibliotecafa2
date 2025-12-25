@@ -418,3 +418,10 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
 }
 
 
+
+.col-no {
+  width: 50px;
+  text-align: center;
+  color: var(--muted);
+  font-weight: 500;
+}
