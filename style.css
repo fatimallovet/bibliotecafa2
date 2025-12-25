@@ -490,13 +490,16 @@ th.sorted {
     text-align: center;
   }
 
+  /* ESTRELLAS */
   #tablaLibros th:nth-child(2),
   #tablaLibros td:nth-child(2) {
     width: 70px;             /* Calificación */
     min-width: 70px;
     text-align: center;
+    font-size: 0.7rem;
   }
 
+  /* TÍTULO */
   #tablaLibros th:nth-child(3),
   #tablaLibros td:nth-child(3) {
     width: 140px;            /* más contenida */
@@ -508,20 +511,29 @@ th.sorted {
     word-break: break-word; /* evita desbordes */
   }
 
+  /* AUTOR */
   #tablaLibros th:nth-child(4),
   #tablaLibros td:nth-child(4) {
-    width: 130px;            /* Autor */
-    min-width: 130px;
+    width: 120px;
+    min-width: 120px;
+    max-width: 120px;
+    white-space: normal;
+    word-break: break-word;
+    font-weight: 400;
+    line-height: 1.15;
   }
 
+  /* GÉNERO */
   #tablaLibros th:nth-child(5),
   #tablaLibros td:nth-child(5) {
-    width: 120px;            /* Género */
-    min-width: 120px;
+    width: 110px;
+    min-width: 110px;
+    max-width: 110px;
+    white-space: normal;
+    word-break: break-word;
+    font-weight: 400;
+    line-height: 1.15;
   }
 
-  /* Estrellas más discretas */
-  .stars {
-    font-size: 0.85rem;
-  }
+
 }
