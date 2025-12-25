@@ -94,6 +94,15 @@ select#generoSelect{padding:8px;border-radius:8px;border:1px solid rgba(16,20,34
 
 footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
 
+/* Tamaño base uniforme para la tabla */
+#tablaLibros th,
+#tablaLibros td {
+  font-size: 0.95rem;
+  line-height: 1.3;
+}
+
+
+
 /* Modal */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;justify-content:center;align-items:center;z-index:10;}
 
@@ -464,4 +473,26 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
 
 th.sorted {
   color: var(--accent);
+}
+
+
+@media (max-width: 600px) {
+
+  #tablaLibros th,
+  #tablaLibros td {
+    font-size: 0.82rem;   /* más chica pero legible */
+    padding: 8px 6px;     /* menos aire */
+  }
+
+  /* Evita que Título se vea “protagonista” */
+  #tablaLibros td:nth-child(3) {
+    font-weight: 400;
+  }
+}
+
+
+@media (max-width: 600px) {
+  .stars {
+    font-size: 0.9rem;
+  }
 }
