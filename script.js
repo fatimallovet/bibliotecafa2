@@ -178,6 +178,42 @@ inputBusqueda.addEventListener('input', () => {
   mostrarTabla(filtrados);
 });
 
+
+// --- Botón limpiar búsqueda ---
+const clearBtn = document.createElement('span');
+clearBtn.textContent = '✕';
+clearBtn.className = 'clear-search';
+
+const buscador = document.getElementById('busqueda');
+buscador.parentElement.appendChild(clearBtn);
+
+// Mostrar / ocultar el botón
+buscador.addEventListener('input', () => {
+  clearBtn.style.display = buscador.value ? 'block' : 'none';
+});
+
+// Al hacer clic, limpiar búsqueda
+clearBtn.addEventListener('click', () => {
+  buscador.value = '';
+  clearBtn.style.display = 'none';
+  mostrarTabla(libros);   // vuelve a mostrar todo
+  buscador.focus();
+});
+
+
+// --- Limpiar búsqueda con tecla ESC ---
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && buscador.value) {
+    buscador.value = '';
+    clearBtn.style.display = 'none';
+    mostrarTabla(libros);   // restaura tabla completa
+    buscador.blur();        // opcional: quita foco
+  }
+});
+
+
+
+
 // --- Función auxiliar para eliminar acentos y poner en minúsculas ---
 function normalizar(texto) {
   return texto
