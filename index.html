@@ -1,36 +1,46 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <link href="https://fonts.googleapis.com/css2?family=Cookie&display=swap" rel="stylesheet">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Proyecto Biblioteca Fátima</title>
+
+  <!-- Fuentes -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cookie&display=swap" rel="stylesheet">
+
+  <!-- Estilos -->
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
-  <header class="site-header">
+
+<header class="site-header">
   <nav class="navbar">
     <h1 class="site-title editorial">
       <strong>Biblioteca</strong>
       <span>Fátima Ll</span>
     </h1>
   </nav>
-  </header>
+</header>
 
- <main>
+<main>
+
   <div class="tabs">
     <button class="tab-btn active" data-tab="tabLibros">📚 Lista</button>
     <button class="tab-btn" data-tab="tabGeneros">🎭 Géneros</button>
-    <button class="tab-btn" data-tab="tabRandom">🎲 Random</button>  
+    <button class="tab-btn" data-tab="tabRandom">🎲 Random</button>
+
     <a class="video-pill" href="https://fatimallovet.github.io/videotecafatima/" target="_blank">
-    🎬 Videoteca
+      🎬 Videoteca
     </a>
-        <!-- BOTÓN BUYMEACOFFEE -->
-    <a class="btn-bmc" href="https://www.buymeacoffee.com/fatimallovet" target="_blank">☕ Buy me a coffee</a>
+
+    <a class="btn-bmc" href="https://www.buymeacoffee.com/fatimallovet" target="_blank">
+      ☕ Buy me a coffee
+    </a>
   </div>
 
-  <!-- Pestaña principal -->
+  <!-- TAB: LIBROS -->
   <section id="tabLibros" class="tab active">
     <div class="section-header">
       <h2>🔍</h2>
@@ -51,10 +61,9 @@
     </table>
 
     <p id="contadorLibros" class="contador"></p>
-</section> 
+  </section>
 
-
-  <!-- Pestaña de géneros -->
+  <!-- TAB: GÉNEROS -->
   <section id="tabGeneros" class="tab">
     <h2>Filtrar por Género</h2>
     <select id="generoSelect">
@@ -63,29 +72,29 @@
     <div id="tarjetasLibros" class="tarjetas"></div>
   </section>
 
-
-<section id="tabRandom" class="tab">
-  <h2>Libro al Azar</h2>
-  <button id="btnRandom">🎲 Dame un libro random</button>
-  <div id="randomLibro" class="random"></div>
-</section>
-
+  <!-- TAB: RANDOM -->
+  <section id="tabRandom" class="tab">
+    <h2>Libro al Azar</h2>
+    <button id="btnRandom">🎲 Dame un libro random</button>
+    <div id="randomLibro" class="random"></div>
+  </section>
 
 </main>
 
-  <footer>
-    <p>&copy; 2025 Proyecto Biblioteca Fátima</p>
-  </footer>
+<footer>
+  <p>&copy; 2025 Proyecto Biblioteca Fátima</p>
+</footer>
 
-  <!-- Modal Detalle -->
-  <div id="detalleModal" class="modal hidden">
-    <div class="modal-content">
-
-      <div id="detalleContenido"></div>
-    </div>
+<!-- MODAL -->
+<div id="detalleModal" class="modal hidden">
+  <div class="modal-content">
+    <div id="detalleContenido"></div>
   </div>
+</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="script.js?v=1.0.6"></script>
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="script.js?v=1.0.6"></script>
+
 </body>
 </html>
