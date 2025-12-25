@@ -499,9 +499,13 @@ th.sorted {
 
   #tablaLibros th:nth-child(3),
   #tablaLibros td:nth-child(3) {
-    width: 180px;            /* Título */
-    min-width: 180px;
-    font-weight: 400;        /* no protagonista */
+    width: 140px;            /* más contenida */
+    min-width: 140px;
+    line-height: 1.15;
+    max-width: 140px;        /* clave */
+    font-weight: 400;
+    white-space: normal;     /* PERMITE partir líneas */
+    word-break: break-word; /* evita desbordes */
   }
 
   #tablaLibros th:nth-child(4),
