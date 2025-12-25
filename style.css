@@ -527,8 +527,8 @@ th.sorted {
   #tablaLibros th:nth-child(5),
   #tablaLibros td:nth-child(5) {
     width: 110px;
-    min-width: 110px;
-    max-width: 110px;
+    min-width: 130px;
+    max-width: 130px;
     white-space: normal;
     word-break: break-word;
     font-weight: 400;
