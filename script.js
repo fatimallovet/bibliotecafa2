@@ -1,165 +1,280 @@
 const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR_lN4MQGP2PigjKJFOV8ZK92MvfpQWj8aH7qqntBJHOKv6XsvLAxriHmjU3WcD7kafNvNbj3pTFqND/pub?gid=0&single=true&output=csv";
-
 let libros = [];
-let ordenActual = { col: 'no', asc: true };
+let ordenActual = {col: null, asc: true};
 
-/* =========================
-   CARGA DE DATOS
-========================= */
+function showError(msg){
+  console.error(msg);
+  const tbody = document.querySelector("#tablaLibros tbody");
+  tbody.innerHTML = `<tr><td colspan="3" style="color:#b00020">${msg}</td></tr>`;
+}
+
 Papa.parse(sheetUrl, {
   download: true,
   header: true,
   skipEmptyLines: true,
-  complete(results) {
-    if (!results.data || results.data.length === 0) {
-      mostrarError("No se pudieron cargar los datos.");
+  complete: function(results) {
+    if(!results || !results.data || results.data.length === 0){
+      showError('No se pudieron cargar los datos desde Google Sheets.');
+      return;
+    }
+    libros = results.data.map(r => {
+      const clean = {};
+      for(const k in r){ clean[k.trim()] = r[k] ? r[k].trim() : ''; }
+      return clean;
+    }).filter(r => (r['Título'] || r['Titulo'] || r['Title']));
+
+    if(libros.length === 0){
+      showError('No se encontraron filas con columna Título.');
       return;
     }
 
-    libros = results.data
-      .map(r => {
-        const clean = {};
-        for (const k in r) clean[k.trim()] = r[k]?.trim() || '';
-        return clean;
-      })
-      .filter(r => r['Título'] || r['Titulo'] || r['Title']);
-
     libros.sort((a, b) => comparar(a, b, 'No.'));
+    ordenActual = { col: 'no', asc: true };
     mostrarTabla(libros);
+
     llenarSelectGeneros(libros);
+    actualizarContador(libros.length);
   },
-  error(err) {
-    mostrarError("Error leyendo CSV: " + err);
-  }
+  error: err => showError('Error leyendo CSV: ' + err)
 });
 
-/* =========================
-   TABLA
-========================= */
+function comparar(a, b, col) {
+  const getVal = (obj, campo) => {
+    if (campo === 'Calificación' || campo === 'Estrellas' || campo === 'Stars') {
+      return Number(obj[campo] || 0);
+    }
+    if (campo === 'No.') {
+      return Number(obj['No.'] || obj['No'] || 0);
+    }
+    return (obj[campo] || '').toLowerCase();
+  };
+
+  const x = getVal(a, col);
+  const y = getVal(b, col);
+
+  return typeof x === 'number' && typeof y === 'number'
+    ? x - y
+    : x.localeCompare(y, 'es', { sensitivity: 'base' });
+}
+
 function mostrarTabla(data) {
   const tbody = document.querySelector("#tablaLibros tbody");
   tbody.innerHTML = "";
-
   data.forEach(libro => {
+    const no = libro['No.'] || libro['No'] || '';
+    const calificacion = libro['Calificación'] || libro['Estrellas'] || libro['Stars'] || '';
+    const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+    const autor = libro['Autor'] || libro['Author'] || '';
+    const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td class="col-no">${escapeHtml(libro['No.'] || libro['No'] || '')}</td>
-      <td>${"⭐".repeat(Number(libro['Calificación'] || libro['Estrellas'] || 0))}</td>
-      <td>${escapeHtml(libro['Título'] || libro['Titulo'] || '')}</td>
-      <td>${escapeHtml(libro['Autor'] || '')}</td>
-      <td>${escapeHtml(libro['Género'] || libro['Genero'] || '')}</td>
+      <td class="col-no">${escapeHtml(no)}</td>
+      <td>${calificacion ? "⭐".repeat(Number(calificacion)) : ''}</td>
+      <td>${escapeHtml(titulo)}</td>
+      <td>${escapeHtml(autor)}</td>
+      <td>${escapeHtml(genero)}</td>
     `;
-    tr.addEventListener("click", () => mostrarDetalle(libro));
+    tr.addEventListener('click', () => showDetalle(libro));
     tbody.appendChild(tr);
   });
-
   actualizarContador(data.length);
 }
 
-/* =========================
-   FILTROS
-========================= */
-document.getElementById("busqueda").addEventListener("input", e => {
-  const term = normalizar(e.target.value);
-  mostrarTabla(libros.filter(l =>
-    normalizar(l['Título'] || '').includes(term) ||
-    normalizar(l['Autor'] || '').includes(term) ||
-    normalizar(l['Género'] || '').includes(term) ||
-    normalizar(l['Etiquetas'] || '').includes(term)
-  ));
-});
-
-function llenarSelectGeneros(data) {
-  const select = document.getElementById("generoSelect");
-  const generos = new Set();
-
+function llenarSelectGeneros(data){
+  const select = document.getElementById('generoSelect');
+  const set = new Set();
   data.forEach(l => {
-    (l['Género'] || '').split(',').map(g => g.trim()).forEach(g => g && generos.add(g));
+    const raw = (l['Género'] || l['Genero'] || l['Genre'] || '') + '';
+    raw.split(',').map(s => s.trim()).filter(Boolean).forEach(g => set.add(g));
   });
-
-  [...generos].sort().forEach(g => {
-    const o = document.createElement("option");
-    o.value = g;
-    o.textContent = g;
-    select.appendChild(o);
+  const generos = Array.from(set).sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'}));
+  generos.forEach(g => {
+    const option = document.createElement('option');
+    option.value = g;
+    option.textContent = g;
+    select.appendChild(option);
   });
 }
 
-document.getElementById("generoSelect").addEventListener("change", e => {
-  const g = e.target.value;
-  mostrarTarjetas(g ? libros.filter(l => (l['Género'] || '').includes(g)) : libros);
+document.getElementById('generoSelect').addEventListener('change', (e)=>{
+  const genero = e.target.value;
+  const filtrados = genero ? libros.filter(l => ((l['Género']||l['Genero']||'').includes(genero))) : libros;
+  mostrarTarjetas(filtrados);
 });
 
-/* =========================
-   RANDOM
-========================= */
-document.getElementById("btnRandom").addEventListener("click", () => {
-  const r = libros[Math.floor(Math.random() * libros.length)];
-  document.getElementById("randomLibro").innerHTML = `
+function mostrarTarjetas(data){
+  const cont = document.getElementById('tarjetasLibros');
+  cont.innerHTML = '';
+  if(data.length === 0){
+    cont.innerHTML = '<p style="color:var(--muted)">No se encontraron libros en este género.</p>';
+    return;
+  }
+  data.forEach(libro => {
+    const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+    const autor = libro['Autor'] || libro['Author'] || '';
+    const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
+    const flags = libro['Flags'] || '';
+    const estrellas = libro['Estrellas'] || libro['Stars'] || '';
+
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.innerHTML = `
+      <strong>${escapeHtml(titulo)}</strong><br>
+      <small>${escapeHtml(autor)}</small><br>
+      <em>${escapeHtml(genero)}</em><br>
+      ${flags ? `<span class="flag-tag">${escapeHtml(flags)}</span><br>` : ''}
+      ${estrellas ? `<span class="stars">${"⭐".repeat(Number(estrellas))}</span>` : ''}
+    `;
+    div.addEventListener('click', () => showDetalle(libro));
+    cont.appendChild(div);
+  });
+}
+
+
+// Botón libro random
+document.getElementById('btnRandom').addEventListener('click', ()=>{
+  if(libros.length === 0) return;
+  const r = libros[Math.floor(Math.random()*libros.length)];
+  const titulo = r['Título'] || r['Titulo'] || r['Title'] || '';
+  const autor = r['Autor'] || r['Author'] || '';
+  const genero = r['Género'] || r['Genero'] || r['Genre'] || '';
+  const flags = r['Flags'] || '';
+  const estrellas = r['Estrellas'] || r['Stars'] || '';
+
+  const div = document.getElementById('randomLibro');
+  div.innerHTML = `
     <div class="random-card">
-      <h3>${escapeHtml(r['Título'] || '')}</h3>
-      <p><strong>${escapeHtml(r['Autor'] || '')}</strong></p>
-      <p><em>${escapeHtml(r['Género'] || '')}</em></p>
+      <h3>${escapeHtml(titulo)}</h3>
+      <p><strong>${escapeHtml(autor)}</strong></p>
+      <p><em>${escapeHtml(genero)}</em></p>
+      ${flags ? `<span class="flag-tag">${escapeHtml(flags)}</span><br>` : ''}
+      ${estrellas ? `<span class="stars">${"⭐".repeat(Number(estrellas))}</span>` : ''}
     </div>
   `;
+
+  // Al hacer clic en el libro random, mostrar el detalle completo
+  div.querySelector('.random-card').addEventListener('click', ()=> showDetalle(r));
 });
 
-/* =========================
-   MODAL
-========================= */
-const modal = document.getElementById("detalleModal");
-window.addEventListener("click", e => e.target === modal && modal.classList.add("hidden"));
+// --- Buscador (ahora ignora acentos) ---
+const inputBusqueda = document.getElementById('busqueda');
+inputBusqueda.addEventListener('input', () => {
+  const term = normalizar(inputBusqueda.value);
 
-function mostrarDetalle(libro) {
-  document.getElementById("detalleContenido").innerHTML = `
-    <div class="modal-header">
-      <h3>${escapeHtml(libro['Título'] || '')}</h3>
-      <span class="close">&times;</span>
-    </div>
-    <div class="modal-body">
-      <p><strong>Autor:</strong> ${escapeHtml(libro['Autor'] || '')}</p>
-      <p><strong>Género:</strong> ${escapeHtml(libro['Género'] || '')}</p>
-      <p class="resena">${escapeHtml(libro['Reseña'] || '')}</p>
-    </div>
-  `;
-  modal.classList.remove("hidden");
-  document.querySelector(".close").onclick = () => modal.classList.add("hidden");
+  const filtrados = libros.filter(l => {
+    const t = normalizar(l['Título'] || l['Titulo'] || '');
+    const a = normalizar(l['Autor'] || '');
+    const g = normalizar(l['Género'] || l['Genero'] || l['Genre'] || '');
+    const tags = normalizar(l['Etiquetas'] || l['Tags'] || '');
+
+    return (
+      t.includes(term) ||
+      a.includes(term) ||
+      g.includes(term) ||
+      tags.includes(term)
+    );
+  });
+
+  mostrarTabla(filtrados);
+});
+
+// --- Función auxiliar para eliminar acentos y poner en minúsculas ---
+function normalizar(texto) {
+  return texto
+    .toLowerCase()
+    .normalize("NFD") // separa los acentos de las letras
+    .replace(/[\u0300-\u036f]/g, ""); // elimina los acentos
 }
 
-/* =========================
-   UTILIDADES
-========================= */
-function comparar(a, b, campo) {
-  return (a[campo] || '').localeCompare(b[campo] || '', 'es', { sensitivity: 'base' });
-}
-
-function normalizar(t) {
-  return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-}
-
-function escapeHtml(s) {
-  return String(s || '').replace(/[&<>"']/g, m =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m])
-  );
-}
-
-function actualizarContador(n) {
-  document.getElementById("contadorLibros").textContent = `${n} libro${n !== 1 ? "s" : ""} encontrados`;
-}
-
-function mostrarError(msg) {
-  document.querySelector("#tablaLibros tbody").innerHTML =
-    `<tr><td colspan="5" style="color:#b00020">${msg}</td></tr>`;
-}
-
-/* =========================
-   TABS
-========================= */
-document.querySelectorAll(".tab-btn").forEach(btn => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-    btn.classList.add("active");
-    document.getElementById(btn.dataset.tab).classList.add("active");
+// --- Ordenar por columnas ---
+document.querySelectorAll('#tablaLibros th').forEach(th =>{
+  th.addEventListener('click', ()=>{
+    const col = th.dataset.sort;
+    const campo = 
+  col === 'no' ? 'No.' :
+  col === 'autor' ? 'Autor' :
+  col === 'genero' ? 'Género' :
+  col === 'calificacion' ? 'Calificación' :
+  'Título';
+    if(ordenActual.col===col) ordenActual.asc=!ordenActual.asc; else ordenActual={col,asc:true};
+    libros.sort((a,b)=>{
+      const comp = comparar(a,b,campo);
+      return ordenActual.asc ? comp : -comp;
+    });
+    mostrarTabla(libros);
   });
 });
+
+// --- Modal ---
+const modal = document.getElementById('detalleModal');
+
+const detalleContenido = document.getElementById('detalleContenido');
+
+
+window.addEventListener('click', e=>{ if(e.target===modal) modal.classList.add('hidden'); });
+
+function showDetalle(libro){
+  const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+  const autor = libro['Autor'] || libro['Author'] || '';
+  const genero = libro['Género'] || libro['Genero'] || '';
+  const tono = libro['Tono'] || libro['Tone'] || '';
+  const ritmo = libro['Ritmo'] || '';
+  const publico = libro['Público'] || libro['Publico'] || '';
+  const etiquetas = libro['Etiquetas'] || libro['Tags'] || '';
+  const resena = libro['Reseña'] || libro['Resena'] || libro['Review'] || '';
+  const flags = libro['Flags'] || '';
+  const estrellas = libro['Estrellas'] || libro['Calificación'] || '';
+
+detalleContenido.innerHTML = `
+  <div class="modal-header">
+    <h3>${escapeHtml(titulo)}</h3>
+    <span id="cerrarModalInterno" class="close">&times;</span>
+  </div>
+
+  <div class="modal-body">
+    <p><strong>Autor:</strong> ${escapeHtml(autor)}</p>
+    <p><strong>Género:</strong> ${escapeHtml(genero)}</p>
+    ${tono ? `<p><strong>Tono:</strong> ${escapeHtml(tono)}</p>` : ''}
+    ${ritmo ? `<p><strong>Ritmo:</strong> ${escapeHtml(ritmo)}</p>` : ''}
+    ${publico ? `<p><strong>Público:</strong> ${escapeHtml(publico)}</p>` : ''}
+    ${etiquetas ? `<p><strong>Etiquetas:</strong> ${escapeHtml(etiquetas)}</p>` : ''}
+    ${flags ? `<p><strong>Flags:</strong> ${escapeHtml(flags)}</p>` : ''}
+    ${estrellas ? `<p><strong>Calificación:</strong> ${"⭐".repeat(Number(estrellas))} (${estrellas})</p>` : ''}
+    <p class="resena">${escapeHtml(resena)}</p>
+  </div>
+`;
+
+document.getElementById('cerrarModalInterno')
+  .addEventListener('click', ()=> modal.classList.add('hidden'));
+  modal.classList.remove('hidden');
+}
+
+
+
+function actualizarContador(num){
+  document.getElementById('contadorLibros').textContent = `${num} libro${num!==1?'s':''} encontrados`;
+}
+
+// simple escape
+function escapeHtml(s){
+  if(!s) return '';
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;','\'':'&#39;'}[c]));
+}
+
+
+// --- Tabs ---
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const target = btn.dataset.tab;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(target).classList.add('active');
+  });
+});
+
+
+
+
+
