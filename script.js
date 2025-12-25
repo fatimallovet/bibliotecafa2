@@ -28,8 +28,10 @@ Papa.parse(sheetUrl, {
       return;
     }
 
-    libros.sort((a,b)=>comparar(a,b,'Título'));
+    libros.sort((a, b) => comparar(a, b, 'No.'));
+    ordenActual = { col: 'no', asc: true };
     mostrarTabla(libros);
+
     llenarSelectGeneros(libros);
     actualizarContador(libros.length);
   },
