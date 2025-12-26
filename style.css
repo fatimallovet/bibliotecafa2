@@ -552,7 +552,7 @@ th.sorted {
     font-family: system-ui, sans-serif; /* neutraliza Cookie en iconos */
 
     flex-shrink: 0;
-    margin-left: 12px;      /* separación respecto al botón de la izquierda */
+    /* margin-left: 12px;      separación respecto al botón de la izquierda */
   }
 
   .btn-bmc .btn-text,
@@ -562,6 +562,6 @@ th.sorted {
 
   /* Elimina empujón heredado del desktop */
   .video-pill {
-    margin-left: 12px;
+    margin-left: 24px;
   }
 }
