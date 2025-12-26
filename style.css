@@ -253,7 +253,6 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
 .video-pill {
   padding: 6px 14px;
   border-radius: 15px;
-  border: 1px solid rgba(79, 144, 132, 0.15);
   font-family: 'Cookie';
   font-size: 1.15rem;   /* tamaño más moderado */
   text-decoration: none;
@@ -522,6 +521,24 @@ th.sorted {
   .btn-bmc .text {
     display: none;
   }
+
+  .video-pill {
+    padding: 6px 14px;
+    border-radius: 50px;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+  }
+
+  .btn-bmc {
+    padding: 6px 14px;
+    border-radius: 50px;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+  }
+
+
 }
 
 
