@@ -535,6 +535,10 @@ th.sorted {
     line-height: 1.15;
   }
 
+  #tablaLibros {
+    display: table;        /* restaura el contexto necesario */
+  }
+
 
 }
 
