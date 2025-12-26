@@ -233,28 +233,7 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
 }
 
 
-/* --- Ajuste móvil: botón Videoteca igual que Buy Me a Coffee --- */
-@media (max-width: 768px) {
-  .video-pill {
-    font-size: 1rem;          /* mismo tamaño que BMC en móvil */
-    padding: 10px 16px;
-    height: auto;
-    white-space: nowrap;      /* no se parte */
-    flex-shrink: 0;           /* CLAVE: evita que se haga pequeño */
-    margin-left: 0;           /* elimina el empujón lateral en móvil */
-  }
-}
 
-/* --- Ajustes para móvil: botón Buy Me A Coffee --- */
-@media (max-width: 768px) {
-  .tabs .btn-bmc {
-    font-size: 1rem;          /* texto más compacto */
-    height: auto !important;  /* permite crecer en altura */
-    padding: 10px 16px;
-    white-space: nowrap;      /* evita que brinque a dos líneas */
-    flex-shrink: 0;           /* evita que se aplaste */
-  }
-}
 
 
 
@@ -564,4 +543,22 @@ th.sorted {
   .video-pill {
     margin-left: 8px;
   }
+}
+
+
+@media (max-width: 600px) {
+  
+  html, body {
+    overflow-x: hidden;
+  }
+
+  .tab.active {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #tablaLibros {
+    min-width: 680px;
+  }
+
 }
