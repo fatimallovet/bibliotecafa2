@@ -265,8 +265,7 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
 }
 
 .video-pill:hover {
-  background: rgba(255,255,255,0.9); /* Blanco con ligero hover */
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
 .tab-btn:hover {
@@ -526,16 +525,14 @@ th.sorted {
     padding: 6px 14px;
     border-radius: 50px;
     align-items: center;
-    gap: 8px;
-    height: 40px;
+
   }
 
   .btn-bmc {
     padding: 6px 14px;
     border-radius: 50px;
     align-items: center;
-    gap: 8px;
-    height: 40px;
+
   }
 
 
