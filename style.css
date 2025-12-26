@@ -233,9 +233,16 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
 }
 
 
-
-
-
+/* --- Ajustes para móvil: botón Buy Me A Coffee --- */
+@media (max-width: 768px) {
+  .tabs .btn-bmc {
+    font-size: 1rem;          /* texto más compacto */
+    height: auto !important;  /* permite crecer en altura */
+    padding: 10px 16px;
+    white-space: nowrap;      /* evita que brinque a dos líneas */
+    flex-shrink: 0;           /* evita que se aplaste */
+  }
+}
 
 .tabs .btn-bmc {
   flex-shrink: 0;       /* evita que se achique */
@@ -251,7 +258,7 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
   font-size: 1.15rem;   /* tamaño más moderado */
   text-decoration: none;
   font-weight: 550;
-  margin-left: 64px;  /* Separar del lado izq */
+  margin-left: 54px;  /* Separar del lado izq */
   color: black;
   background: rgb(205, 182, 218);          /* ← Fondo blanco */
   box-shadow: var(--shadow);  /* ← Igual que tus otros botones */
@@ -510,89 +517,4 @@ th.sorted {
 }
 
 
-/* ================================
-   BOTONES SOLO ICONO EN MÓVIL (FIX)
-   ================================ */
-@media (max-width: 600px) {
 
-  .btn-bmc,
-  .video-pill {
-    width: 42px;
-    height: 42px;
-    padding: 0;
-    border-radius: 50%;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    font-size: 1.15rem;     /* tamaño visual equilibrado */
-    line-height: 1;         /* CLAVE: evita descentrado vertical */
-    font-family: system-ui, sans-serif; /* neutraliza Cookie en iconos */
-
-    flex-shrink: 0;
-    margin-left: 12px;      /* separación respecto al botón de la izquierda */
-  }
-
-  .btn-bmc .btn-text,
-  .video-pill .btn-text {
-    display: none;
-  }
-
-  /* Elimina empujón heredado del desktop */
-  .video-pill {
-    margin-left: 8px;
-  }
-}
-
-
-@media (max-width: 600px) {
-
-  html, body {
-    overflow-x: hidden;
-  }
-
-  .tab.active {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  #tablaLibros {
-    min-width: 680px;
-  }
-
-}
-
-@media (max-width: 600px) {
-
-  .tab,
-  .tab.active {
-    max-width: 100%;
-    overflow-x: hidden; /* ← impide que búsqueda + todo crezcan */
-  }
-
-}
-
-
-@media (max-width: 600px) {
-
-  #tablaLibros {
-    display: block;
-    max-width: 100%;
-    overflow-x: auto;
-    min-width: 680px;
-    -webkit-overflow-scrolling: touch;
-  }
-
-}
-
-
-@media (max-width: 600px) {
-
-  .search-box,
-  .search-container,
-  input[type="search"] {
-    max-width: 100%;
-  }
-
-}
