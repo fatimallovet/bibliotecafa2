@@ -568,5 +568,16 @@ th.sorted {
 
 }
 
+#tablaLibros thead th {
+  position: sticky;
+  top: 0;
+  background: var(--card);
+  z-index: 5;
+}
+
+.tabla-wrapper {
+  overflow-y: auto;
+  position: relative; /* ← clave para desktop */
+}
 
 
