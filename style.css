@@ -217,8 +217,8 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
 /* Estilo ajustado del botón Buy Me a Coffee */
 .btn-bmc {
   background: #FFDD00;
-  border-radius: 12px;
-  padding: 10px 16px;
+  padding: 6px 14px;
+  border-radius: 15px;
   font-size: 1.15rem;   /* tamaño más moderado */
   font-family: 'Cookie', cursive;
   cursor: pointer;
@@ -251,27 +251,6 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
 
 
 
-/* Botón Videoteca */
-.video-btn{
-  background: #d86bff;       /* Morado rosita */
-  color: white;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 600;
-  box-shadow: var(--shadow);
-  transition: transform .15s, opacity .2s;
-}
-
-.video-btn:hover{
-  transform: translateY(-2px);
-  opacity: 0.9;
-}
-
-
-
 
 
 .video-pill {
@@ -283,7 +262,7 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
   font-weight: 550;
   margin-left: 54px;  /* Separar del lado izq */
   color: var(--accent);
-  background: white;          /* ← Fondo blanco */
+  background: rgb(204, 137, 225);          /* ← Fondo blanco */
   box-shadow: var(--shadow);  /* ← Igual que tus otros botones */
   transition: 0.25s ease;
 }
