@@ -557,6 +557,8 @@ th.sorted {
     width: 42px;             /* ancho idéntico */
     line-height: 1;          /* evita inflados raros */
     padding: 0;         /* padding horizontal igual */
+    font-family: inherit;
+    font-size: 1.2rem;
   }
 
 
