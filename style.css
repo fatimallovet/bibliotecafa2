@@ -532,19 +532,27 @@ th.sorted {
 
 
 /* ================================
-   BOTONES SOLO ICONO EN MÓVIL
+   BOTONES SOLO ICONO EN MÓVIL (FIX)
    ================================ */
 @media (max-width: 600px) {
 
   .btn-bmc,
   .video-pill {
-    padding: 10px;
     width: 42px;
     height: 42px;
+    padding: 0;
+    border-radius: 50%;
+
+    display: flex;
+    align-items: center;
     justify-content: center;
-    border-radius: 50%;      /* look icon-only */
-    font-size: 1.2rem;
+
+    font-size: 1.15rem;     /* tamaño visual equilibrado */
+    line-height: 1;         /* CLAVE: evita descentrado vertical */
+    font-family: system-ui, sans-serif; /* neutraliza Cookie en iconos */
+
     flex-shrink: 0;
+    margin-left: 12px;      /* separación respecto al botón de la izquierda */
   }
 
   .btn-bmc .btn-text,
@@ -552,7 +560,8 @@ th.sorted {
     display: none;
   }
 
+  /* Elimina empujón heredado del desktop */
   .video-pill {
-    margin-left: 0;          /* fuera empujón lateral */
+    margin-left: 12px;
   }
 }
