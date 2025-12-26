@@ -517,4 +517,12 @@ th.sorted {
 }
 
 
+@media (max-width: 600px) {
+  .video-pill .text,
+  .btn-bmc .text {
+    display: none;
+  }
+}
+
+
 
