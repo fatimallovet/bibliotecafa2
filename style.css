@@ -75,17 +75,25 @@ th:hover{color:var(--accent)}
 tbody tr:hover{background:rgba(108,99,255,0.08);cursor:pointer;transform:translateY(-2px);transition:all .12s}
 
 .tabla-wrapper {
-  max-height: 70vh;        /* ajusta a gusto */
+  height: 70vh;        /* ajusta a gusto */
   overflow-y: auto;
+  position: relative; /* ← clave para desktop */
 }
+
+
+
 
 /* Header fijo */
 #tablaLibros thead th {
   position: sticky;
   top: 0;
-  z-index: 4;
+  z-index: 10;
   background: var(--card);
 }
+
+
+
+
 
 .contador{text-align:right;color:var(--muted);font-size:0.9rem;margin-top:6px}
 
@@ -568,16 +576,8 @@ th.sorted {
 
 }
 
-#tablaLibros thead th {
-  position: sticky;
-  top: 0;
-  background: var(--card);
-  z-index: 5;
-}
 
-.tabla-wrapper {
-  overflow-y: auto;
-  position: relative; /* ← clave para desktop */
-}
+
+
 
 
