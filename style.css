@@ -270,7 +270,7 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
   font-size: 1.15rem;   /* tamaño más moderado */
   text-decoration: none;
   font-weight: 550;
-  margin-left: 154px;  /* Separar del lado izq */
+  margin-left: 64px;  /* Separar del lado izq */
   color: black;
   background: rgb(205, 182, 218);          /* ← Fondo blanco */
   box-shadow: var(--shadow);  /* ← Igual que tus otros botones */
@@ -529,4 +529,28 @@ th.sorted {
 }
 
 
+/* ================================
+   BOTONES SOLO ICONO EN MÓVIL
+   ================================ */
+@media (max-width: 600px) {
 
+  .btn-bmc,
+  .video-pill {
+    padding: 10px;
+    width: 42px;
+    height: 42px;
+    justify-content: center;
+    border-radius: 50%;      /* look icon-only */
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+
+  .btn-bmc .btn-text,
+  .video-pill .btn-text {
+    display: none;
+  }
+
+  .video-pill {
+    margin-left: 0;          /* fuera empujón lateral */
+  }
+}
