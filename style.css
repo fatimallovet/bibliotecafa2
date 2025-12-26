@@ -62,7 +62,8 @@ h2{color:var(--accent);margin:12px 0}
 /* Tabla */
 table{
   width:100%;
-  border-collapse:collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   background:var(--card);
   border-radius:8px;
   overflow:hidden;
@@ -77,6 +78,7 @@ tbody tr:hover{background:rgba(108,99,255,0.08);cursor:pointer;transform:transla
 .tabla-wrapper {
   height: 70vh;        /* ajusta a gusto */
   overflow-y: auto;
+  overflow-x: auto; /* scroll horizontal */
   position: relative; /* ← clave para desktop */
 }
 
@@ -87,7 +89,7 @@ tbody tr:hover{background:rgba(108,99,255,0.08);cursor:pointer;transform:transla
 #tablaLibros thead th {
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 2; /* suficiente */
   background: var(--card);
 }
 
@@ -427,10 +429,13 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
 
 @media (max-width: 600px) {
   table {
-    display: block;
+    display: table;
     overflow-x: auto;
     white-space: nowrap;
   }
+  .tabla-wrapper {
+    overflow-x: auto;
+    }
 }
 
 
