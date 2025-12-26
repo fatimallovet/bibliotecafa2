@@ -262,7 +262,7 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
   font-weight: 550;
   margin-left: 54px;  /* Separar del lado izq */
   color: var(--accent);
-  background: rgb(204, 137, 225);          /* ← Fondo blanco */
+  background: rgb(220, 185, 239);          /* ← Fondo blanco */
   box-shadow: var(--shadow);  /* ← Igual que tus otros botones */
   transition: 0.25s ease;
 }
