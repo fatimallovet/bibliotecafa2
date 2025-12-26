@@ -281,7 +281,7 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
   font-family: 'Cookie';
   text-decoration: none;
   font-weight: 550;
-  margin-left: 14px;  /* Separar del lado izq */
+  margin-left: 24px;  /* Separar del lado izq */
   color: var(--accent);
   background: white;          /* ← Fondo blanco */
   box-shadow: var(--shadow);  /* ← Igual que tus otros botones */
