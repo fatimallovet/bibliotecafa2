@@ -266,6 +266,7 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
 
 .video-pill:hover {
   transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(16,20,34,0.15);
 }
 
 .tab-btn:hover {
@@ -275,6 +276,7 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
 
 .btn-bmc:hover {
   transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(16,20,34,0.15);
 }
 
 
@@ -516,26 +518,26 @@ th.sorted {
 
 
 @media (max-width: 600px) {
+
   .video-pill .text,
   .btn-bmc .text {
     display: none;
   }
 
-  .video-pill {
-    padding: 6px 14px;
-    border-radius: 50px;
-    align-items: center;
 
-  }
-
+  .video-pill,
   .btn-bmc {
-    padding: 6px 14px;
-    border-radius: 50px;
-    align-items: center;
-
+    display: flex;           /* mismo modelo de caja */
+    align-items: center;     /* centra vertical */
+    border-radius: 50%;
+    justify-content: center;
+    height: 42px;            /* altura idéntica */
+    width: 42px;             /* ancho idéntico */
+    line-height: 1;          /* evita inflados raros */
+    padding: 0;         /* padding horizontal igual */
   }
 
-
+  
 }
 
 
