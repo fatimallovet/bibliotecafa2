@@ -233,6 +233,18 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
 }
 
 
+/* --- Ajuste móvil: botón Videoteca igual que Buy Me a Coffee --- */
+@media (max-width: 768px) {
+  .video-pill {
+    font-size: 1rem;          /* mismo tamaño que BMC en móvil */
+    padding: 10px 16px;
+    height: auto;
+    white-space: nowrap;      /* no se parte */
+    flex-shrink: 0;           /* CLAVE: evita que se haga pequeño */
+    margin-left: 0;           /* elimina el empujón lateral en móvil */
+  }
+}
+
 /* --- Ajustes para móvil: botón Buy Me A Coffee --- */
 @media (max-width: 768px) {
   .tabs .btn-bmc {
@@ -258,7 +270,7 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
   font-size: 1.15rem;   /* tamaño más moderado */
   text-decoration: none;
   font-weight: 550;
-  margin-left: 54px;  /* Separar del lado izq */
+  margin-left: 154px;  /* Separar del lado izq */
   color: black;
   background: rgb(205, 182, 218);          /* ← Fondo blanco */
   box-shadow: var(--shadow);  /* ← Igual que tus otros botones */
