@@ -547,7 +547,7 @@ th.sorted {
 
 
 @media (max-width: 600px) {
-  
+
   html, body {
     overflow-x: hidden;
   }
@@ -559,6 +559,40 @@ th.sorted {
 
   #tablaLibros {
     min-width: 680px;
+  }
+
+}
+
+@media (max-width: 600px) {
+
+  .tab,
+  .tab.active {
+    max-width: 100%;
+    overflow-x: hidden; /* ← impide que búsqueda + todo crezcan */
+  }
+
+}
+
+
+@media (max-width: 600px) {
+
+  #tablaLibros {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    min-width: 680px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+}
+
+
+@media (max-width: 600px) {
+
+  .search-box,
+  .search-container,
+  input[type="search"] {
+    max-width: 100%;
   }
 
 }
