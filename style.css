@@ -408,6 +408,19 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
   z-index: 5;
 }
 
+.tabs-external {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;   /* 👈 magia */
+}
+
+@media (max-width: 600px) {
+  .tabs-external {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
 
 .tab-btn,
 .video-pill,
@@ -464,6 +477,7 @@ footer{text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
 th.sorted {
   color: var(--accent);
 }
+
 
 
 
