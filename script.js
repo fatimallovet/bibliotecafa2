@@ -67,12 +67,18 @@ function mostrarTabla(data) {
     const autor = libro['Autor'] || libro['Author'] || '';
     const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
     const tr = document.createElement("tr");
+    const generoChips = genero
+      ? genero.split(',').map(g => `<span class="genre-chip">${escapeHtml(g.trim())}</span>`).join(' ')
+      : '';
+    const starsHtml = calificacion
+      ? `<span class="stars-cell">${'★'.repeat(Number(calificacion))}</span>`
+      : '';
     tr.innerHTML = `
       <td class="col-no">${escapeHtml(no)}</td>
-      <td>${calificacion ? "⭐".repeat(Number(calificacion)) : ''}</td>
+      <td>${starsHtml}</td>
       <td>${escapeHtml(titulo)}</td>
       <td>${escapeHtml(autor)}</td>
-      <td>${escapeHtml(genero)}</td>
+      <td>${generoChips}</td>
     `;
     tr.addEventListener('click', () => showDetalle(libro));
     tbody.appendChild(tr);
