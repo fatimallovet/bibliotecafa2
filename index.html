@@ -1,150 +1,171 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+  <link href="https://fonts.googleapis.com/css2?family=Cookie&display=swap" rel="stylesheet">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BiblioFa</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96">
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="shortcut icon" href="favicon.ico">
-  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-  <meta name="apple-mobile-web-app-title" content="BiblioFa">
-  <link rel="manifest" href="site.webmanifest">
+<link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="shortcut icon" href="favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="BiblioFa">
+<link rel="manifest" href="site.webmanifest">
+
+
 </head>
 <body>
-
   <header class="site-header">
-    <nav class="navbar">
-      <h1 class="site-title editorial">
-        <strong>Biblioteca</strong>
-        <span>Fátima Ll</span>
-      </h1>
-    </nav>
+  <nav class="navbar">
+    <h1 class="site-title editorial">
+      <strong>Biblioteca</strong>
+      <span>Fátima Ll</span>
+    </h1>
+  </nav>
   </header>
 
-  <main>
+ <main>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="tabLibros">📚 Lista</button>
+    <button class="tab-btn" data-tab="tabGeneros">🎭 Géneros</button>
+    <button class="tab-btn" data-tab="tabRandom">🎲 Random</button>  
+    <button class="tab-btn" data-tab="tabAbout">🧠 Cómo funciona</button>
+    
+    <a class="video-pill" href="https://fatimallovet.github.io/videotecafatima/" target="_blank">
+      <span class="icon">🎬</span>
+      <span class="text">Videoteca</span>
+    </a>
 
-    <div class="tabs">
-      <button class="tab-btn active" data-tab="tabLibros">📚 Lista</button>
-      <button class="tab-btn" data-tab="tabGeneros">🎭 Géneros</button>
-      <button class="tab-btn" data-tab="tabRandom">🎲 Random</button>
-      <button class="tab-btn" data-tab="tabAbout">🧠 Cómo funciona</button>
+    <!-- BOTÓN BUYMEACOFFEE -->
+    <a class="btn-bmc" href="https://www.buymeacoffee.com/fatimallovet" target="_blank">
+      <span class="icon">☕</span>
+      <span class="text">Buy me a coffee</span>
+    </a>
+  </div>
 
-      <a class="video-pill" href="https://fatimallovet.github.io/videotecafatima/" target="_blank">
-        <span class="icon">🎬</span>
-        <span class="text">Videoteca</span>
-      </a>
-
-      <a class="btn-bmc" href="https://www.buymeacoffee.com/fatimallovet" target="_blank">
-        <span class="icon">☕</span>
-        <span class="text">Buy me a coffee</span>
-      </a>
+  <!-- Pestaña principal -->
+  <section id="tabLibros" class="tab active">
+    <div class="section-header">
+      <h2>🔍</h2>
+      <input id="busqueda" type="text" placeholder="Por título, género, autor o palabras clave...">
     </div>
 
-    <!-- Lista -->
-    <section id="tabLibros" class="tab active">
-      <div class="section-header">
-        <div class="search-wrap">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
-          <input id="busqueda" type="text" placeholder="Buscar por título, autor, género o palabras clave...">
-        </div>
-      </div>
+    <div class="tabla-wrapper">
+      <table id="tablaLibros">
+        <thead>
+          <tr>
+            <th data-sort="no" class="sorted">No.</th>
+            <th data-sort="calificacion">Calificación</th>
+            <th data-sort="titulo">Título</th>
+            <th data-sort="autor">Autor</th>
+            <th data-sort="genero">Género</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
 
-      <div class="tabla-wrapper">
-        <table id="tablaLibros">
-          <thead>
-            <tr>
-              <th data-sort="no" class="sorted">No.</th>
-              <th data-sort="calificacion">Calificación</th>
-              <th data-sort="titulo">Título</th>
-              <th data-sort="autor">Autor</th>
-              <th data-sort="genero">Género</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
+    <p id="contadorLibros" class="contador"></p>
+</section> 
 
-      <p id="contadorLibros" class="contador"></p>
-    </section>
 
-    <!-- Géneros -->
-    <section id="tabGeneros" class="tab">
-      <h2>Filtrar por género</h2>
-      <select id="generoSelect">
-        <option value="">Todos los géneros</option>
-      </select>
-      <div id="tarjetasLibros" class="tarjetas"></div>
-    </section>
+  <!-- Pestaña de géneros -->
+  <section id="tabGeneros" class="tab">
+    <h2>Filtrar por Género</h2>
+    <select id="generoSelect">
+      <option value="">Todos</option>
+    </select>
+    <div id="tarjetasLibros" class="tarjetas"></div>
+  </section>
 
-    <!-- Random -->
-    <section id="tabRandom" class="tab">
-      <h2>Libro al azar</h2>
-      <button id="btnRandom">🎲 Dame un libro random</button>
-      <div id="randomLibro" class="random"></div>
-    </section>
 
-    <!-- About -->
-    <section id="tabAbout" class="tab">
-      <h2>Sobre este proyecto</h2>
+<section id="tabRandom" class="tab">
+  <h2>Libro al Azar</h2>
+  <button id="btnRandom">🎲 Dame un libro random</button>
+  <div id="randomLibro" class="random"></div>
+</section>
 
-      <p>Esta biblioteca empezó casi por casualidad: a base de recibir mensajes y peticiones del tipo "oye, ¿me recomiendas un libro?", o "¿qué has leído últimamente?"... Como mi memoria no me da para tener en la mente todo lo que he leído, y adaptarlo a los gustos de cada quien, decidí crear un espacio donde tenga una lista ordenada y clasificada de todas mis recomendaciones.</p>
 
-      <p>Obviamente es un proyecto en crecimiento, que voy a ir alimentando con los libros que, por una u otra razón, me han parecido <strong>valiosos</strong>. Aquí puedes encontrar desde mis clásicos favoritos o los best sellers del momento, hasta títulos menos conocidos que han llamado mi atención y merecen ser descubiertos.</p>
+<section id="tabAbout" class="tab">
+  <h2>Sobre este proyecto</h2>
 
-      <p>La selección y la calificación son totalmente <strong>subjetivas</strong> y responden únicamente a mis gustos personales. No me considero una crítica calificada, solo una lectora entusiasta y bastante exigente.</p>
+  <p>
+    La historia corta: me frustraba no acordarme de lo que había leído. La historia larga: 
+    llevaba tiempo recibiendo mensajes de "¿qué me recomiendas?" y cada vez que intentaba 
+    responder bien, me daba cuenta de que mi memoria es un desastre. Así que hice esto.
+  </p>
 
-      <p>El sistema de calificación funciona así:</p>
+  <p>
+    No es una página de reseñas profesionales ni nada parecido. Es simplemente mi lista, 
+    con mis criterios, para tener donde buscar cada vez que alguien me pregunta, y para compartirlo
+    con quien le pueda interesar.  
+    Todo lo que ves aquí lo he leído yo, y lo que está es porque me pareció que valía la pena 
+    recomendarlo, por la razón que sea.
+  </p>
 
-      <ul>
-        <li><strong>3 estrellas:</strong> recomendable.</li>
-        <li><strong>4 estrellas:</strong> sobresaliente.</li>
-        <li><strong>5 estrellas:</strong> excepcional y entre mis favoritas personales.</li>
-      </ul>
+  <p>
+    La selección es completamente subjetiva. No soy crítica literaria ni pretendo serlo, 
+    solo me encanta leer, pero soy bastante exigente con lo que leo.
+  </p>
 
-      <p>Los libros que he calificado con <strong>dos estrellas o menos</strong> no los verás aquí, porque son aquellos que de plano <strong>no recomendaría</strong>, ya sea porque me han decepcionado por su baja calidad o porque tienen algo que no me ha gustado.</p>
+  <p>Las estrellas funcionan así:</p>
 
-      <p>Cada entrada incluye un apartado que señala la <strong>edad mínima recomendada</strong>. Esta indicación es orientativa y subjetiva: un adulto puede disfrutar perfectamente un libro pensado para lectores más jóvenes si está bien escrito y la historia tiene algo que decir.</p>
+  <ul>
+    <li><strong>3 estrellas:</strong> bueno, lo recomendaría.</li>
+    <li><strong>4 estrellas:</strong> muy bueno, difícil de soltar.</li>
+    <li><strong>5 estrellas:</strong> de los que no olvidas.</li>
+  </ul>
 
-      <p>Por esto, intento ofrecer información suficiente sobre cada libro para que puedas decidir con mayor criterio si es adecuado para ti o para la persona a quien planeas recomendarlo. La idea no es poner etiquetas rígidas, sino dar contexto y facilitar una elección informada.</p>
+  <p>
+    Los de dos estrellas o menos no están. Si no lo recomendaría, no tiene mucho sentido que ocupe espacio aquí.
+  </p>
 
-      <p>Los libros están <strong>numerados en el orden en que los fui agregando a la base de datos</strong>, lo que facilita volver más adelante y localizar rápidamente las nuevas incorporaciones. Además, puedes <strong>ordenar por título o autor</strong>, filtrar por géneros, utilizar la barra de búsqueda o dejar que el botón random te sorprenda.</p>
+  <p>
+    Cada libro tiene una indicación de edad mínima, pero tómala como orientación, no como regla. 
+    Hay adultos que disfrutan libros "juveniles" y hay lectores jóvenes que no necesitan que nadie 
+    los subestime. Lo pongo para dar contexto, no para poner límites.
+  </p>
 
-      <p>Cuando se trata de <strong>sagas o trilogías</strong>, normalmente encontrarás listado el <strong>primer libro</strong>, y se indica claramente si tiene continuación.</p>
+  <p>
+    La numeración es simplemente el orden en que los fui agregando, por si quieres volver a ver 
+    qué hay de nuevo. También puedes ordenar por título o autor, filtrar por género, buscar 
+    por palabras clave, o darle al botón random si no sabes por dónde empezar.
+  </p>
 
-      <p>Espero que esta página te sirva de ayuda o inspiración.</p>
+  <p>
+    En el caso de sagas, generalmente está el primer libro y se indica que tiene continuación, 
+    para que no te lleves sorpresas.
+  </p>
 
-      <p>Si deseas una recomendación más personalizada, ayuda para conseguir algún libro o simplemente conversar sobre historias que valen la pena, <strong>estaré feliz de que me contactes</strong>.</p>
+  <p>
+    Si quieres que te recomiende algo más específico según lo que buscas, con gusto. 
+    Si llegaste aquí es porque me conoces, así que ya sabes dónde encontrarme 😄
+  </p>
 
-      <p>Y por supuesto, también estaré encantada de que me compartas sugerencias sobre la página, o recomendaciones de los que a ti te han gustado y no veas por aquí ✍️</p>
+  <p>📚✨💙</p>
+</section>
 
-      <p>(Por privacidad, no publicaré aquí medios de contacto... si llegaste a esta página, es porque me conoces, o conoces a alguien que me conoce, así que seguro tienes forma de contactarme).</p>
 
-      <p>¡Gracias por confiar en mis recomendaciones! 📚✨💙</p>
-    </section>
 
-  </main>
+</main>
 
   <footer>
-    <p>&copy; 2025 Biblioteca Fátima Ll</p>
+    <p>&copy; 2025 Proyecto Biblioteca Fátima</p>
   </footer>
 
   <!-- Modal Detalle -->
   <div id="detalleModal" class="modal hidden">
     <div class="modal-content">
+
       <div id="detalleContenido"></div>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="script.js?v=1.0.7"></script>
+  <script src="script.js?v=1.0.6"></script>
 </body>
 </html>
