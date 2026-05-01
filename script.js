@@ -136,27 +136,75 @@ window.addEventListener('resize', () => {
   if (ultimaData.length > 0) mostrarTabla(ultimaData);
 });
 
-function llenarSelectGeneros(data){
-  const select = document.getElementById('generoSelect');
-  const set = new Set();
-  data.forEach(l => {
-    const raw = (l['Género'] || l['Genero'] || l['Genre'] || '') + '';
-    raw.split(',').map(s => s.trim()).filter(Boolean).forEach(g => set.add(g));
+// --- Filtro de géneros con intersección ---
+const generosActivos = new Set();
+
+function getGenerosLibro(libro) {
+  return (libro['Género'] || libro['Genero'] || libro['Genre'] || '')
+    .split(',').map(s => s.trim()).filter(Boolean);
+}
+
+function librosFiltradosPorGenero() {
+  if (generosActivos.size === 0) return libros;
+  // Intersección: el libro debe tener TODOS los géneros activos
+  return libros.filter(l =>
+    [...generosActivos].every(g => getGenerosLibro(l).includes(g))
+  );
+}
+
+function renderGeneroBtns() {
+  const cont = document.getElementById('generoBtns');
+  const resultado = librosFiltradosPorGenero();
+
+  // Géneros disponibles dado el filtro actual (para desactivar los que no aplican)
+  const disponibles = new Set();
+  resultado.forEach(l => getGenerosLibro(l).forEach(g => disponibles.add(g)));
+
+  // Todos los géneros existentes en la biblioteca
+  const todosGeneros = Array.from(
+    new Set(libros.flatMap(l => getGenerosLibro(l)))
+  ).sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+
+  cont.innerHTML = '';
+
+  // Botón "Todos"
+  const btnTodos = document.createElement('button');
+  btnTodos.className = 'genero-btn' + (generosActivos.size === 0 ? ' active' : '');
+  btnTodos.textContent = 'Todos';
+  btnTodos.addEventListener('click', () => {
+    generosActivos.clear();
+    renderGeneroBtns();
+    mostrarTarjetas(libros);
   });
-  const generos = Array.from(set).sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'}));
-  generos.forEach(g => {
-    const option = document.createElement('option');
-    option.value = g;
-    option.textContent = g;
-    select.appendChild(option);
+  cont.appendChild(btnTodos);
+
+  // Un botón por género
+  todosGeneros.forEach(g => {
+    const btn = document.createElement('button');
+    const activo = generosActivos.has(g);
+    const disponible = activo || disponibles.has(g);
+
+    btn.className = 'genero-btn' + (activo ? ' active' : '') + (!disponible ? ' desactivado' : '');
+    btn.textContent = g;
+    btn.disabled = !disponible;
+
+    btn.addEventListener('click', () => {
+      if (generosActivos.has(g)) {
+        generosActivos.delete(g);
+      } else {
+        generosActivos.add(g);
+      }
+      renderGeneroBtns();
+      mostrarTarjetas(librosFiltradosPorGenero());
+    });
+    cont.appendChild(btn);
   });
 }
 
-document.getElementById('generoSelect').addEventListener('change', (e)=>{
-  const genero = e.target.value;
-  const filtrados = genero ? libros.filter(l => ((l['Género']||l['Genero']||'').includes(genero))) : libros;
-  mostrarTarjetas(filtrados);
-});
+function llenarSelectGeneros(data) {
+  renderGeneroBtns();
+  mostrarTarjetas(libros);
+}
 
 function mostrarTarjetas(data){
   const cont = document.getElementById('tarjetasLibros');
