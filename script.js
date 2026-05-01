@@ -1,3 +1,17 @@
+// Busca un campo en el objeto ignorando diferencias de acentos
+function getCampo(obj, ...nombres) {
+  for (const nombre of nombres) {
+    if (obj[nombre] !== undefined && obj[nombre] !== '') return obj[nombre];
+  }
+  // Fallback: buscar normalizando claves
+  const norm = s => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  for (const nombre of nombres) {
+    const key = Object.keys(obj).find(k => norm(k) === norm(nombre));
+    if (key && obj[key] !== '') return obj[key];
+  }
+  return '';
+}
+
 const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR_lN4MQGP2PigjKJFOV8ZK92MvfpQWj8aH7qqntBJHOKv6XsvLAxriHmjU3WcD7kafNvNbj3pTFqND/pub?gid=0&single=true&output=csv";
 let libros = [];
 let ordenActual = {col: null, asc: true};
@@ -218,14 +232,16 @@ function mostrarTarjetas(data){
     const autor = libro['Autor'] || libro['Author'] || '';
     const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
     const flags = libro['Flags'] || '';
-    const estrellas = libro['Calificación'] || libro['Estrellas'] || libro['Stars'] || '';
+    const estrellasRaw = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
+    const numEstrellas = parseInt(estrellasRaw, 10);
+    const estrellasHtml = numEstrellas > 0 ? `<span class="card-stars">${'★'.repeat(numEstrellas)}</span>` : '';
 
     const div = document.createElement('div');
     div.className = 'card';
     div.innerHTML = `
       <div class="card-top">
         <strong>${escapeHtml(titulo)}</strong>
-        ${estrellas ? `<span class="card-stars">${'★'.repeat(Number(estrellas))}</span>` : ''}
+        ${estrellasHtml}
       </div>
       <small>${escapeHtml(autor)}</small><br>
       <em>${escapeHtml(genero)}</em><br>
