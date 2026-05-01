@@ -218,16 +218,18 @@ function mostrarTarjetas(data){
     const autor = libro['Autor'] || libro['Author'] || '';
     const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
     const flags = libro['Flags'] || '';
-    const estrellas = libro['Estrellas'] || libro['Stars'] || '';
+    const estrellas = libro['Calificación'] || libro['Estrellas'] || libro['Stars'] || '';
 
     const div = document.createElement('div');
     div.className = 'card';
     div.innerHTML = `
-      <strong>${escapeHtml(titulo)}</strong><br>
+      <div class="card-top">
+        <strong>${escapeHtml(titulo)}</strong>
+        ${estrellas ? `<span class="card-stars">${'★'.repeat(Number(estrellas))}</span>` : ''}
+      </div>
       <small>${escapeHtml(autor)}</small><br>
       <em>${escapeHtml(genero)}</em><br>
-      ${flags ? `<span class="flag-tag">${escapeHtml(flags)}</span><br>` : ''}
-      ${estrellas ? `<span class="stars">${"⭐".repeat(Number(estrellas))}</span>` : ''}
+      ${flags ? `<span class="flag-tag">${escapeHtml(flags)}</span>` : ''}
     `;
     div.addEventListener('click', () => showDetalle(libro));
     cont.appendChild(div);

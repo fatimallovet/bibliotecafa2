@@ -811,3 +811,25 @@ footer {
   cursor: not-allowed;
   pointer-events: none;
 }
+
+/* tarjeta géneros: título + estrellas en la misma línea */
+.card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.card-top strong {
+  line-height: 1.3;
+}
+
+.card-stars {
+  color: #BA7517;
+  font-size: 0.82rem;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding-top: 1px;
+}
