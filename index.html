@@ -32,7 +32,8 @@
   <div class="tabs">
     <button class="tab-btn active" data-tab="tabLibros">📚 Lista</button>
     <button class="tab-btn" data-tab="tabGeneros">🎭 Géneros</button>
-    <button class="tab-btn" data-tab="tabRandom">🎲 Random</button>  
+    <button class="tab-btn" data-tab="tabRandom">🎲 Random</button>
+    <button class="tab-btn" data-tab="tabSentimiento">🫀 ¿Cómo me siento?</button>  
     <button class="tab-btn" data-tab="tabAbout">ℹ️ Info</button>
     
     <a class="video-pill" href="https://fatimallovet.github.io/videotecafatima/" target="_blank">
@@ -150,6 +151,52 @@
 </section>
 
 
+
+
+<section id="tabSentimiento" class="tab">
+  <div id="sentimientoGrid" class="sentimiento-grid">
+    <button class="sentimiento-btn" data-mood="evadir">
+      <span class="mood-icon">🌙</span>
+      <span class="mood-label">Quiero evadir<br>la realidad</span>
+    </button>
+    <button class="sentimiento-btn" data-mood="reir">
+      <span class="mood-icon">😂</span>
+      <span class="mood-label">Quiero reír<br>un rato</span>
+    </button>
+    <button class="sentimiento-btn" data-mood="llorar">
+      <span class="mood-icon">🥺</span>
+      <span class="mood-label">Necesito<br>llorar un poco</span>
+    </button>
+    <button class="sentimiento-btn" data-mood="aprender">
+      <span class="mood-icon">🧠</span>
+      <span class="mood-label">Quiero<br>aprender algo</span>
+    </button>
+    <button class="sentimiento-btn" data-mood="crecer">
+      <span class="mood-icon">🌱</span>
+      <span class="mood-label">Quiero crecer<br>por dentro</span>
+    </button>
+    <button class="sentimiento-btn" data-mood="tension">
+      <span class="mood-icon">😬</span>
+      <span class="mood-label">Quiero intriga<br>y tensión</span>
+    </button>
+    <button class="sentimiento-btn" data-mood="clasico">
+      <span class="mood-icon">📜</span>
+      <span class="mood-label">Me apetece<br>un clásico</span>
+    </button>
+    <button class="sentimiento-btn" data-mood="ligero">
+      <span class="mood-icon">☁️</span>
+      <span class="mood-label">Algo ligero<br>y sin drama</span>
+    </button>
+  </div>
+
+  <div id="sentimientoResultado" class="sentimiento-resultado" style="display:none">
+    <div id="sentimientoCard"></div>
+    <div class="sentimiento-actions">
+      <button id="btnOtro" class="btn-otro">🔀 Otro libro así</button>
+      <button id="btnVolver" class="btn-volver">← Cambiar estado de ánimo</button>
+    </div>
+  </div>
+</section>
 
 </main>
 

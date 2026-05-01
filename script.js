@@ -254,39 +254,29 @@ function mostrarTarjetas(data){
 
 
 // Botón libro random
-function mostrarLibroRandom() {
+document.getElementById('btnRandom').addEventListener('click', ()=>{
   if(libros.length === 0) return;
-  const r = libros[Math.floor(Math.random() * libros.length)];
+  const r = libros[Math.floor(Math.random()*libros.length)];
   const titulo = r['Título'] || r['Titulo'] || r['Title'] || '';
   const autor = r['Autor'] || r['Author'] || '';
   const genero = r['Género'] || r['Genero'] || r['Genre'] || '';
   const flags = r['Flags'] || '';
-  const tono = r['Tono'] || r['Tone'] || '';
-  const ritmo = r['Ritmo'] || '';
-  const publico = r['Público'] || r['Publico'] || '';
-  const resena = r['Reseña'] || r['Resena'] || r['Review'] || '';
-  const estrellasRaw = getCampo(r, 'Calificación', 'Estrellas', 'Stars');
-  const numEstrellas = parseInt(estrellasRaw, 10);
+  const estrellas = r['Estrellas'] || r['Stars'] || '';
 
   const div = document.getElementById('randomLibro');
   div.innerHTML = `
-    <div class="random-card-full">
-      <div class="random-header">
-        <h3>${escapeHtml(titulo)}</h3>
-        ${numEstrellas > 0 ? `<span class="random-stars">${'★'.repeat(numEstrellas)}</span>` : ''}
-      </div>
-      <p class="random-autor">${escapeHtml(autor)}</p>
-      <p class="random-genero">${escapeHtml(genero)}</p>
-      ${tono ? `<p class="random-meta"><span>Tono</span> ${escapeHtml(tono)}</p>` : ''}
-      ${ritmo ? `<p class="random-meta"><span>Ritmo</span> ${escapeHtml(ritmo)}</p>` : ''}
-      ${publico ? `<p class="random-meta"><span>Público</span> ${escapeHtml(publico)}</p>` : ''}
-      ${flags ? `<p><span class="flag-tag">${escapeHtml(flags)}</span></p>` : ''}
-      ${resena ? `<p class="random-resena">${escapeHtml(resena)}</p>` : ''}
+    <div class="random-card">
+      <h3>${escapeHtml(titulo)}</h3>
+      <p><strong>${escapeHtml(autor)}</strong></p>
+      <p><em>${escapeHtml(genero)}</em></p>
+      ${flags ? `<span class="flag-tag">${escapeHtml(flags)}</span><br>` : ''}
+      ${estrellas ? `<span class="stars">${"⭐".repeat(Number(estrellas))}</span>` : ''}
     </div>
   `;
-}
 
-document.getElementById('btnRandom').addEventListener('click', mostrarLibroRandom);
+  // Al hacer clic en el libro random, mostrar el detalle completo
+  div.querySelector('.random-card').addEventListener('click', ()=> showDetalle(r));
+});
 
 // --- Buscador (ahora ignora acentos) ---
 const inputBusqueda = document.getElementById('busqueda');
@@ -439,8 +429,6 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     const target = btn.dataset.tab;
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.getElementById(target).classList.add('active');
-
-    if (target === 'tabRandom') mostrarLibroRandom();
   });
 });
 
@@ -448,3 +436,87 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 
 
 
+
+// --- Recomendador: ¿Cómo me siento? ---
+const MOODS = {
+  evadir:  { generos: ['fantasía','aventura','ciencia ficción','distópico','realismo mágico','fantasía épica','fantasía gótica'], tonos: [] },
+  reir:    { generos: ['humor','comedia','sátira','comedia social','comedia negra'], tonos: ['humorístico','ingenioso','disparatado','irónico'] },
+  llorar:  { generos: [], tonos: ['conmovedor','melancólico','desgarrador','emotivo','nostálgico','dramático'] },
+  aprender:{ generos: ['biográfico','testimonial','memorias','biografía novelada'], tonos: [] },
+  crecer:  { generos: ['espiritualidad','cristianismo','religión','desarrollo personal','conversos'], tonos: ['reflexivo','inspirador','esperanzador'] },
+  tension: { generos: ['thriller','misterio','suspenso','intriga','crimen','policíaca','espionaje','thriller psicológico'], tonos: ['intrigante','tenso'] },
+  clasico: { generos: ['clásico'], tonos: [] },
+  ligero:  { generos: ['juvenil','contemporáneo','ficción contemporánea','comedia','humor','infantil'], tonos: ['ligero','tierno','cálido','humorístico','optimista'] },
+};
+
+let moodActual = null;
+let librosMood = [];
+
+function librosParaMood(mood) {
+  const { generos, tonos } = MOODS[mood];
+  return libros.filter(l => {
+    const g = (l['Género'] || '').toLowerCase();
+    const t = (l['Tono'] || '').toLowerCase();
+    const genOk = generos.length === 0 || generos.some(x => g.includes(x));
+    const tonOk = tonos.length === 0 || tonos.some(x => t.includes(x));
+    return genOk && tonOk;
+  });
+}
+
+function mostrarResultadoMood(libro) {
+  const titulo  = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+  const autor   = libro['Autor'] || libro['Author'] || '';
+  const genero  = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
+  const tono    = libro['Tono'] || '';
+  const ritmo   = libro['Ritmo'] || '';
+  const publico = libro['Público'] || libro['Publico'] || '';
+  const resena  = libro['Reseña'] || libro['Resena'] || libro['Review'] || '';
+  const flags   = libro['Flags'] || '';
+  const estrellasRaw = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
+  const numEstrellas = parseInt(estrellasRaw, 10);
+
+  document.getElementById('sentimientoCard').innerHTML = `
+    <div class="random-card-full">
+      <div class="random-header">
+        <h3>${escapeHtml(titulo)}</h3>
+        ${numEstrellas > 0 ? `<span class="random-stars">${'★'.repeat(numEstrellas)}</span>` : ''}
+      </div>
+      <p class="random-autor">${escapeHtml(autor)}</p>
+      <p class="random-genero">${escapeHtml(genero)}</p>
+      ${tono    ? `<p class="random-meta"><span>Tono</span> ${escapeHtml(tono)}</p>` : ''}
+      ${ritmo   ? `<p class="random-meta"><span>Ritmo</span> ${escapeHtml(ritmo)}</p>` : ''}
+      ${publico ? `<p class="random-meta"><span>Público</span> ${escapeHtml(publico)}</p>` : ''}
+      ${flags && flags !== 'ninguno' ? `<p><span class="flag-tag">${escapeHtml(flags)}</span></p>` : ''}
+      ${resena  ? `<p class="random-resena">${escapeHtml(resena)}</p>` : ''}
+    </div>
+  `;
+
+  document.getElementById('sentimientoGrid').style.display = 'none';
+  document.getElementById('sentimientoResultado').style.display = '';
+}
+
+function elegirRandom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+document.querySelectorAll('.sentimiento-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    moodActual = btn.dataset.mood;
+    librosMood = librosParaMood(moodActual);
+    if (librosMood.length === 0) {
+      alert('No encontré libros para ese estado de ánimo 😔');
+      return;
+    }
+    mostrarResultadoMood(elegirRandom(librosMood));
+  });
+});
+
+document.getElementById('btnOtro').addEventListener('click', () => {
+  if (librosMood.length === 0) return;
+  mostrarResultadoMood(elegirRandom(librosMood));
+});
+
+document.getElementById('btnVolver').addEventListener('click', () => {
+  document.getElementById('sentimientoResultado').style.display = 'none';
+  document.getElementById('sentimientoGrid').style.display = '';
+});
