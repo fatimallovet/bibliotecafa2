@@ -257,16 +257,21 @@ function mostrarTarjetas(data){
 function mostrarLibroRandom() {
   if (libros.length === 0) return;
   const r = libros[Math.floor(Math.random() * libros.length)];
-  const titulo   = r['Título'] || r['Titulo'] || r['Title'] || '';
-  const autor    = r['Autor'] || r['Author'] || '';
-  const genero   = r['Género'] || r['Genero'] || r['Genre'] || '';
-  const tono     = r['Tono'] || r['Tone'] || '';
-  const ritmo    = r['Ritmo'] || '';
-  const publico  = r['Público'] || r['Publico'] || '';
-  const resena   = r['Reseña'] || r['Resena'] || r['Review'] || '';
-  const flags    = r['Flags'] || '';
+  const titulo    = r['Título'] || r['Titulo'] || r['Title'] || '';
+  const autor     = r['Autor'] || r['Author'] || '';
+  const genero    = r['Género'] || r['Genero'] || r['Genre'] || '';
+  const tono      = r['Tono'] || r['Tone'] || '';
+  const ritmo     = r['Ritmo'] || '';
+  const publico   = r['Público'] || r['Publico'] || '';
+  const resena    = r['Reseña'] || r['Resena'] || r['Review'] || '';
+  const flags     = r['Flags'] || '';
+  const etiquetas = r['Etiquetas'] || r['Tags'] || '';
   const estrellasRaw = getCampo(r, 'Calificación', 'Estrellas', 'Stars');
   const numEstrellas = parseInt(estrellasRaw, 10);
+
+  const etiquetasHtml = etiquetas
+    ? etiquetas.split(',').map(e => `<span class="etiqueta-tag">${escapeHtml(e.trim())}</span>`).join('')
+    : '';
 
   document.getElementById('randomLibro').innerHTML = `
     <div class="random-card-full">
@@ -279,6 +284,7 @@ function mostrarLibroRandom() {
       ${tono    ? `<p class="random-meta"><span>Tono</span> ${escapeHtml(tono)}</p>` : ''}
       ${ritmo   ? `<p class="random-meta"><span>Ritmo</span> ${escapeHtml(ritmo)}</p>` : ''}
       ${publico ? `<p class="random-meta"><span>Público</span> ${escapeHtml(publico)}</p>` : ''}
+      ${etiquetasHtml ? `<div class="random-etiquetas">${etiquetasHtml}</div>` : ''}
       ${flags && flags.toLowerCase() !== 'ninguno' ? `<p><span class="flag-tag">${escapeHtml(flags)}</span></p>` : ''}
       ${resena  ? `<p class="random-resena">${escapeHtml(resena)}</p>` : ''}
     </div>

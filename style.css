@@ -946,7 +946,6 @@ footer {
   max-width: 540px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.07);
 }
-
 .random-header {
   display: flex;
   align-items: flex-start;
@@ -954,7 +953,6 @@ footer {
   gap: 12px;
   margin-bottom: 6px;
 }
-
 .random-header h3 {
   font-size: 1.2rem;
   font-weight: 600;
@@ -962,7 +960,6 @@ footer {
   color: var(--text);
   margin: 0;
 }
-
 .random-stars {
   color: #BA7517;
   font-size: 1rem;
@@ -971,27 +968,23 @@ footer {
   flex-shrink: 0;
   padding-top: 3px;
 }
-
 .random-autor {
   font-size: 0.9rem;
   font-weight: 500;
   color: var(--muted);
   margin: 0 0 2px;
 }
-
 .random-genero {
   font-size: 0.82rem;
   color: var(--accent);
   font-weight: 500;
   margin: 0 0 12px;
 }
-
 .random-meta {
   font-size: 0.82rem;
   color: var(--text);
   margin: 0 0 4px;
 }
-
 .random-meta span {
   font-size: 0.72rem;
   font-weight: 600;
@@ -1000,7 +993,20 @@ footer {
   color: var(--muted);
   margin-right: 6px;
 }
-
+.random-etiquetas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 8px 0 4px;
+}
+.etiqueta-tag {
+  display: inline-block;
+  font-size: 0.7rem;
+  padding: 2px 7px;
+  border-radius: 100px;
+  background: rgba(16,20,34,0.06);
+  color: var(--muted);
+}
 .random-resena {
   font-size: 0.88rem;
   line-height: 1.7;
@@ -1010,14 +1016,25 @@ footer {
   border-top: 1px solid rgba(16,20,34,0.07);
 }
 
-/* ── Sentimiento: grid de estados de ánimo ───────────── */
+/* ── Tarjetas: reseña 3 líneas con clamp ─────────────── */
+.card-resena {
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 4px 0 6px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── Sentimiento: grid de estados ────────────────────── */
 .sentimiento-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 12px;
   margin-top: 8px;
 }
-
 .sentimiento-btn {
   font-family: inherit;
   background: var(--card);
@@ -1032,23 +1049,18 @@ footer {
   transition: all .2s ease;
   text-align: center;
 }
-
 .sentimiento-btn:hover {
   border-color: var(--accent);
   transform: translateY(-3px);
   box-shadow: 0 6px 20px rgba(0,0,0,0.08);
 }
-
 .mood-icon { font-size: 2.2rem; line-height: 1; }
-
 .mood-label {
   font-size: 0.82rem;
   font-weight: 500;
   color: var(--text);
   line-height: 1.4;
 }
-
-/* Resultado sentimiento */
 .sentimiento-header {
   display: flex;
   align-items: center;
@@ -1057,7 +1069,6 @@ footer {
   flex-wrap: wrap;
   gap: 8px;
 }
-
 .btn-volver {
   font-family: inherit;
   font-size: 0.88rem;
@@ -1070,20 +1081,13 @@ footer {
   cursor: pointer;
   transition: all .18s ease;
 }
-
 .btn-volver:hover {
   border-color: var(--accent);
   color: var(--accent);
 }
 
-/* Tarjetas en sentimiento — reutiliza .tarjetas y .card */
-/* card-top, card-autor, card-genero, card-resena ya definidos arriba */
-
 @media (max-width: 600px) {
-  .sentimiento-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-  }
+  .sentimiento-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .sentimiento-btn { padding: 18px 10px; }
   .mood-icon { font-size: 1.8rem; }
   .mood-label { font-size: 0.78rem; }
