@@ -57,18 +57,7 @@ function comparar(a, b, col) {
     : x.localeCompare(y, 'es', { sensitivity: 'base' });
 }
 
-let ultimaData = [];
-function esMobil() { return window.innerWidth <= 600; }
-
 function mostrarTabla(data) {
-  ultimaData = data;
-  esMobil() ? mostrarTarjetasLista(data) : mostrarFilasTabla(data);
-  actualizarContador(data.length);
-}
-
-function mostrarFilasTabla(data) {
-  document.getElementById('listaCards').style.display = 'none';
-  document.querySelector('.tabla-wrapper').style.display = '';
   const tbody = document.querySelector("#tablaLibros tbody");
   tbody.innerHTML = "";
   data.forEach(libro => {
@@ -77,13 +66,13 @@ function mostrarFilasTabla(data) {
     const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
     const autor = libro['Autor'] || libro['Author'] || '';
     const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
+    const tr = document.createElement("tr");
     const generoChips = genero
       ? genero.split(',').map(g => `<span class="genre-chip">${escapeHtml(g.trim())}</span>`).join(' ')
       : '';
     const starsHtml = calificacion
       ? `<span class="stars-cell">${'★'.repeat(Number(calificacion))}</span>`
       : '';
-    const tr = document.createElement("tr");
     tr.innerHTML = `
       <td class="col-no">${escapeHtml(no)}</td>
       <td>${starsHtml}</td>
@@ -94,69 +83,79 @@ function mostrarFilasTabla(data) {
     tr.addEventListener('click', () => showDetalle(libro));
     tbody.appendChild(tr);
   });
+  actualizarContador(data.length);
 }
 
-function mostrarTarjetasLista(data) {
-  document.querySelector('.tabla-wrapper').style.display = 'none';
-  const cont = document.getElementById('listaCards');
-  cont.style.display = '';
+// --- Filtro de géneros con intersección ---
+const generosActivos = new Set();
+
+function getGeneros(libro) {
+  return (libro['Género'] || libro['Genero'] || libro['Genre'] || '')
+    .split(',').map(s => s.trim()).filter(Boolean);
+}
+
+function librosFiltrados() {
+  if (generosActivos.size === 0) return libros;
+  return libros.filter(l =>
+    [...generosActivos].every(g => getGeneros(l).includes(g))
+  );
+}
+
+function renderGeneroBtns() {
+  const cont = document.getElementById('generoBtns');
+  const actuales = librosFiltrados();
+
+  // Géneros disponibles dado el filtro actual
+  const disponibles = new Set();
+  actuales.forEach(l => getGeneros(l).forEach(g => disponibles.add(g)));
+
+  // Todos los géneros conocidos (para no perder botones)
+  const todosGeneros = Array.from(
+    new Set(libros.flatMap(l => getGeneros(l)))
+  ).sort((a,b) => a.localeCompare(b, 'es', {sensitivity:'base'}));
+
   cont.innerHTML = '';
-  if (data.length === 0) {
-    cont.innerHTML = '<p style="color:var(--muted)">No se encontraron libros.</p>';
-    return;
-  }
-  data.forEach(libro => {
-    const no = libro['No.'] || libro['No'] || '';
-    const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
-    const autor = libro['Autor'] || libro['Author'] || '';
-    const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
-    const calificacion = libro['Calificación'] || libro['Estrellas'] || libro['Stars'] || '';
-    const generoChips = genero
-      ? genero.split(',').map(g => `<span class="genre-chip">${escapeHtml(g.trim())}</span>`).join(' ')
-      : '';
-    const starsHtml = calificacion
-      ? `<span class="lista-stars">${'★'.repeat(Number(calificacion))}</span>`
-      : '';
-    const div = document.createElement('div');
-    div.className = 'lista-card';
-    div.innerHTML = `
-      <div class="lista-card-no">${escapeHtml(no)}</div>
-      <div class="lista-card-body">
-        <div class="lista-card-titulo">${escapeHtml(titulo)}</div>
-        <div class="lista-card-autor">${escapeHtml(autor)}</div>
-        <div class="lista-card-meta">${generoChips} ${starsHtml}</div>
-      </div>
-    `;
-    div.addEventListener('click', () => showDetalle(libro));
-    cont.appendChild(div);
+
+  // Botón "Todos"
+  const btnTodos = document.createElement('button');
+  btnTodos.className = 'genero-btn' + (generosActivos.size === 0 ? ' active' : '');
+  btnTodos.textContent = 'Todos';
+  btnTodos.addEventListener('click', () => {
+    generosActivos.clear();
+    renderGeneroBtns();
+    mostrarTarjetas(libros);
+  });
+  cont.appendChild(btnTodos);
+
+  todosGeneros.forEach(g => {
+    const btn = document.createElement('button');
+    const estaActivo = generosActivos.has(g);
+    const estaDisponible = disponibles.has(g) || estaActivo;
+
+    btn.className = 'genero-btn' +
+      (estaActivo ? ' active' : '') +
+      (estaDisponible ? '' : ' disabled');
+    btn.textContent = g;
+    btn.disabled = !estaDisponible;
+
+    btn.addEventListener('click', () => {
+      if (generosActivos.has(g)) {
+        generosActivos.delete(g);
+      } else {
+        generosActivos.add(g);
+      }
+      const filtrados = librosFiltrados();
+      renderGeneroBtns();
+      mostrarTarjetas(filtrados);
+    });
+    cont.appendChild(btn);
   });
 }
-
-window.addEventListener('resize', () => {
-  if (ultimaData.length > 0) mostrarTabla(ultimaData);
-});
 
 function llenarSelectGeneros(data){
-  const select = document.getElementById('generoSelect');
-  const set = new Set();
-  data.forEach(l => {
-    const raw = (l['Género'] || l['Genero'] || l['Genre'] || '') + '';
-    raw.split(',').map(s => s.trim()).filter(Boolean).forEach(g => set.add(g));
-  });
-  const generos = Array.from(set).sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'}));
-  generos.forEach(g => {
-    const option = document.createElement('option');
-    option.value = g;
-    option.textContent = g;
-    select.appendChild(option);
-  });
+  renderGeneroBtns();
+  mostrarTarjetas(libros);
 }
-
-document.getElementById('generoSelect').addEventListener('change', (e)=>{
-  const genero = e.target.value;
-  const filtrados = genero ? libros.filter(l => ((l['Género']||l['Genero']||'').includes(genero))) : libros;
-  mostrarTarjetas(filtrados);
-});
 
 function mostrarTarjetas(data){
   const cont = document.getElementById('tarjetasLibros');
