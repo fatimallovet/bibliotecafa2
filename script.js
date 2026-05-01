@@ -86,76 +86,27 @@ function mostrarTabla(data) {
   actualizarContador(data.length);
 }
 
-// --- Filtro de géneros con intersección ---
-const generosActivos = new Set();
-
-function getGeneros(libro) {
-  return (libro['Género'] || libro['Genero'] || libro['Genre'] || '')
-    .split(',').map(s => s.trim()).filter(Boolean);
-}
-
-function librosFiltrados() {
-  if (generosActivos.size === 0) return libros;
-  return libros.filter(l =>
-    [...generosActivos].every(g => getGeneros(l).includes(g))
-  );
-}
-
-function renderGeneroBtns() {
-  const cont = document.getElementById('generoBtns');
-  const actuales = librosFiltrados();
-
-  // Géneros disponibles dado el filtro actual
-  const disponibles = new Set();
-  actuales.forEach(l => getGeneros(l).forEach(g => disponibles.add(g)));
-
-  // Todos los géneros conocidos (para no perder botones)
-  const todosGeneros = Array.from(
-    new Set(libros.flatMap(l => getGeneros(l)))
-  ).sort((a,b) => a.localeCompare(b, 'es', {sensitivity:'base'}));
-
-  cont.innerHTML = '';
-
-  // Botón "Todos"
-  const btnTodos = document.createElement('button');
-  btnTodos.className = 'genero-btn' + (generosActivos.size === 0 ? ' active' : '');
-  btnTodos.textContent = 'Todos';
-  btnTodos.addEventListener('click', () => {
-    generosActivos.clear();
-    renderGeneroBtns();
-    mostrarTarjetas(libros);
-  });
-  cont.appendChild(btnTodos);
-
-  todosGeneros.forEach(g => {
-    const btn = document.createElement('button');
-    const estaActivo = generosActivos.has(g);
-    const estaDisponible = disponibles.has(g) || estaActivo;
-
-    btn.className = 'genero-btn' +
-      (estaActivo ? ' active' : '') +
-      (estaDisponible ? '' : ' disabled');
-    btn.textContent = g;
-    btn.disabled = !estaDisponible;
-
-    btn.addEventListener('click', () => {
-      if (generosActivos.has(g)) {
-        generosActivos.delete(g);
-      } else {
-        generosActivos.add(g);
-      }
-      const filtrados = librosFiltrados();
-      renderGeneroBtns();
-      mostrarTarjetas(filtrados);
-    });
-    cont.appendChild(btn);
-  });
-}
-
 function llenarSelectGeneros(data){
-  renderGeneroBtns();
-  mostrarTarjetas(libros);
+  const select = document.getElementById('generoSelect');
+  const set = new Set();
+  data.forEach(l => {
+    const raw = (l['Género'] || l['Genero'] || l['Genre'] || '') + '';
+    raw.split(',').map(s => s.trim()).filter(Boolean).forEach(g => set.add(g));
+  });
+  const generos = Array.from(set).sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'}));
+  generos.forEach(g => {
+    const option = document.createElement('option');
+    option.value = g;
+    option.textContent = g;
+    select.appendChild(option);
+  });
 }
+
+document.getElementById('generoSelect').addEventListener('change', (e)=>{
+  const genero = e.target.value;
+  const filtrados = genero ? libros.filter(l => ((l['Género']||l['Genero']||'').includes(genero))) : libros;
+  mostrarTarjetas(filtrados);
+});
 
 function mostrarTarjetas(data){
   const cont = document.getElementById('tarjetasLibros');
@@ -170,11 +121,7 @@ function mostrarTarjetas(data){
     const genero = libro['G\u00e9nero'] || libro['Genero'] || libro['Genre'] || '';
     const flags = libro['Flags'] || '';
     const estrellas = libro['Estrellas'] || libro['Calificaci\u00f3n'] || libro['Stars'] || '';
-    const etiquetas = libro['Etiquetas'] || libro['Tags'] || '';
-
-    const etiquetasHtml = etiquetas
-      ? etiquetas.split(',').map(e => `<span class="etiqueta-tag">${escapeHtml(e.trim())}</span>`).join('')
-      : '';
+    const resena = libro['Rese\u00f1a'] || libro['Resena'] || libro['Review'] || '';
 
     const div = document.createElement('div');
     div.className = 'card';
@@ -185,7 +132,7 @@ function mostrarTarjetas(data){
       </div>
       <small class="card-autor">${escapeHtml(autor)}</small>
       <em class="card-genero">${escapeHtml(genero)}</em>
-      ${etiquetasHtml ? `<div class="card-etiquetas">${etiquetasHtml}</div>` : ''}
+      ${resena ? `<p class="card-resena">${escapeHtml(resena)}</p>` : ''}
       ${flags ? `<div><span class="flag-tag">${escapeHtml(flags)}</span></div>` : ''}
     `;
     div.addEventListener('click', () => showDetalle(libro));
