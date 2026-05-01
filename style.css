@@ -407,12 +407,13 @@ select#generoSelect:focus { border-color: var(--accent); }
 
 .flag-tag {
   display: inline-block;
-  background: var(--accent);
-  color: white;
+  background: #fdecea;
+  color: #c0392b;
   padding: 2px 8px;
-  border-radius: 100px;
-  font-size: 0.75rem;
-  margin-top: 6px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-top: 4px;
 }
 
 .stars {
