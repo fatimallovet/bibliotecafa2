@@ -57,7 +57,18 @@ function comparar(a, b, col) {
     : x.localeCompare(y, 'es', { sensitivity: 'base' });
 }
 
+let ultimaData = [];
+function esMobil() { return window.innerWidth <= 600; }
+
 function mostrarTabla(data) {
+  ultimaData = data;
+  esMobil() ? mostrarTarjetasLista(data) : mostrarFilasTabla(data);
+  actualizarContador(data.length);
+}
+
+function mostrarFilasTabla(data) {
+  document.getElementById('listaCards').style.display = 'none';
+  document.querySelector('.tabla-wrapper').style.display = '';
   const tbody = document.querySelector("#tablaLibros tbody");
   tbody.innerHTML = "";
   data.forEach(libro => {
@@ -66,13 +77,13 @@ function mostrarTabla(data) {
     const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
     const autor = libro['Autor'] || libro['Author'] || '';
     const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
-    const tr = document.createElement("tr");
     const generoChips = genero
       ? genero.split(',').map(g => `<span class="genre-chip">${escapeHtml(g.trim())}</span>`).join(' ')
       : '';
     const starsHtml = calificacion
       ? `<span class="stars-cell">${'★'.repeat(Number(calificacion))}</span>`
       : '';
+    const tr = document.createElement("tr");
     tr.innerHTML = `
       <td class="col-no">${escapeHtml(no)}</td>
       <td>${starsHtml}</td>
@@ -83,8 +94,47 @@ function mostrarTabla(data) {
     tr.addEventListener('click', () => showDetalle(libro));
     tbody.appendChild(tr);
   });
-  actualizarContador(data.length);
 }
+
+function mostrarTarjetasLista(data) {
+  document.querySelector('.tabla-wrapper').style.display = 'none';
+  const cont = document.getElementById('listaCards');
+  cont.style.display = '';
+  cont.innerHTML = '';
+  if (data.length === 0) {
+    cont.innerHTML = '<p style="color:var(--muted)">No se encontraron libros.</p>';
+    return;
+  }
+  data.forEach(libro => {
+    const no = libro['No.'] || libro['No'] || '';
+    const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+    const autor = libro['Autor'] || libro['Author'] || '';
+    const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
+    const calificacion = libro['Calificación'] || libro['Estrellas'] || libro['Stars'] || '';
+    const generoChips = genero
+      ? genero.split(',').map(g => `<span class="genre-chip">${escapeHtml(g.trim())}</span>`).join(' ')
+      : '';
+    const starsHtml = calificacion
+      ? `<span class="lista-stars">${'★'.repeat(Number(calificacion))}</span>`
+      : '';
+    const div = document.createElement('div');
+    div.className = 'lista-card';
+    div.innerHTML = `
+      <div class="lista-card-no">${escapeHtml(no)}</div>
+      <div class="lista-card-body">
+        <div class="lista-card-titulo">${escapeHtml(titulo)}</div>
+        <div class="lista-card-autor">${escapeHtml(autor)}</div>
+        <div class="lista-card-meta">${generoChips} ${starsHtml}</div>
+      </div>
+    `;
+    div.addEventListener('click', () => showDetalle(libro));
+    cont.appendChild(div);
+  });
+}
+
+window.addEventListener('resize', () => {
+  if (ultimaData.length > 0) mostrarTabla(ultimaData);
+});
 
 function llenarSelectGeneros(data){
   const select = document.getElementById('generoSelect');
@@ -112,28 +162,24 @@ function mostrarTarjetas(data){
   const cont = document.getElementById('tarjetasLibros');
   cont.innerHTML = '';
   if(data.length === 0){
-    cont.innerHTML = '<p style="color:var(--muted)">No se encontraron libros en este g\u00e9nero.</p>';
+    cont.innerHTML = '<p style="color:var(--muted)">No se encontraron libros en este género.</p>';
     return;
   }
   data.forEach(libro => {
-    const titulo = libro['T\u00edtulo'] || libro['Titulo'] || libro['Title'] || '';
+    const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
     const autor = libro['Autor'] || libro['Author'] || '';
-    const genero = libro['G\u00e9nero'] || libro['Genero'] || libro['Genre'] || '';
+    const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
     const flags = libro['Flags'] || '';
-    const estrellas = libro['Estrellas'] || libro['Calificaci\u00f3n'] || libro['Stars'] || '';
-    const resena = libro['Rese\u00f1a'] || libro['Resena'] || libro['Review'] || '';
+    const estrellas = libro['Estrellas'] || libro['Stars'] || '';
 
     const div = document.createElement('div');
     div.className = 'card';
     div.innerHTML = `
-      <div class="card-header">
-        <strong>${escapeHtml(titulo)}</strong>
-        ${estrellas ? `<span class="card-stars">${'\u2605'.repeat(Number(estrellas))}</span>` : ''}
-      </div>
-      <small class="card-autor">${escapeHtml(autor)}</small>
-      <em class="card-genero">${escapeHtml(genero)}</em>
-      ${resena ? `<p class="card-resena">${escapeHtml(resena)}</p>` : ''}
-      ${flags ? `<div><span class="flag-tag">${escapeHtml(flags)}</span></div>` : ''}
+      <strong>${escapeHtml(titulo)}</strong><br>
+      <small>${escapeHtml(autor)}</small><br>
+      <em>${escapeHtml(genero)}</em><br>
+      ${flags ? `<span class="flag-tag">${escapeHtml(flags)}</span><br>` : ''}
+      ${estrellas ? `<span class="stars">${"⭐".repeat(Number(estrellas))}</span>` : ''}
     `;
     div.addEventListener('click', () => showDetalle(libro));
     cont.appendChild(div);
