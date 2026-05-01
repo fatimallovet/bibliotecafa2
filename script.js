@@ -232,7 +232,6 @@ function mostrarTarjetas(data){
     const autor = libro['Autor'] || libro['Author'] || '';
     const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
     const flags = libro['Flags'] || '';
-    const resena = libro['Reseña'] || libro['Resena'] || libro['Review'] || '';
     const estrellasRaw = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
     const numEstrellas = parseInt(estrellasRaw, 10);
     const estrellasHtml = numEstrellas > 0 ? `<span class="card-stars">${'★'.repeat(numEstrellas)}</span>` : '';
@@ -244,9 +243,8 @@ function mostrarTarjetas(data){
         <strong>${escapeHtml(titulo)}</strong>
         ${estrellasHtml}
       </div>
-      <small class="card-autor">${escapeHtml(autor)}</small>
-      <em class="card-genero">${escapeHtml(genero)}</em>
-      ${resena ? `<p class="card-resena">${escapeHtml(resena)}</p>` : ''}
+      <small>${escapeHtml(autor)}</small><br>
+      <em>${escapeHtml(genero)}</em><br>
       ${flags ? `<span class="flag-tag">${escapeHtml(flags)}</span>` : ''}
     `;
     div.addEventListener('click', () => showDetalle(libro));
@@ -256,29 +254,39 @@ function mostrarTarjetas(data){
 
 
 // Botón libro random
-document.getElementById('btnRandom').addEventListener('click', ()=>{
+function mostrarLibroRandom() {
   if(libros.length === 0) return;
-  const r = libros[Math.floor(Math.random()*libros.length)];
+  const r = libros[Math.floor(Math.random() * libros.length)];
   const titulo = r['Título'] || r['Titulo'] || r['Title'] || '';
   const autor = r['Autor'] || r['Author'] || '';
   const genero = r['Género'] || r['Genero'] || r['Genre'] || '';
   const flags = r['Flags'] || '';
-  const estrellas = r['Estrellas'] || r['Stars'] || '';
+  const tono = r['Tono'] || r['Tone'] || '';
+  const ritmo = r['Ritmo'] || '';
+  const publico = r['Público'] || r['Publico'] || '';
+  const resena = r['Reseña'] || r['Resena'] || r['Review'] || '';
+  const estrellasRaw = getCampo(r, 'Calificación', 'Estrellas', 'Stars');
+  const numEstrellas = parseInt(estrellasRaw, 10);
 
   const div = document.getElementById('randomLibro');
   div.innerHTML = `
-    <div class="random-card">
-      <h3>${escapeHtml(titulo)}</h3>
-      <p><strong>${escapeHtml(autor)}</strong></p>
-      <p><em>${escapeHtml(genero)}</em></p>
-      ${flags ? `<span class="flag-tag">${escapeHtml(flags)}</span><br>` : ''}
-      ${estrellas ? `<span class="stars">${"⭐".repeat(Number(estrellas))}</span>` : ''}
+    <div class="random-card-full">
+      <div class="random-header">
+        <h3>${escapeHtml(titulo)}</h3>
+        ${numEstrellas > 0 ? `<span class="random-stars">${'★'.repeat(numEstrellas)}</span>` : ''}
+      </div>
+      <p class="random-autor">${escapeHtml(autor)}</p>
+      <p class="random-genero">${escapeHtml(genero)}</p>
+      ${tono ? `<p class="random-meta"><span>Tono</span> ${escapeHtml(tono)}</p>` : ''}
+      ${ritmo ? `<p class="random-meta"><span>Ritmo</span> ${escapeHtml(ritmo)}</p>` : ''}
+      ${publico ? `<p class="random-meta"><span>Público</span> ${escapeHtml(publico)}</p>` : ''}
+      ${flags ? `<p><span class="flag-tag">${escapeHtml(flags)}</span></p>` : ''}
+      ${resena ? `<p class="random-resena">${escapeHtml(resena)}</p>` : ''}
     </div>
   `;
+}
 
-  // Al hacer clic en el libro random, mostrar el detalle completo
-  div.querySelector('.random-card').addEventListener('click', ()=> showDetalle(r));
-});
+document.getElementById('btnRandom').addEventListener('click', mostrarLibroRandom);
 
 // --- Buscador (ahora ignora acentos) ---
 const inputBusqueda = document.getElementById('busqueda');
@@ -431,6 +439,8 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     const target = btn.dataset.tab;
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.getElementById(target).classList.add('active');
+
+    if (target === 'tabRandom') mostrarLibroRandom();
   });
 });
 

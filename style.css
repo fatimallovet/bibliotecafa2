@@ -834,30 +834,75 @@ footer {
   padding-top: 1px;
 }
 
-/* ── Tarjeta géneros: reseña recortada ───────────────── */
-.card-autor {
-  display: block;
-  font-size: 0.82rem;
-  color: var(--muted);
-  margin-bottom: 2px;
+/* ── Tarjeta random completa ─────────────────────────── */
+.random-card-full {
+  background: var(--card);
+  border: 1px solid rgba(16,20,34,0.08);
+  border-radius: 14px;
+  padding: 24px 28px;
+  max-width: 540px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.07);
 }
 
-.card-genero {
-  display: block;
-  font-style: normal;
-  font-size: 0.75rem;
-  color: var(--accent);
-  font-weight: 500;
+.random-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 6px;
 }
 
-.card-resena {
-  font-size: 0.78rem;
-  line-height: 1.55;
+.random-header h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text);
+  margin: 0;
+}
+
+.random-stars {
+  color: #BA7517;
+  font-size: 1rem;
+  letter-spacing: 2px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding-top: 3px;
+}
+
+.random-autor {
+  font-size: 0.9rem;
+  font-weight: 500;
   color: var(--muted);
-  margin: 0 0 6px 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  margin: 0 0 2px;
+}
+
+.random-genero {
+  font-size: 0.82rem;
+  color: var(--accent);
+  font-weight: 500;
+  margin: 0 0 12px;
+}
+
+.random-meta {
+  font-size: 0.82rem;
+  color: var(--text);
+  margin: 0 0 4px;
+}
+
+.random-meta span {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin-right: 6px;
+}
+
+.random-resena {
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: var(--text);
+  margin: 14px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid rgba(16,20,34,0.07);
 }
