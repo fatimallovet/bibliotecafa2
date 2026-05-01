@@ -67,7 +67,7 @@ function mostrarTabla(data) {
 }
 
 function mostrarFilasTabla(data) {
-  document.getElementById('listaCards').style.display = 'none';
+  const listaCardsEl = document.getElementById('listaCards'); if(listaCardsEl) listaCardsEl.style.display = 'none';
   document.querySelector('.tabla-wrapper').style.display = '';
   const tbody = document.querySelector("#tablaLibros tbody");
   tbody.innerHTML = "";
@@ -97,7 +97,7 @@ function mostrarFilasTabla(data) {
 }
 
 function mostrarTarjetasLista(data) {
-  document.querySelector('.tabla-wrapper').style.display = 'none';
+  const tablaWrapperEl = document.querySelector('.tabla-wrapper'); if(tablaWrapperEl) tablaWrapperEl.style.display = 'none';
   const cont = document.getElementById('listaCards');
   cont.style.display = '';
   cont.innerHTML = '';
@@ -153,7 +153,7 @@ function librosFiltradosPorGenero() {
 }
 
 function renderGeneroBtns() {
-  const cont = document.getElementById('generoBtns');
+  const cont = document.getElementById('generoBtns'); if(!cont) return;
   const resultado = librosFiltradosPorGenero();
 
   // Géneros disponibles dado el filtro actual (para desactivar los que no aplican)
