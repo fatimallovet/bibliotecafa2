@@ -936,3 +936,156 @@ footer {
   .mood-icon { font-size: 1.8rem; }
   .mood-label { font-size: 0.78rem; }
 }
+
+/* ── Random: ficha completa ──────────────────────────── */
+.random-card-full {
+  background: var(--card);
+  border: 1px solid rgba(16,20,34,0.08);
+  border-radius: 14px;
+  padding: 24px 28px;
+  max-width: 540px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+}
+
+.random-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.random-header h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text);
+  margin: 0;
+}
+
+.random-stars {
+  color: #BA7517;
+  font-size: 1rem;
+  letter-spacing: 2px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding-top: 3px;
+}
+
+.random-autor {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--muted);
+  margin: 0 0 2px;
+}
+
+.random-genero {
+  font-size: 0.82rem;
+  color: var(--accent);
+  font-weight: 500;
+  margin: 0 0 12px;
+}
+
+.random-meta {
+  font-size: 0.82rem;
+  color: var(--text);
+  margin: 0 0 4px;
+}
+
+.random-meta span {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin-right: 6px;
+}
+
+.random-resena {
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: var(--text);
+  margin: 14px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid rgba(16,20,34,0.07);
+}
+
+/* ── Sentimiento: grid de estados de ánimo ───────────── */
+.sentimiento-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.sentimiento-btn {
+  font-family: inherit;
+  background: var(--card);
+  border: 1px solid rgba(16,20,34,0.08);
+  border-radius: 16px;
+  padding: 24px 12px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  transition: all .2s ease;
+  text-align: center;
+}
+
+.sentimiento-btn:hover {
+  border-color: var(--accent);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+}
+
+.mood-icon { font-size: 2.2rem; line-height: 1; }
+
+.mood-label {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+/* Resultado sentimiento */
+.sentimiento-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.btn-volver {
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 500;
+  padding: 8px 18px;
+  border-radius: 100px;
+  border: 1px solid rgba(16,20,34,0.15);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .18s ease;
+}
+
+.btn-volver:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Tarjetas en sentimiento — reutiliza .tarjetas y .card */
+/* card-top, card-autor, card-genero, card-resena ya definidos arriba */
+
+@media (max-width: 600px) {
+  .sentimiento-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .sentimiento-btn { padding: 18px 10px; }
+  .mood-icon { font-size: 1.8rem; }
+  .mood-label { font-size: 0.78rem; }
+  .random-card-full { padding: 18px; }
+}

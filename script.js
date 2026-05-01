@@ -254,29 +254,38 @@ function mostrarTarjetas(data){
 
 
 // Botón libro random
-document.getElementById('btnRandom').addEventListener('click', ()=>{
-  if(libros.length === 0) return;
-  const r = libros[Math.floor(Math.random()*libros.length)];
-  const titulo = r['Título'] || r['Titulo'] || r['Title'] || '';
-  const autor = r['Autor'] || r['Author'] || '';
-  const genero = r['Género'] || r['Genero'] || r['Genre'] || '';
-  const flags = r['Flags'] || '';
-  const estrellas = r['Estrellas'] || r['Stars'] || '';
+function mostrarLibroRandom() {
+  if (libros.length === 0) return;
+  const r = libros[Math.floor(Math.random() * libros.length)];
+  const titulo   = r['Título'] || r['Titulo'] || r['Title'] || '';
+  const autor    = r['Autor'] || r['Author'] || '';
+  const genero   = r['Género'] || r['Genero'] || r['Genre'] || '';
+  const tono     = r['Tono'] || r['Tone'] || '';
+  const ritmo    = r['Ritmo'] || '';
+  const publico  = r['Público'] || r['Publico'] || '';
+  const resena   = r['Reseña'] || r['Resena'] || r['Review'] || '';
+  const flags    = r['Flags'] || '';
+  const estrellasRaw = getCampo(r, 'Calificación', 'Estrellas', 'Stars');
+  const numEstrellas = parseInt(estrellasRaw, 10);
 
-  const div = document.getElementById('randomLibro');
-  div.innerHTML = `
-    <div class="random-card">
-      <h3>${escapeHtml(titulo)}</h3>
-      <p><strong>${escapeHtml(autor)}</strong></p>
-      <p><em>${escapeHtml(genero)}</em></p>
-      ${flags ? `<span class="flag-tag">${escapeHtml(flags)}</span><br>` : ''}
-      ${estrellas ? `<span class="stars">${"⭐".repeat(Number(estrellas))}</span>` : ''}
+  document.getElementById('randomLibro').innerHTML = `
+    <div class="random-card-full">
+      <div class="random-header">
+        <h3>${escapeHtml(titulo)}</h3>
+        ${numEstrellas > 0 ? `<span class="random-stars">${'★'.repeat(numEstrellas)}</span>` : ''}
+      </div>
+      <p class="random-autor">${escapeHtml(autor)}</p>
+      <p class="random-genero">${escapeHtml(genero)}</p>
+      ${tono    ? `<p class="random-meta"><span>Tono</span> ${escapeHtml(tono)}</p>` : ''}
+      ${ritmo   ? `<p class="random-meta"><span>Ritmo</span> ${escapeHtml(ritmo)}</p>` : ''}
+      ${publico ? `<p class="random-meta"><span>Público</span> ${escapeHtml(publico)}</p>` : ''}
+      ${flags && flags.toLowerCase() !== 'ninguno' ? `<p><span class="flag-tag">${escapeHtml(flags)}</span></p>` : ''}
+      ${resena  ? `<p class="random-resena">${escapeHtml(resena)}</p>` : ''}
     </div>
   `;
+}
 
-  // Al hacer clic en el libro random, mostrar el detalle completo
-  div.querySelector('.random-card').addEventListener('click', ()=> showDetalle(r));
-});
+document.getElementById('btnRandom').addEventListener('click', mostrarLibroRandom);
 
 // --- Buscador (ahora ignora acentos) ---
 const inputBusqueda = document.getElementById('busqueda');
@@ -429,8 +438,11 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     const target = btn.dataset.tab;
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.getElementById(target).classList.add('active');
+
+    if (target === 'tabRandom') mostrarLibroRandom();
   });
 });
+
 
 
 
@@ -449,9 +461,6 @@ const MOODS = {
   ligero:  { generos: ['juvenil','contemporáneo','ficción contemporánea','comedia','humor','infantil'], tonos: ['ligero','tierno','cálido','humorístico','optimista'] },
 };
 
-let moodActual = null;
-let librosMood = [];
-
 function librosParaMood(mood) {
   const { generos, tonos } = MOODS[mood];
   return libros.filter(l => {
@@ -463,57 +472,50 @@ function librosParaMood(mood) {
   });
 }
 
-function mostrarResultadoMood(libro) {
-  const titulo  = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
-  const autor   = libro['Autor'] || libro['Author'] || '';
-  const genero  = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
-  const tono    = libro['Tono'] || '';
-  const ritmo   = libro['Ritmo'] || '';
-  const publico = libro['Público'] || libro['Publico'] || '';
-  const resena  = libro['Reseña'] || libro['Resena'] || libro['Review'] || '';
-  const flags   = libro['Flags'] || '';
-  const estrellasRaw = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
-  const numEstrellas = parseInt(estrellasRaw, 10);
+function mostrarTarjetasMood(data) {
+  const cont = document.getElementById('sentimientoTarjetas');
+  cont.innerHTML = '';
+  data.forEach(libro => {
+    const titulo  = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+    const autor   = libro['Autor'] || libro['Author'] || '';
+    const genero  = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
+    const flags   = libro['Flags'] || '';
+    const resena  = libro['Reseña'] || libro['Resena'] || libro['Review'] || '';
+    const estrellasRaw = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
+    const numEstrellas = parseInt(estrellasRaw, 10);
+    const estrellasHtml = numEstrellas > 0 ? `<span class="card-stars">${'★'.repeat(numEstrellas)}</span>` : '';
 
-  document.getElementById('sentimientoCard').innerHTML = `
-    <div class="random-card-full">
-      <div class="random-header">
-        <h3>${escapeHtml(titulo)}</h3>
-        ${numEstrellas > 0 ? `<span class="random-stars">${'★'.repeat(numEstrellas)}</span>` : ''}
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.innerHTML = `
+      <div class="card-top">
+        <strong>${escapeHtml(titulo)}</strong>
+        ${estrellasHtml}
       </div>
-      <p class="random-autor">${escapeHtml(autor)}</p>
-      <p class="random-genero">${escapeHtml(genero)}</p>
-      ${tono    ? `<p class="random-meta"><span>Tono</span> ${escapeHtml(tono)}</p>` : ''}
-      ${ritmo   ? `<p class="random-meta"><span>Ritmo</span> ${escapeHtml(ritmo)}</p>` : ''}
-      ${publico ? `<p class="random-meta"><span>Público</span> ${escapeHtml(publico)}</p>` : ''}
-      ${flags && flags !== 'ninguno' ? `<p><span class="flag-tag">${escapeHtml(flags)}</span></p>` : ''}
-      ${resena  ? `<p class="random-resena">${escapeHtml(resena)}</p>` : ''}
-    </div>
-  `;
-
-  document.getElementById('sentimientoGrid').style.display = 'none';
-  document.getElementById('sentimientoResultado').style.display = '';
-}
-
-function elegirRandom(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
+      <small class="card-autor">${escapeHtml(autor)}</small>
+      <em class="card-genero">${escapeHtml(genero)}</em>
+      ${resena ? `<p class="card-resena">${escapeHtml(resena)}</p>` : ''}
+      ${flags && flags.toLowerCase() !== 'ninguno' ? `<span class="flag-tag">${escapeHtml(flags)}</span>` : ''}
+    `;
+    div.addEventListener('click', () => showDetalle(libro));
+    cont.appendChild(div);
+  });
+  document.getElementById('sentimientoContador').textContent =
+    `${data.length} libro${data.length !== 1 ? 's' : ''} para este momento`;
 }
 
 document.querySelectorAll('.sentimiento-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    moodActual = btn.dataset.mood;
-    librosMood = librosParaMood(moodActual);
-    if (librosMood.length === 0) {
+    const mood = btn.dataset.mood;
+    const resultado = librosParaMood(mood);
+    if (resultado.length === 0) {
       alert('No encontré libros para ese estado de ánimo 😔');
       return;
     }
-    mostrarResultadoMood(elegirRandom(librosMood));
+    mostrarTarjetasMood(resultado);
+    document.getElementById('sentimientoGrid').style.display = 'none';
+    document.getElementById('sentimientoResultado').style.display = '';
   });
-});
-
-document.getElementById('btnOtro').addEventListener('click', () => {
-  if (librosMood.length === 0) return;
-  mostrarResultadoMood(elegirRandom(librosMood));
 });
 
 document.getElementById('btnVolver').addEventListener('click', () => {
