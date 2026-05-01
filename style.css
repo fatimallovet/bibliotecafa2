@@ -833,3 +833,31 @@ footer {
   flex-shrink: 0;
   padding-top: 1px;
 }
+
+/* ── Tarjeta géneros: reseña recortada ───────────────── */
+.card-autor {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+.card-genero {
+  display: block;
+  font-style: normal;
+  font-size: 0.75rem;
+  color: var(--accent);
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.card-resena {
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 0 0 6px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

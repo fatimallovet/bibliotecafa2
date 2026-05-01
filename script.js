@@ -232,6 +232,7 @@ function mostrarTarjetas(data){
     const autor = libro['Autor'] || libro['Author'] || '';
     const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
     const flags = libro['Flags'] || '';
+    const resena = libro['Reseña'] || libro['Resena'] || libro['Review'] || '';
     const estrellasRaw = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
     const numEstrellas = parseInt(estrellasRaw, 10);
     const estrellasHtml = numEstrellas > 0 ? `<span class="card-stars">${'★'.repeat(numEstrellas)}</span>` : '';
@@ -243,8 +244,9 @@ function mostrarTarjetas(data){
         <strong>${escapeHtml(titulo)}</strong>
         ${estrellasHtml}
       </div>
-      <small>${escapeHtml(autor)}</small><br>
-      <em>${escapeHtml(genero)}</em><br>
+      <small class="card-autor">${escapeHtml(autor)}</small>
+      <em class="card-genero">${escapeHtml(genero)}</em>
+      ${resena ? `<p class="card-resena">${escapeHtml(resena)}</p>` : ''}
       ${flags ? `<span class="flag-tag">${escapeHtml(flags)}</span>` : ''}
     `;
     div.addEventListener('click', () => showDetalle(libro));
