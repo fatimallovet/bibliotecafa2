@@ -161,24 +161,32 @@ function mostrarTarjetas(data){
   const cont = document.getElementById('tarjetasLibros');
   cont.innerHTML = '';
   if(data.length === 0){
-    cont.innerHTML = '<p style="color:var(--muted)">No se encontraron libros en este género.</p>';
+    cont.innerHTML = '<p style="color:var(--muted)">No se encontraron libros en este g\u00e9nero.</p>';
     return;
   }
   data.forEach(libro => {
-    const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+    const titulo = libro['T\u00edtulo'] || libro['Titulo'] || libro['Title'] || '';
     const autor = libro['Autor'] || libro['Author'] || '';
-    const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
+    const genero = libro['G\u00e9nero'] || libro['Genero'] || libro['Genre'] || '';
     const flags = libro['Flags'] || '';
-    const estrellas = libro['Estrellas'] || libro['Stars'] || '';
+    const estrellas = libro['Estrellas'] || libro['Calificaci\u00f3n'] || libro['Stars'] || '';
+    const etiquetas = libro['Etiquetas'] || libro['Tags'] || '';
+
+    const etiquetasHtml = etiquetas
+      ? etiquetas.split(',').map(e => `<span class="etiqueta-tag">${escapeHtml(e.trim())}</span>`).join('')
+      : '';
 
     const div = document.createElement('div');
     div.className = 'card';
     div.innerHTML = `
-      <strong>${escapeHtml(titulo)}</strong><br>
-      <small>${escapeHtml(autor)}</small><br>
-      <em>${escapeHtml(genero)}</em><br>
-      ${flags ? `<span class="flag-tag">${escapeHtml(flags)}</span><br>` : ''}
-      ${estrellas ? `<span class="stars">${"⭐".repeat(Number(estrellas))}</span>` : ''}
+      <div class="card-header">
+        <strong>${escapeHtml(titulo)}</strong>
+        ${estrellas ? `<span class="card-stars">${'\u2605'.repeat(Number(estrellas))}</span>` : ''}
+      </div>
+      <small class="card-autor">${escapeHtml(autor)}</small>
+      <em class="card-genero">${escapeHtml(genero)}</em>
+      ${etiquetasHtml ? `<div class="card-etiquetas">${etiquetasHtml}</div>` : ''}
+      ${flags ? `<div><span class="flag-tag">${escapeHtml(flags)}</span></div>` : ''}
     `;
     div.addEventListener('click', () => showDetalle(libro));
     cont.appendChild(div);
