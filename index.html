@@ -218,6 +218,27 @@
     </div>
   </div>
 
+
+  <!-- Estante flotante -->
+  <div id="estanteBtn" class="estante-fab" style="display:none">
+    <span class="estante-fab-icon">🔖</span>
+    <span id="estanteCount" class="estante-count">0</span>
+  </div>
+
+  <div id="estantePanel" class="estante-panel hidden">
+    <div class="estante-panel-header">
+      <strong>Mi estante</strong>
+      <button id="estanteCerrar" class="estante-cerrar">✕</button>
+    </div>
+    <ul id="estanteLista" class="estante-lista"></ul>
+    <div class="estante-actions">
+      <button id="btnGenerarImagen" class="btn-estante-primary">🖼️ Crear imagen para compartir</button>
+      <button id="btnVaciarEstante" class="btn-estante-secondary">🗑️ Vaciar estante</button>
+    </div>
+  </div>
+
+  <!-- Canvas oculto para generar imagen -->
+  <canvas id="estanteCanvas" style="display:none"></canvas>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="script.js?v=1.0.6"></script>
 </body>
