@@ -1094,15 +1094,105 @@ footer {
   .random-card-full { padding: 18px; }
 }
 
-/* ── Estante flotante ────────────────────────────────── */
-.estante-fab {
+/* ── Botón palomita (antojo) ─────────────────────────── */
+.btn-antojo {
+  background: none;
+  border: 1.5px solid #ccc;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #ccc;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all .18s ease;
+  line-height: 1;
+}
+.btn-antojo:hover {
+  border-color: #1D9E75;
+  color: #1D9E75;
+  transform: scale(1.1);
+}
+.btn-antojo.guardado {
+  background: #1D9E75;
+  border-color: #1D9E75;
+  color: white;
+}
+.col-antojo {
+  width: 36px;
+  text-align: center;
+  padding: 0 4px !important;
+}
+.lista-card .btn-antojo { align-self: center; }
+.card .btn-antojo {
+  display: block;
+  margin-top: 8px;
+}
+
+/* Botones en modal */
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0,0,0,0.07);
+  flex-wrap: wrap;
+}
+.btn-modal-antojo {
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 100px;
+  border: 1.5px solid #ccc;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all .18s ease;
+}
+.btn-modal-antojo .check-icon { font-weight: 700; }
+.btn-modal-antojo:hover {
+  border-color: #1D9E75;
+  color: #1D9E75;
+}
+.btn-modal-antojo.guardado {
+  background: #1D9E75;
+  border-color: #1D9E75;
+  color: white;
+}
+.btn-modal-compartir {
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 100px;
+  border: 1.5px solid var(--border-md, rgba(0,0,0,0.13));
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .18s ease;
+}
+.btn-modal-compartir:hover {
+  border-color: var(--accent, #1D9E75);
+  color: var(--accent, #1D9E75);
+}
+
+/* ── FAB Antojos ─────────────────────────────────────── */
+.antojos-fab {
   position: fixed;
   bottom: 28px;
   right: 28px;
   width: 58px;
   height: 58px;
   border-radius: 50%;
-  background: var(--accent, #1D9E75);
+  background: #1D9E75;
   color: white;
   display: flex;
   align-items: center;
@@ -1110,18 +1200,15 @@ footer {
   cursor: pointer;
   box-shadow: 0 4px 20px rgba(29,158,117,0.4);
   z-index: 50;
-  transition: transform .2s, box-shadow .2s;
   border: none;
-  font-size: 1.4rem;
-  gap: 0;
+  font-size: 1.5rem;
+  transition: transform .2s, box-shadow .2s;
 }
-
-.estante-fab:hover {
+.antojos-fab:hover {
   transform: scale(1.08);
   box-shadow: 0 6px 24px rgba(29,158,117,0.5);
 }
-
-.estante-count {
+.antojos-count {
   position: absolute;
   top: -4px;
   right: -4px;
@@ -1129,17 +1216,18 @@ footer {
   color: white;
   font-size: 0.7rem;
   font-weight: 700;
-  width: 20px;
+  min-width: 20px;
   height: 20px;
-  border-radius: 50%;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0 4px;
   border: 2px solid white;
 }
 
-/* Panel desplegable */
-.estante-panel {
+/* ── Panel antojos ───────────────────────────────────── */
+.antojos-panel {
   position: fixed;
   bottom: 96px;
   right: 28px;
@@ -1155,15 +1243,12 @@ footer {
   overflow: hidden;
   animation: slideUpPanel .2s ease;
 }
-
-.estante-panel.hidden { display: none; }
-
+.antojos-panel.hidden { display: none; }
 @keyframes slideUpPanel {
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-
-.estante-panel-header {
+.antojos-panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1173,8 +1258,7 @@ footer {
   font-weight: 600;
   flex-shrink: 0;
 }
-
-.estante-cerrar {
+.antojos-cerrar {
   background: none;
   border: none;
   font-size: 1rem;
@@ -1183,31 +1267,24 @@ footer {
   padding: 2px 6px;
   border-radius: 4px;
 }
-.estante-cerrar:hover { color: var(--text, #1a1a1a); }
-
-.estante-lista {
+.antojos-cerrar:hover { color: var(--text, #1a1a1a); }
+.antojos-lista {
   list-style: none;
   margin: 0;
   padding: 8px 0;
   overflow-y: auto;
   flex: 1;
 }
-
-.estante-item {
+.antojos-item {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
   transition: background .12s;
 }
-.estante-item:hover { background: rgba(0,0,0,0.03); }
-
-.estante-item-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.estante-item-titulo {
+.antojos-item:hover { background: rgba(0,0,0,0.03); }
+.antojos-item-info { flex: 1; min-width: 0; }
+.antojos-item-titulo {
   display: block;
   font-size: 0.85rem;
   font-weight: 600;
@@ -1216,57 +1293,40 @@ footer {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
-.estante-item-autor {
+.antojos-item-autor {
   display: block;
   font-size: 0.75rem;
   color: var(--muted, #6b6b6b);
 }
-
-.estante-item-stars {
+.antojos-item-stars {
   display: block;
   font-size: 0.72rem;
   color: #BA7517;
 }
-
-.estante-item-remove {
+.antojos-item-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.antojos-item-share,
+.antojos-item-remove {
   background: none;
   border: none;
-  font-size: 0.8rem;
-  color: var(--muted, #6b6b6b);
+  font-size: 0.9rem;
   cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
-  flex-shrink: 0;
-  transition: color .12s;
+  padding: 4px 6px;
+  border-radius: 6px;
+  color: var(--muted, #6b6b6b);
+  transition: all .12s;
 }
-.estante-item-remove:hover { color: #c0392b; }
-
-.estante-actions {
+.antojos-item-share:hover { background: rgba(29,158,117,0.1); color: #1D9E75; }
+.antojos-item-remove:hover { background: rgba(192,57,43,0.1); color: #c0392b; }
+.antojos-footer-actions {
   padding: 12px 16px;
   border-top: 1px solid rgba(0,0,0,0.07);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
   flex-shrink: 0;
 }
-
-.btn-estante-primary {
-  font-family: inherit;
-  font-size: 0.85rem;
-  font-weight: 600;
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: none;
-  background: var(--accent, #1D9E75);
-  color: white;
-  cursor: pointer;
-  transition: filter .15s;
-  text-align: center;
-}
-.btn-estante-primary:hover { filter: brightness(1.1); }
-
-.btn-estante-secondary {
+.btn-antojos-secondary {
   font-family: inherit;
   font-size: 0.82rem;
   padding: 8px 14px;
@@ -1275,56 +1335,12 @@ footer {
   background: transparent;
   color: var(--muted, #6b6b6b);
   cursor: pointer;
-  transition: border-color .15s, color .15s;
+  width: 100%;
+  transition: all .15s;
 }
-.btn-estante-secondary:hover { border-color: #c0392b; color: #c0392b; }
-
-/* Botón bookmark en tarjetas y tabla */
-.btn-shelf {
-  background: none;
-  border: none;
-  font-size: 1rem;
-  cursor: pointer;
-  opacity: 0.35;
-  transition: opacity .15s, transform .15s;
-  padding: 2px 4px;
-  line-height: 1;
-  display: inline-block;
-  flex-shrink: 0;
-}
-.btn-shelf:hover { opacity: 0.8; transform: scale(1.15); }
-.btn-shelf.en-estante { opacity: 1; }
-
-/* En tabla: columna estrecha */
-.col-shelf {
-  width: 36px;
-  text-align: center;
-  padding: 0 4px !important;
-}
-
-/* En lista-card (móvil) */
-.lista-card .btn-shelf {
-  align-self: center;
-  font-size: 1.1rem;
-}
-
-/* En tarjeta de géneros */
-.card .btn-shelf {
-  display: block;
-  margin-top: 6px;
-  text-align: right;
-}
+.btn-antojos-secondary:hover { border-color: #c0392b; color: #c0392b; }
 
 @media (max-width: 600px) {
-  .estante-panel {
-    right: 12px;
-    bottom: 90px;
-    width: calc(100vw - 24px);
-  }
-  .estante-fab {
-    right: 16px;
-    bottom: 20px;
-    width: 52px;
-    height: 52px;
-  }
+  .antojos-panel { right: 12px; bottom: 90px; width: calc(100vw - 24px); }
+  .antojos-fab { right: 16px; bottom: 20px; width: 52px; height: 52px; }
 }

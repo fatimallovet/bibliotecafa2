@@ -219,26 +219,25 @@
   </div>
 
 
-  <!-- Estante flotante -->
-  <div id="estanteBtn" class="estante-fab" style="display:none">
-    <span class="estante-fab-icon">🧺</span>
-    <span id="estanteCount" class="estante-count">0</span>
-  </div>
+  <!-- Panel de Antojos flotante -->
+  <button id="antojosBtn" class="antojos-fab" style="display:none" aria-label="Mis antojos">
+    <span class="antojos-fab-icon">🤤</span>
+    <span id="antojosCount" class="antojos-count">0</span>
+  </button>
 
-  <div id="estantePanel" class="estante-panel hidden">
-    <div class="estante-panel-header">
-      <strong>Mi canasta</strong>
-      <button id="estanteCerrar" class="estante-cerrar">✕</button>
+  <div id="antojosPanel" class="antojos-panel hidden">
+    <div class="antojos-panel-header">
+      <strong>Mis antojos</strong>
+      <button id="antojosCerrar" class="antojos-cerrar">✕</button>
     </div>
-    <ul id="estanteLista" class="estante-lista"></ul>
-    <div class="estante-actions">
-      <button id="btnGenerarImagen" class="btn-estante-primary">🖼️ Crear imagen para compartir</button>
-      <button id="btnVaciarEstante" class="btn-estante-secondary">🗑️ Vaciar canasta</button>
+    <ul id="antojosLista" class="antojos-lista"></ul>
+    <div class="antojos-footer-actions">
+      <button id="btnVaciarAntojos" class="btn-antojos-secondary">🗑️ Vaciar</button>
     </div>
   </div>
 
   <!-- Canvas oculto para generar imagen -->
-  <canvas id="estanteCanvas" style="display:none"></canvas>
+  <canvas id="libroCanvas" style="display:none"></canvas>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="script.js?v=1.0.6"></script>
 </body>

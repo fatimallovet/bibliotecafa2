@@ -104,12 +104,12 @@ function mostrarFilasTabla(data) {
       <td>${escapeHtml(titulo)}</td>
       <td>${escapeHtml(autor)}</td>
       <td>${generoChips}</td>
-      <td class="col-shelf"><button class="btn-shelf ${estanteContiene(libro) ? 'en-estante' : ''}" title="Guardar en mi estante">🔖</button></td>
+      <td class="col-antojo"><button class="btn-antojo ${antojosContiene(libro) ? 'guardado' : ''}" title="Guardar en mis antojos">✓</button></td>
     `;
-    tr.querySelector('.btn-shelf').addEventListener('click', (e) => {
+    tr.querySelector('.btn-antojo').addEventListener('click', (e) => {
       e.stopPropagation();
-      toggleEstante(libro);
-      tr.querySelector('.btn-shelf').classList.toggle('en-estante', estanteContiene(libro));
+      toggleAntojos(libro);
+      tr.querySelector('.btn-antojo').classList.toggle('guardado', antojosContiene(libro));
     });
     tr.addEventListener('click', () => showDetalle(libro));
     tbody.appendChild(tr);
@@ -146,12 +146,12 @@ function mostrarTarjetasLista(data) {
         <div class="lista-card-autor">${escapeHtml(autor)}</div>
         <div class="lista-card-meta">${generoChips} ${starsHtml}</div>
       </div>
-      <button class="btn-shelf ${estanteContiene(libro) ? 'en-estante' : ''}" title="Guardar en mi estante">🔖</button>
+      <button class="btn-antojo ${antojosContiene(libro) ? 'guardado' : ''}" title="Guardar en mis antojos">✓</button>
     `;
-    div.querySelector('.btn-shelf').addEventListener('click', (e) => {
+    div.querySelector('.btn-antojo').addEventListener('click', (e) => {
       e.stopPropagation();
-      toggleEstante(libro);
-      div.querySelector('.btn-shelf').classList.toggle('en-estante', estanteContiene(libro));
+      toggleAntojos(libro);
+      div.querySelector('.btn-antojo').classList.toggle('guardado', antojosContiene(libro));
     });
     div.addEventListener('click', () => showDetalle(libro));
     cont.appendChild(div);
@@ -259,16 +259,16 @@ function mostrarTarjetas(data){
       <em>${escapeHtml(genero)}</em><br>
       ${flags ? `<span class="flag-tag">${escapeHtml(flags)}</span>` : ''}
     `;
-    const shelfBtn = document.createElement('button');
-    shelfBtn.className = 'btn-shelf' + (estanteContiene(libro) ? ' en-estante' : '');
-    shelfBtn.title = 'Guardar en mi estante';
-    shelfBtn.textContent = '🔖';
-    shelfBtn.addEventListener('click', (e) => {
+    const antojoBtn = document.createElement('button');
+    antojoBtn.className = 'btn-antojo' + (antojosContiene(libro) ? ' guardado' : '');
+    antojoBtn.title = 'Guardar en mis antojos';
+    antojoBtn.textContent = '✓';
+    antojoBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      toggleEstante(libro);
-      shelfBtn.classList.toggle('en-estante', estanteContiene(libro));
+      toggleAntojos(libro);
+      antojoBtn.classList.toggle('guardado', antojosContiene(libro));
     });
-    div.appendChild(shelfBtn);
+    div.appendChild(antojoBtn);
     div.addEventListener('click', () => showDetalle(libro));
     cont.appendChild(div);
   });
@@ -441,6 +441,34 @@ detalleContenido.innerHTML = `
 
 document.getElementById('cerrarModalInterno')
   .addEventListener('click', ()=> modal.classList.add('hidden'));
+
+  // Botones de acción en modal
+  const modalActions = document.createElement('div');
+  modalActions.className = 'modal-actions';
+
+  const btnModalAntojo = document.createElement('button');
+  btnModalAntojo.className = 'btn-modal-antojo' + (antojosContiene(libro) ? ' guardado' : '');
+  btnModalAntojo.innerHTML = antojosContiene(libro)
+    ? '<span class="check-icon">✓</span> En mis antojos'
+    : '<span class="check-icon">✓</span> Guardar en antojos';
+  btnModalAntojo.addEventListener('click', () => {
+    toggleAntojos(libro);
+    const guardado = antojosContiene(libro);
+    btnModalAntojo.className = 'btn-modal-antojo' + (guardado ? ' guardado' : '');
+    btnModalAntojo.innerHTML = guardado
+      ? '<span class="check-icon">✓</span> En mis antojos'
+      : '<span class="check-icon">✓</span> Guardar en antojos';
+  });
+
+  const btnModalCompartir = document.createElement('button');
+  btnModalCompartir.className = 'btn-modal-compartir';
+  btnModalCompartir.innerHTML = '🖼️ Compartir tarjeta';
+  btnModalCompartir.addEventListener('click', () => generarTarjetaLibro(libro));
+
+  modalActions.appendChild(btnModalAntojo);
+  modalActions.appendChild(btnModalCompartir);
+  document.querySelector('#detalleContenido .modal-body').appendChild(modalActions);
+
   modal.classList.remove('hidden');
 }
 
@@ -525,16 +553,16 @@ function mostrarTarjetasMood(data) {
       ${resena ? `<p class="card-resena">${escapeHtml(resena)}</p>` : ''}
       ${flags && flags.toLowerCase() !== 'ninguno' ? `<span class="flag-tag">${escapeHtml(flags)}</span>` : ''}
     `;
-    const shelfBtnM = document.createElement('button');
-    shelfBtnM.className = 'btn-shelf' + (estanteContiene(libro) ? ' en-estante' : '');
-    shelfBtnM.title = 'Guardar en mi estante';
-    shelfBtnM.textContent = '🔖';
-    shelfBtnM.addEventListener('click', (e) => {
+    const antojoM = document.createElement('button');
+    antojoM.className = 'btn-antojo' + (antojosContiene(libro) ? ' guardado' : '');
+    antojoM.title = 'Guardar en mis antojos';
+    antojoM.textContent = '✓';
+    antojoM.addEventListener('click', (e) => {
       e.stopPropagation();
-      toggleEstante(libro);
-      shelfBtnM.classList.toggle('en-estante', estanteContiene(libro));
+      toggleAntojos(libro);
+      antojoM.classList.toggle('guardado', antojosContiene(libro));
     });
-    div.appendChild(shelfBtnM);
+    div.appendChild(antojoM);
     div.addEventListener('click', () => showDetalle(libro));
     cont.appendChild(div);
   });
@@ -562,70 +590,70 @@ document.getElementById('btnVolver').addEventListener('click', () => {
 });
 
 // =====================================================
-// ESTANTE PERSONAL
+// ANTOJOS + GENERADOR DE TARJETA
 // =====================================================
-const ESTANTE_KEY = 'bibliofа_estante';
+const ANTOJOS_KEY = 'bibliofа_antojos';
 
-function estanteCargar() {
-  try { return JSON.parse(localStorage.getItem(ESTANTE_KEY) || '[]'); }
+function antojosCargar() {
+  try { return JSON.parse(localStorage.getItem(ANTOJOS_KEY) || '[]'); }
   catch { return []; }
 }
 
-function estanteGuardar(items) {
-  localStorage.setItem(ESTANTE_KEY, JSON.stringify(items));
+function antojosGuardar(items) {
+  localStorage.setItem(ANTOJOS_KEY, JSON.stringify(items));
 }
 
-function estanteContiene(libro) {
+function antojosContiene(libro) {
   const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
-  return estanteCargar().some(l => (l['Título'] || l['Titulo'] || l['Title'] || '') === titulo);
+  return antojosCargar().some(l => (l['Título'] || l['Titulo'] || l['Title'] || '') === titulo);
 }
 
-function toggleEstante(libro) {
-  let items = estanteCargar();
+function toggleAntojos(libro) {
+  let items = antojosCargar();
   const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
   const idx = items.findIndex(l => (l['Título'] || l['Titulo'] || l['Title'] || '') === titulo);
-  if (idx >= 0) {
-    items.splice(idx, 1);
-  } else {
-    items.push(libro);
-  }
-  estanteGuardar(items);
-  actualizarEstanteUI();
+  if (idx >= 0) items.splice(idx, 1);
+  else items.push(libro);
+  antojosGuardar(items);
+  actualizarAntojosUI();
 }
 
-function actualizarEstanteUI() {
-  const items = estanteCargar();
-  const count = items.length;
-  const fab = document.getElementById('estanteBtn');
-  const countEl = document.getElementById('estanteCount');
+function actualizarAntojosUI() {
+  const items = antojosCargar();
+  const fab = document.getElementById('antojosBtn');
+  const countEl = document.getElementById('antojosCount');
+  fab.style.display = items.length > 0 ? 'flex' : 'none';
+  countEl.textContent = items.length;
 
-  fab.style.display = count > 0 ? 'flex' : 'none';
-  countEl.textContent = count;
-
-  // Actualizar lista en el panel
-  const lista = document.getElementById('estanteLista');
+  const lista = document.getElementById('antojosLista');
   lista.innerHTML = '';
   items.forEach(libro => {
     const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
     const autor  = libro['Autor'] || libro['Author'] || '';
     const estrellasRaw = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
     const numEstrellas = parseInt(estrellasRaw, 10);
+
     const li = document.createElement('li');
-    li.className = 'estante-item';
+    li.className = 'antojos-item';
     li.innerHTML = `
-      <div class="estante-item-info">
-        <span class="estante-item-titulo">${escapeHtml(titulo)}</span>
-        <span class="estante-item-autor">${escapeHtml(autor)}</span>
-        ${numEstrellas > 0 ? `<span class="estante-item-stars">${'★'.repeat(numEstrellas)}</span>` : ''}
+      <div class="antojos-item-info">
+        <span class="antojos-item-titulo">${escapeHtml(titulo)}</span>
+        <span class="antojos-item-autor">${escapeHtml(autor)}</span>
+        ${numEstrellas > 0 ? `<span class="antojos-item-stars">${'★'.repeat(numEstrellas)}</span>` : ''}
       </div>
-      <button class="estante-item-remove" data-titulo="${escapeHtml(titulo)}" title="Quitar">✕</button>
+      <div class="antojos-item-actions">
+        <button class="antojos-item-share" title="Compartir tarjeta">🖼️</button>
+        <button class="antojos-item-remove" title="Quitar">✕</button>
+      </div>
     `;
-    li.querySelector('.estante-item-remove').addEventListener('click', () => {
-      toggleEstante(libro);
-      // refrescar botones de shelf visibles
-      document.querySelectorAll('.btn-shelf.en-estante').forEach(btn => {
-        const row = btn.closest('tr, .card, .lista-card');
-        if (row && row.textContent.includes(titulo)) btn.classList.remove('en-estante');
+    li.querySelector('.antojos-item-share').addEventListener('click', () => generarTarjetaLibro(libro));
+    li.querySelector('.antojos-item-remove').addEventListener('click', () => {
+      toggleAntojos(libro);
+      document.querySelectorAll('.btn-antojo').forEach(btn => {
+        const container = btn.closest('tr, .card, .lista-card');
+        if (container && container.textContent.includes(titulo)) {
+          btn.classList.remove('guardado');
+        }
       });
     });
     lista.appendChild(li);
@@ -633,114 +661,200 @@ function actualizarEstanteUI() {
 }
 
 // Abrir/cerrar panel
-document.getElementById('estanteBtn').addEventListener('click', () => {
-  document.getElementById('estantePanel').classList.toggle('hidden');
+document.getElementById('antojosBtn').addEventListener('click', () => {
+  document.getElementById('antojosPanel').classList.toggle('hidden');
 });
-document.getElementById('estanteCerrar').addEventListener('click', () => {
-  document.getElementById('estantePanel').classList.add('hidden');
+document.getElementById('antojosCerrar').addEventListener('click', () => {
+  document.getElementById('antojosPanel').classList.add('hidden');
 });
-
-// Vaciar
-document.getElementById('btnVaciarEstante').addEventListener('click', () => {
-  if (!confirm('¿Vaciar el estante?')) return;
-  localStorage.removeItem(ESTANTE_KEY);
-  actualizarEstanteUI();
-  document.querySelectorAll('.btn-shelf.en-estante').forEach(b => b.classList.remove('en-estante'));
+document.getElementById('btnVaciarAntojos').addEventListener('click', () => {
+  if (!confirm('¿Vaciar los antojos?')) return;
+  localStorage.removeItem(ANTOJOS_KEY);
+  actualizarAntojosUI();
+  document.querySelectorAll('.btn-antojo.guardado').forEach(b => b.classList.remove('guardado'));
 });
 
-// ── Generar imagen para WhatsApp ──────────────────────
-document.getElementById('btnGenerarImagen').addEventListener('click', () => {
-  const items = estanteCargar();
-  if (items.length === 0) return;
+// ── Generador de tarjeta individual ──────────────────
+function generarTarjetaLibro(libro) {
+  const titulo    = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+  const autor     = libro['Autor'] || libro['Author'] || '';
+  const genero    = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
+  const tono      = libro['Tono'] || '';
+  const ritmo     = libro['Ritmo'] || '';
+  const publico   = libro['Público'] || libro['Publico'] || '';
+  const resena    = libro['Reseña'] || libro['Resena'] || libro['Review'] || '';
+  const flags     = libro['Flags'] || '';
+  const estrellasRaw = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
+  const numEstrellas = parseInt(estrellasRaw, 10);
 
-  const canvas = document.getElementById('estanteCanvas');
+  const SCALE = 2; // alta resolución
+  const W = 420;
+  const ACCENT = '#1D9E75';
+  const DARK   = '#1a1a1a';
+  const MUTED  = '#6b6b6b';
+  const BG     = '#f7f5f0';
+
+  // Calcular altura dinámica
+  const canvas = document.getElementById('libroCanvas');
   const ctx = canvas.getContext('2d');
 
-  const W = 800;
-  const paddingX = 48;
-  const paddingTop = 60;
-  const lineH = 52;
-  const headerH = 120;
-  const footerH = 60;
-  const H = headerH + paddingTop + items.length * lineH + footerH;
+  // Medir texto de reseña (máx 5 líneas)
+  const resenaMaxW = (W - 64) * SCALE;
+  ctx.font = `${14 * SCALE}px system-ui, sans-serif`;
+  const resenaLineas = wrapText(ctx, resena, resenaMaxW, 5);
+  const metaItems = [tono, ritmo, publico].filter(Boolean);
 
-  canvas.width = W;
-  canvas.height = H;
+  const H = 80                          // franja top + padding
+    + 60                                // título (2 líneas)
+    + 30                                // autor
+    + 28                                // género chips
+    + (numEstrellas > 0 ? 28 : 0)       // estrellas
+    + (metaItems.length > 0 ? metaItems.length * 22 + 8 : 0) // meta
+    + (flags && flags.toLowerCase() !== 'ninguno' ? 28 : 0)  // flag
+    + (resena ? resenaLineas.length * 22 + 24 : 0)           // reseña
+    + 56;                               // firma + padding bottom
+
+  canvas.width  = W * SCALE;
+  canvas.height = H * SCALE;
+  ctx.scale(SCALE, SCALE);
 
   // Fondo
-  ctx.fillStyle = '#f7f5f0';
+  ctx.fillStyle = BG;
   ctx.fillRect(0, 0, W, H);
 
-  // Franja superior
-  ctx.fillStyle = '#1D9E75';
-  ctx.fillRect(0, 0, W, 8);
+  // Franja izquierda verde
+  ctx.fillStyle = ACCENT;
+  ctx.fillRect(0, 0, 6, H);
+
+  // Franja top sutil
+  ctx.fillStyle = ACCENT;
+  ctx.fillRect(0, 0, W, 4);
+
+  let y = 36;
+
+  // Ícono libro
+  ctx.font = `${22}px system-ui, sans-serif`;
+  ctx.fillText('📚', 20, y);
+  y += 6;
 
   // Título
-  ctx.fillStyle = '#1a1a1a';
-  ctx.font = 'bold 28px system-ui, sans-serif';
-  ctx.fillText('📚 Mi lista de lecturas', paddingX, 56);
+  ctx.fillStyle = DARK;
+  ctx.font = `bold ${18}px system-ui, sans-serif`;
+  const tituloLineas = wrapText(ctx, titulo, W - 80, 2);
+  tituloLineas.forEach(linea => { ctx.fillText(linea, 20, y); y += 24; });
 
-  ctx.fillStyle = '#6b6b6b';
-  ctx.font = '16px system-ui, sans-serif';
-  ctx.fillText('via BiblioFa — biblioteca de Fátima Ll', paddingX, 84);
+  // Autor
+  ctx.fillStyle = MUTED;
+  ctx.font = `${13}px system-ui, sans-serif`;
+  ctx.fillText(autor, 20, y);
+  y += 24;
 
-  // Línea separadora
+  // Línea divisoria
   ctx.strokeStyle = '#e0ddd8';
   ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(paddingX, 100);
-  ctx.lineTo(W - paddingX, 100);
-  ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(20, y); ctx.lineTo(W - 20, y); ctx.stroke();
+  y += 14;
 
-  // Libros
-  items.forEach((libro, i) => {
-    const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
-    const autor  = libro['Autor'] || libro['Author'] || '';
-    const estrellasRaw = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
-    const numEstrellas = parseInt(estrellasRaw, 10);
-    const y = headerH + paddingTop + i * lineH;
+  // Género como chip visual
+  if (genero) {
+    ctx.fillStyle = 'rgba(29,158,117,0.12)';
+    const gW = ctx.measureText(genero).width + 20;
+    roundRect(ctx, 20, y - 14, gW, 20, 10);
+    ctx.fill();
+    ctx.fillStyle = '#0F6E56';
+    ctx.font = `500 ${11}px system-ui, sans-serif`;
+    ctx.fillText(genero, 30, y);
+    y += 24;
+  }
 
-    // Fondo alterno
-    if (i % 2 === 0) {
-      ctx.fillStyle = 'rgba(29,158,117,0.05)';
-      ctx.fillRect(paddingX - 8, y - 22, W - paddingX * 2 + 16, lineH - 4);
-    }
+  // Estrellas
+  if (numEstrellas > 0) {
+    ctx.fillStyle = '#BA7517';
+    ctx.font = `${16}px system-ui, sans-serif`;
+    ctx.fillText('★'.repeat(numEstrellas), 20, y);
+    y += 26;
+  }
 
-    // Número
-    ctx.fillStyle = '#1D9E75';
-    ctx.font = 'bold 14px system-ui, sans-serif';
-    ctx.fillText(String(i + 1).padStart(2, '0'), paddingX, y);
+  // Metadatos
+  if (metaItems.length > 0) {
+    metaItems.forEach(item => {
+      ctx.fillStyle = MUTED;
+      ctx.font = `${12}px system-ui, sans-serif`;
+      ctx.fillText('· ' + item, 20, y);
+      y += 20;
+    });
+    y += 6;
+  }
 
-    // Título
-    ctx.fillStyle = '#1a1a1a';
-    ctx.font = 'bold 16px system-ui, sans-serif';
-    const tituloCorto = titulo.length > 38 ? titulo.slice(0, 36) + '…' : titulo;
-    ctx.fillText(tituloCorto, paddingX + 36, y);
+  // Flag
+  if (flags && flags.toLowerCase() !== 'ninguno') {
+    ctx.fillStyle = 'rgba(192,57,43,0.1)';
+    const fW = ctx.measureText(flags).width + 20;
+    ctx.font = `${11}px system-ui, sans-serif`;
+    roundRect(ctx, 20, y - 13, fW, 18, 9);
+    ctx.fill();
+    ctx.fillStyle = '#c0392b';
+    ctx.fillText(flags, 30, y);
+    y += 24;
+  }
 
-    // Autor
-    ctx.fillStyle = '#6b6b6b';
-    ctx.font = '14px system-ui, sans-serif';
-    ctx.fillText(autor, paddingX + 36, y + 20);
+  // Reseña
+  if (resena && resenaLineas.length > 0) {
+    ctx.strokeStyle = '#e0ddd8';
+    ctx.beginPath(); ctx.moveTo(20, y); ctx.lineTo(W - 20, y); ctx.stroke();
+    y += 16;
+    ctx.fillStyle = '#444';
+    ctx.font = `${12}px system-ui, sans-serif`;
+    resenaLineas.forEach(linea => { ctx.fillText(linea, 20, y); y += 19; });
+    y += 6;
+  }
 
-    // Estrellas
-    if (numEstrellas > 0) {
-      ctx.fillStyle = '#BA7517';
-      ctx.font = '13px system-ui, sans-serif';
-      ctx.fillText('★'.repeat(numEstrellas), W - paddingX - 90, y);
-    }
-  });
-
-  // Footer
-  ctx.fillStyle = '#6b6b6b';
-  ctx.font = '13px system-ui, sans-serif';
-  ctx.fillText(`${items.length} libro${items.length !== 1 ? 's' : ''} seleccionados`, paddingX, H - 20);
+  // Firma
+  ctx.strokeStyle = '#e0ddd8';
+  ctx.beginPath(); ctx.moveTo(20, y); ctx.lineTo(W - 20, y); ctx.stroke();
+  y += 16;
+  ctx.fillStyle = ACCENT;
+  ctx.font = `bold ${11}px system-ui, sans-serif`;
+  ctx.fillText('BiblioFa — Biblioteca de Fátima Ll', 20, y);
 
   // Descargar
   const link = document.createElement('a');
-  link.download = 'mi-lista-de-lecturas.png';
+  link.download = `${titulo.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.png`;
   link.href = canvas.toDataURL('image/png');
   link.click();
-});
+}
+
+// Helpers canvas
+function wrapText(ctx, text, maxWidth, maxLines) {
+  if (!text) return [];
+  const words = text.split(' ');
+  const lines = [];
+  let current = '';
+  for (const word of words) {
+    const test = current ? current + ' ' + word : word;
+    if (ctx.measureText(test).width > maxWidth && current) {
+      lines.push(current);
+      if (lines.length >= maxLines) { lines[maxLines - 1] += '…'; return lines; }
+      current = word;
+    } else { current = test; }
+  }
+  if (current) lines.push(current);
+  return lines;
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
 
 // Inicializar
-actualizarEstanteUI();
+actualizarAntojosUI();
