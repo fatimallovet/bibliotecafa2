@@ -42,8 +42,8 @@ Papa.parse(sheetUrl, {
       return;
     }
 
-    libros.sort((a, b) => comparar(a, b, 'No.'));
-    ordenActual = { col: 'no', asc: true };
+    libros.sort((a, b) => comparar(b, a, 'No.'));
+    ordenActual = { col: 'no', asc: false };
     mostrarTabla(libros);
 
     llenarSelectGeneros(libros);
@@ -236,8 +236,6 @@ function mostrarTarjetas(data){
     const numEstrellas = parseInt(estrellasRaw, 10);
     const estrellasHtml = numEstrellas > 0 ? `<span class="card-stars">${'★'.repeat(numEstrellas)}</span>` : '';
 
-    const resena = libro['Reseña'] || libro['Resena'] || libro['Review'] || '';
-
     const div = document.createElement('div');
     div.className = 'card';
     div.innerHTML = `
@@ -245,10 +243,9 @@ function mostrarTarjetas(data){
         <strong>${escapeHtml(titulo)}</strong>
         ${estrellasHtml}
       </div>
-      <small class="card-autor">${escapeHtml(autor)}</small>
-      <em class="card-genero">${escapeHtml(genero)}</em>
-      ${resena ? `<p class="card-resena">${escapeHtml(resena)}</p>` : ''}
-      ${flags && flags.toLowerCase() !== 'ninguno' ? `<span class="flag-tag">${escapeHtml(flags)}</span>` : ''}
+      <small>${escapeHtml(autor)}</small><br>
+      <em>${escapeHtml(genero)}</em><br>
+      ${flags ? `<span class="flag-tag">${escapeHtml(flags)}</span>` : ''}
     `;
     div.addEventListener('click', () => showDetalle(libro));
     cont.appendChild(div);
@@ -467,7 +464,7 @@ const MOODS = {
   crecer:  { generos: ['espiritualidad','cristianismo','religión','desarrollo personal','conversos'], tonos: ['reflexivo','inspirador','esperanzador'] },
   tension: { generos: ['thriller','misterio','suspenso','intriga','crimen','policíaca','espionaje','thriller psicológico'], tonos: ['intrigante','tenso'] },
   clasico: { generos: ['clásico'], tonos: [] },
-  ligero:  { generos: ['juvenil','contemporáneo','ficción contemporánea','comedia','humor','infantil'], tonos: ['ligero','tierno','cálido','humorístico','optimista'] },
+  ligero:  { generos: ['juvenil','contemporáneo','ficción contemporánea','comedia','humor','infantil','aventura'], tonos: ['ligero','tierno','cálido','humorístico','optimista'] },
 };
 
 function librosParaMood(mood) {
