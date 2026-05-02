@@ -236,6 +236,8 @@ function mostrarTarjetas(data){
     const numEstrellas = parseInt(estrellasRaw, 10);
     const estrellasHtml = numEstrellas > 0 ? `<span class="card-stars">${'★'.repeat(numEstrellas)}</span>` : '';
 
+    const resena = libro['Reseña'] || libro['Resena'] || libro['Review'] || '';
+
     const div = document.createElement('div');
     div.className = 'card';
     div.innerHTML = `
@@ -243,9 +245,10 @@ function mostrarTarjetas(data){
         <strong>${escapeHtml(titulo)}</strong>
         ${estrellasHtml}
       </div>
-      <small>${escapeHtml(autor)}</small><br>
-      <em>${escapeHtml(genero)}</em><br>
-      ${flags ? `<span class="flag-tag">${escapeHtml(flags)}</span>` : ''}
+      <small class="card-autor">${escapeHtml(autor)}</small>
+      <em class="card-genero">${escapeHtml(genero)}</em>
+      ${resena ? `<p class="card-resena">${escapeHtml(resena)}</p>` : ''}
+      ${flags && flags.toLowerCase() !== 'ninguno' ? `<span class="flag-tag">${escapeHtml(flags)}</span>` : ''}
     `;
     div.addEventListener('click', () => showDetalle(libro));
     cont.appendChild(div);
