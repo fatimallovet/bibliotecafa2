@@ -104,7 +104,13 @@ function mostrarFilasTabla(data) {
       <td>${escapeHtml(titulo)}</td>
       <td>${escapeHtml(autor)}</td>
       <td>${generoChips}</td>
+      <td class="col-shelf"><button class="btn-shelf ${estanteContiene(libro) ? 'en-estante' : ''}" title="Guardar en mi estante">🔖</button></td>
     `;
+    tr.querySelector('.btn-shelf').addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleEstante(libro);
+      tr.querySelector('.btn-shelf').classList.toggle('en-estante', estanteContiene(libro));
+    });
     tr.addEventListener('click', () => showDetalle(libro));
     tbody.appendChild(tr);
   });
@@ -140,7 +146,13 @@ function mostrarTarjetasLista(data) {
         <div class="lista-card-autor">${escapeHtml(autor)}</div>
         <div class="lista-card-meta">${generoChips} ${starsHtml}</div>
       </div>
+      <button class="btn-shelf ${estanteContiene(libro) ? 'en-estante' : ''}" title="Guardar en mi estante">🔖</button>
     `;
+    div.querySelector('.btn-shelf').addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleEstante(libro);
+      div.querySelector('.btn-shelf').classList.toggle('en-estante', estanteContiene(libro));
+    });
     div.addEventListener('click', () => showDetalle(libro));
     cont.appendChild(div);
   });
@@ -247,6 +259,16 @@ function mostrarTarjetas(data){
       <em>${escapeHtml(genero)}</em><br>
       ${flags ? `<span class="flag-tag">${escapeHtml(flags)}</span>` : ''}
     `;
+    const shelfBtn = document.createElement('button');
+    shelfBtn.className = 'btn-shelf' + (estanteContiene(libro) ? ' en-estante' : '');
+    shelfBtn.title = 'Guardar en mi estante';
+    shelfBtn.textContent = '🔖';
+    shelfBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleEstante(libro);
+      shelfBtn.classList.toggle('en-estante', estanteContiene(libro));
+    });
+    div.appendChild(shelfBtn);
     div.addEventListener('click', () => showDetalle(libro));
     cont.appendChild(div);
   });
@@ -503,6 +525,16 @@ function mostrarTarjetasMood(data) {
       ${resena ? `<p class="card-resena">${escapeHtml(resena)}</p>` : ''}
       ${flags && flags.toLowerCase() !== 'ninguno' ? `<span class="flag-tag">${escapeHtml(flags)}</span>` : ''}
     `;
+    const shelfBtnM = document.createElement('button');
+    shelfBtnM.className = 'btn-shelf' + (estanteContiene(libro) ? ' en-estante' : '');
+    shelfBtnM.title = 'Guardar en mi estante';
+    shelfBtnM.textContent = '🔖';
+    shelfBtnM.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleEstante(libro);
+      shelfBtnM.classList.toggle('en-estante', estanteContiene(libro));
+    });
+    div.appendChild(shelfBtnM);
     div.addEventListener('click', () => showDetalle(libro));
     cont.appendChild(div);
   });
@@ -528,3 +560,187 @@ document.getElementById('btnVolver').addEventListener('click', () => {
   document.getElementById('sentimientoResultado').style.display = 'none';
   document.getElementById('sentimientoGrid').style.display = '';
 });
+
+// =====================================================
+// ESTANTE PERSONAL
+// =====================================================
+const ESTANTE_KEY = 'bibliofа_estante';
+
+function estanteCargar() {
+  try { return JSON.parse(localStorage.getItem(ESTANTE_KEY) || '[]'); }
+  catch { return []; }
+}
+
+function estanteGuardar(items) {
+  localStorage.setItem(ESTANTE_KEY, JSON.stringify(items));
+}
+
+function estanteContiene(libro) {
+  const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+  return estanteCargar().some(l => (l['Título'] || l['Titulo'] || l['Title'] || '') === titulo);
+}
+
+function toggleEstante(libro) {
+  let items = estanteCargar();
+  const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+  const idx = items.findIndex(l => (l['Título'] || l['Titulo'] || l['Title'] || '') === titulo);
+  if (idx >= 0) {
+    items.splice(idx, 1);
+  } else {
+    items.push(libro);
+  }
+  estanteGuardar(items);
+  actualizarEstanteUI();
+}
+
+function actualizarEstanteUI() {
+  const items = estanteCargar();
+  const count = items.length;
+  const fab = document.getElementById('estanteBtn');
+  const countEl = document.getElementById('estanteCount');
+
+  fab.style.display = count > 0 ? 'flex' : 'none';
+  countEl.textContent = count;
+
+  // Actualizar lista en el panel
+  const lista = document.getElementById('estanteLista');
+  lista.innerHTML = '';
+  items.forEach(libro => {
+    const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+    const autor  = libro['Autor'] || libro['Author'] || '';
+    const estrellasRaw = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
+    const numEstrellas = parseInt(estrellasRaw, 10);
+    const li = document.createElement('li');
+    li.className = 'estante-item';
+    li.innerHTML = `
+      <div class="estante-item-info">
+        <span class="estante-item-titulo">${escapeHtml(titulo)}</span>
+        <span class="estante-item-autor">${escapeHtml(autor)}</span>
+        ${numEstrellas > 0 ? `<span class="estante-item-stars">${'★'.repeat(numEstrellas)}</span>` : ''}
+      </div>
+      <button class="estante-item-remove" data-titulo="${escapeHtml(titulo)}" title="Quitar">✕</button>
+    `;
+    li.querySelector('.estante-item-remove').addEventListener('click', () => {
+      toggleEstante(libro);
+      // refrescar botones de shelf visibles
+      document.querySelectorAll('.btn-shelf.en-estante').forEach(btn => {
+        const row = btn.closest('tr, .card, .lista-card');
+        if (row && row.textContent.includes(titulo)) btn.classList.remove('en-estante');
+      });
+    });
+    lista.appendChild(li);
+  });
+}
+
+// Abrir/cerrar panel
+document.getElementById('estanteBtn').addEventListener('click', () => {
+  document.getElementById('estantePanel').classList.toggle('hidden');
+});
+document.getElementById('estanteCerrar').addEventListener('click', () => {
+  document.getElementById('estantePanel').classList.add('hidden');
+});
+
+// Vaciar
+document.getElementById('btnVaciarEstante').addEventListener('click', () => {
+  if (!confirm('¿Vaciar el estante?')) return;
+  localStorage.removeItem(ESTANTE_KEY);
+  actualizarEstanteUI();
+  document.querySelectorAll('.btn-shelf.en-estante').forEach(b => b.classList.remove('en-estante'));
+});
+
+// ── Generar imagen para WhatsApp ──────────────────────
+document.getElementById('btnGenerarImagen').addEventListener('click', () => {
+  const items = estanteCargar();
+  if (items.length === 0) return;
+
+  const canvas = document.getElementById('estanteCanvas');
+  const ctx = canvas.getContext('2d');
+
+  const W = 800;
+  const paddingX = 48;
+  const paddingTop = 60;
+  const lineH = 52;
+  const headerH = 120;
+  const footerH = 60;
+  const H = headerH + paddingTop + items.length * lineH + footerH;
+
+  canvas.width = W;
+  canvas.height = H;
+
+  // Fondo
+  ctx.fillStyle = '#f7f5f0';
+  ctx.fillRect(0, 0, W, H);
+
+  // Franja superior
+  ctx.fillStyle = '#1D9E75';
+  ctx.fillRect(0, 0, W, 8);
+
+  // Título
+  ctx.fillStyle = '#1a1a1a';
+  ctx.font = 'bold 28px system-ui, sans-serif';
+  ctx.fillText('📚 Mi lista de lecturas', paddingX, 56);
+
+  ctx.fillStyle = '#6b6b6b';
+  ctx.font = '16px system-ui, sans-serif';
+  ctx.fillText('via BiblioFa — biblioteca de Fátima Ll', paddingX, 84);
+
+  // Línea separadora
+  ctx.strokeStyle = '#e0ddd8';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(paddingX, 100);
+  ctx.lineTo(W - paddingX, 100);
+  ctx.stroke();
+
+  // Libros
+  items.forEach((libro, i) => {
+    const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+    const autor  = libro['Autor'] || libro['Author'] || '';
+    const estrellasRaw = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
+    const numEstrellas = parseInt(estrellasRaw, 10);
+    const y = headerH + paddingTop + i * lineH;
+
+    // Fondo alterno
+    if (i % 2 === 0) {
+      ctx.fillStyle = 'rgba(29,158,117,0.05)';
+      ctx.fillRect(paddingX - 8, y - 22, W - paddingX * 2 + 16, lineH - 4);
+    }
+
+    // Número
+    ctx.fillStyle = '#1D9E75';
+    ctx.font = 'bold 14px system-ui, sans-serif';
+    ctx.fillText(String(i + 1).padStart(2, '0'), paddingX, y);
+
+    // Título
+    ctx.fillStyle = '#1a1a1a';
+    ctx.font = 'bold 16px system-ui, sans-serif';
+    const tituloCorto = titulo.length > 38 ? titulo.slice(0, 36) + '…' : titulo;
+    ctx.fillText(tituloCorto, paddingX + 36, y);
+
+    // Autor
+    ctx.fillStyle = '#6b6b6b';
+    ctx.font = '14px system-ui, sans-serif';
+    ctx.fillText(autor, paddingX + 36, y + 20);
+
+    // Estrellas
+    if (numEstrellas > 0) {
+      ctx.fillStyle = '#BA7517';
+      ctx.font = '13px system-ui, sans-serif';
+      ctx.fillText('★'.repeat(numEstrellas), W - paddingX - 90, y);
+    }
+  });
+
+  // Footer
+  ctx.fillStyle = '#6b6b6b';
+  ctx.font = '13px system-ui, sans-serif';
+  ctx.fillText(`${items.length} libro${items.length !== 1 ? 's' : ''} seleccionados`, paddingX, H - 20);
+
+  // Descargar
+  const link = document.createElement('a');
+  link.download = 'mi-lista-de-lecturas.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+});
+
+// Inicializar
+actualizarEstanteUI();
