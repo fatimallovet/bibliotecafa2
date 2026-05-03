@@ -1094,16 +1094,16 @@ footer {
   .random-card-full { padding: 18px; }
 }
 
-/* ── Botón palomita (antojo) ─────────────────────────── */
+/* ── Botón palomita ──────────────────────────────────── */
 .btn-antojo {
   background: none;
   border: 1.5px solid #ccc;
   border-radius: 50%;
   width: 26px;
   height: 26px;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 700;
-  color: #ccc;
+  color: #bbb;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -1112,28 +1112,13 @@ footer {
   transition: all .18s ease;
   line-height: 1;
 }
-.btn-antojo:hover {
-  border-color: #1D9E75;
-  color: #1D9E75;
-  transform: scale(1.1);
-}
-.btn-antojo.guardado {
-  background: #1D9E75;
-  border-color: #1D9E75;
-  color: white;
-}
-.col-antojo {
-  width: 36px;
-  text-align: center;
-  padding: 0 4px !important;
-}
+.btn-antojo:hover { border-color: #1D9E75; color: #1D9E75; transform: scale(1.1); }
+.btn-antojo.guardado { background: #1D9E75; border-color: #1D9E75; color: white; }
+.col-antojo { width: 36px; text-align: center; padding: 0 4px !important; }
 .lista-card .btn-antojo { align-self: center; }
-.card .btn-antojo {
-  display: block;
-  margin-top: 8px;
-}
+.card .btn-antojo { display: block; margin-top: 8px; }
 
-/* Botones en modal */
+/* ── Botones en modal ────────────────────────────────── */
 .modal-actions {
   display: flex;
   gap: 10px;
@@ -1152,37 +1137,23 @@ footer {
   background: transparent;
   color: var(--muted);
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all .18s ease;
+  transition: all .18s;
 }
-.btn-modal-antojo .check-icon { font-weight: 700; }
-.btn-modal-antojo:hover {
-  border-color: #1D9E75;
-  color: #1D9E75;
-}
-.btn-modal-antojo.guardado {
-  background: #1D9E75;
-  border-color: #1D9E75;
-  color: white;
-}
+.btn-modal-antojo:hover { border-color: #1D9E75; color: #1D9E75; }
+.btn-modal-antojo.guardado { background: #1D9E75; border-color: #1D9E75; color: white; }
 .btn-modal-compartir {
   font-family: inherit;
   font-size: 0.85rem;
   font-weight: 500;
   padding: 8px 16px;
   border-radius: 100px;
-  border: 1.5px solid var(--border-md, rgba(0,0,0,0.13));
+  border: 1.5px solid rgba(0,0,0,0.13);
   background: transparent;
   color: var(--muted);
   cursor: pointer;
-  transition: all .18s ease;
+  transition: all .18s;
 }
-.btn-modal-compartir:hover {
-  border-color: var(--accent, #1D9E75);
-  color: var(--accent, #1D9E75);
-}
+.btn-modal-compartir:hover { border-color: #1D9E75; color: #1D9E75; }
 
 /* ── FAB Antojos ─────────────────────────────────────── */
 .antojos-fab {
@@ -1204,14 +1175,10 @@ footer {
   font-size: 1.5rem;
   transition: transform .2s, box-shadow .2s;
 }
-.antojos-fab:hover {
-  transform: scale(1.08);
-  box-shadow: 0 6px 24px rgba(29,158,117,0.5);
-}
+.antojos-fab:hover { transform: scale(1.08); box-shadow: 0 6px 24px rgba(29,158,117,0.5); }
 .antojos-count {
   position: absolute;
-  top: -4px;
-  right: -4px;
+  top: -4px; right: -4px;
   background: #c0392b;
   color: white;
   font-size: 0.7rem;
@@ -1229,8 +1196,7 @@ footer {
 /* ── Panel antojos ───────────────────────────────────── */
 .antojos-panel {
   position: fixed;
-  bottom: 96px;
-  right: 28px;
+  bottom: 96px; right: 28px;
   width: 320px;
   max-height: 70vh;
   background: var(--card, white);
@@ -1259,65 +1225,33 @@ footer {
   flex-shrink: 0;
 }
 .antojos-cerrar {
-  background: none;
-  border: none;
-  font-size: 1rem;
-  cursor: pointer;
+  background: none; border: none;
+  font-size: 1rem; cursor: pointer;
   color: var(--muted, #6b6b6b);
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 2px 6px; border-radius: 4px;
 }
 .antojos-cerrar:hover { color: var(--text, #1a1a1a); }
-.antojos-lista {
-  list-style: none;
-  margin: 0;
-  padding: 8px 0;
-  overflow-y: auto;
-  flex: 1;
-}
+.antojos-lista { list-style: none; margin: 0; padding: 8px 0; overflow-y: auto; flex: 1; }
 .antojos-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  transition: background .12s;
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 16px; transition: background .12s;
 }
 .antojos-item:hover { background: rgba(0,0,0,0.03); }
 .antojos-item-info { flex: 1; min-width: 0; }
 .antojos-item-titulo {
-  display: block;
-  font-size: 0.85rem;
-  font-weight: 600;
+  display: block; font-size: 0.85rem; font-weight: 600;
   color: var(--text, #1a1a1a);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.antojos-item-autor {
-  display: block;
-  font-size: 0.75rem;
-  color: var(--muted, #6b6b6b);
-}
-.antojos-item-stars {
-  display: block;
-  font-size: 0.72rem;
-  color: #BA7517;
-}
-.antojos-item-actions {
-  display: flex;
-  gap: 4px;
-  flex-shrink: 0;
-}
+.antojos-item-autor { display: block; font-size: 0.75rem; color: var(--muted, #6b6b6b); }
+.antojos-item-stars { display: block; font-size: 0.72rem; color: #BA7517; }
+.antojos-item-actions { display: flex; gap: 4px; flex-shrink: 0; }
 .antojos-item-share,
 .antojos-item-remove {
-  background: none;
-  border: none;
-  font-size: 0.9rem;
-  cursor: pointer;
-  padding: 4px 6px;
-  border-radius: 6px;
-  color: var(--muted, #6b6b6b);
-  transition: all .12s;
+  background: none; border: none;
+  font-size: 0.9rem; cursor: pointer;
+  padding: 4px 6px; border-radius: 6px;
+  color: var(--muted, #6b6b6b); transition: all .12s;
 }
 .antojos-item-share:hover { background: rgba(29,158,117,0.1); color: #1D9E75; }
 .antojos-item-remove:hover { background: rgba(192,57,43,0.1); color: #c0392b; }
@@ -1327,18 +1261,36 @@ footer {
   flex-shrink: 0;
 }
 .btn-antojos-secondary {
-  font-family: inherit;
-  font-size: 0.82rem;
-  padding: 8px 14px;
-  border-radius: 10px;
+  font-family: inherit; font-size: 0.82rem;
+  padding: 8px 14px; border-radius: 10px;
   border: 1px solid rgba(0,0,0,0.1);
-  background: transparent;
-  color: var(--muted, #6b6b6b);
-  cursor: pointer;
-  width: 100%;
-  transition: all .15s;
+  background: transparent; color: var(--muted, #6b6b6b);
+  cursor: pointer; width: 100%; transition: all .15s;
 }
 .btn-antojos-secondary:hover { border-color: #c0392b; color: #c0392b; }
+
+/* ── Toast notificación ──────────────────────────────── */
+.share-toast {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: #1a1a1a;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 100px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity .25s, transform .25s;
+  z-index: 100;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.share-toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
 
 @media (max-width: 600px) {
   .antojos-panel { right: 12px; bottom: 90px; width: calc(100vw - 24px); }
