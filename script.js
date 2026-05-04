@@ -264,11 +264,6 @@ function mostrarTarjetas(data){
     ab.title = 'Guardar en antojos'; ab.textContent = '✓';
     ab.addEventListener('click', e => { e.stopPropagation(); toggleAntojos(libro); ab.classList.toggle('guardado', antojosContiene(libro)); });
     div.appendChild(ab);
-    const ab = document.createElement('button');
-    ab.className = 'btn-antojo' + (antojosContiene(libro) ? ' guardado' : '');
-    ab.title = 'Guardar en antojos'; ab.textContent = '✓';
-    ab.addEventListener('click', e => { e.stopPropagation(); toggleAntojos(libro); ab.classList.toggle('guardado', antojosContiene(libro)); });
-    div.appendChild(ab);
     div.addEventListener('click', () => showDetalle(libro));
     cont.appendChild(div);
   });
@@ -313,7 +308,6 @@ function mostrarLibroRandom() {
       ${resena  ? `<p class="random-resena">${escapeHtml(resena)}</p>` : ''}
     </div>
   `;
-}
 
   // Cablear botones de acción del random
   const _btnRA = document.getElementById('randomBtnAntojo');
@@ -570,11 +564,6 @@ function mostrarTarjetasMood(data) {
     am.title = 'Guardar en antojos'; am.textContent = '✓';
     am.addEventListener('click', e => { e.stopPropagation(); toggleAntojos(libro); am.classList.toggle('guardado', antojosContiene(libro)); });
     div.appendChild(am);
-    const am = document.createElement('button');
-    am.className = 'btn-antojo' + (antojosContiene(libro) ? ' guardado' : '');
-    am.title = 'Guardar en antojos'; am.textContent = '✓';
-    am.addEventListener('click', e => { e.stopPropagation(); toggleAntojos(libro); am.classList.toggle('guardado', antojosContiene(libro)); });
-    div.appendChild(am);
     div.addEventListener('click', () => showDetalle(libro));
     cont.appendChild(div);
   });
@@ -604,7 +593,7 @@ document.getElementById('btnVolver').addEventListener('click', () => {
 // =====================================================
 // ANTOJOS
 // =====================================================
-const ANTOJOS_KEY = 'bibliofа_antojos';
+const ANTOJOS_KEY = 'bibliof_antojos';
 
 function antojosCargar() {
   try { return JSON.parse(localStorage.getItem(ANTOJOS_KEY) || '[]'); }
