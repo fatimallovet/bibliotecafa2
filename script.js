@@ -104,7 +104,13 @@ function mostrarFilasTabla(data) {
       <td>${escapeHtml(titulo)}</td>
       <td>${escapeHtml(autor)}</td>
       <td>${generoChips}</td>
+      <td class="col-antojo"><button class="btn-antojo ${antojosContiene(libro) ? 'guardado' : ''}" title="Guardar en antojos">✓</button></td>
     `;
+    tr.querySelector('.btn-antojo').addEventListener('click', e => {
+      e.stopPropagation();
+      toggleAntojos(libro);
+      tr.querySelector('.btn-antojo').classList.toggle('guardado', antojosContiene(libro));
+    });
     tr.addEventListener('click', () => showDetalle(libro));
     tbody.appendChild(tr);
   });
@@ -140,7 +146,13 @@ function mostrarTarjetasLista(data) {
         <div class="lista-card-autor">${escapeHtml(autor)}</div>
         <div class="lista-card-meta">${generoChips} ${starsHtml}</div>
       </div>
+      <button class="btn-antojo ${antojosContiene(libro) ? 'guardado' : ''}" title="Guardar en antojos">✓</button>
     `;
+    div.querySelector('.btn-antojo').addEventListener('click', e => {
+      e.stopPropagation();
+      toggleAntojos(libro);
+      div.querySelector('.btn-antojo').classList.toggle('guardado', antojosContiene(libro));
+    });
     div.addEventListener('click', () => showDetalle(libro));
     cont.appendChild(div);
   });
@@ -247,6 +259,11 @@ function mostrarTarjetas(data){
       <em>${escapeHtml(genero)}</em><br>
       ${flags ? `<span class="flag-tag">${escapeHtml(flags)}</span>` : ''}
     `;
+    const ab = document.createElement('button');
+    ab.className = 'btn-antojo' + (antojosContiene(libro) ? ' guardado' : '');
+    ab.title = 'Guardar en antojos'; ab.textContent = '✓';
+    ab.addEventListener('click', e => { e.stopPropagation(); toggleAntojos(libro); ab.classList.toggle('guardado', antojosContiene(libro)); });
+    div.appendChild(ab);
     div.addEventListener('click', () => showDetalle(libro));
     cont.appendChild(div);
   });
@@ -419,6 +436,31 @@ detalleContenido.innerHTML = `
 
 document.getElementById('cerrarModalInterno')
   .addEventListener('click', ()=> modal.classList.add('hidden'));
+
+  // Acciones del modal
+  const modalActions = document.createElement('div');
+  modalActions.className = 'modal-actions';
+
+  const btnAntojo = document.createElement('button');
+  btnAntojo.className = 'btn-modal-antojo' + (antojosContiene(libro) ? ' guardado' : '');
+  btnAntojo.innerHTML = antojosContiene(libro)
+    ? '✓ En mis antojos' : '✓ Guardar en antojos';
+  btnAntojo.addEventListener('click', () => {
+    toggleAntojos(libro);
+    const g = antojosContiene(libro);
+    btnAntojo.className = 'btn-modal-antojo' + (g ? ' guardado' : '');
+    btnAntojo.innerHTML = g ? '✓ En mis antojos' : '✓ Guardar en antojos';
+  });
+
+  const btnCompartir = document.createElement('button');
+  btnCompartir.className = 'btn-modal-compartir';
+  btnCompartir.innerHTML = '↗ Compartir';
+  btnCompartir.addEventListener('click', () => compartirLibro(libro));
+
+  modalActions.appendChild(btnAntojo);
+  modalActions.appendChild(btnCompartir);
+  document.querySelector('#detalleContenido .modal-body').appendChild(modalActions);
+
   modal.classList.remove('hidden');
 }
 
@@ -503,6 +545,11 @@ function mostrarTarjetasMood(data) {
       ${resena ? `<p class="card-resena">${escapeHtml(resena)}</p>` : ''}
       ${flags && flags.toLowerCase() !== 'ninguno' ? `<span class="flag-tag">${escapeHtml(flags)}</span>` : ''}
     `;
+    const am = document.createElement('button');
+    am.className = 'btn-antojo' + (antojosContiene(libro) ? ' guardado' : '');
+    am.title = 'Guardar en antojos'; am.textContent = '✓';
+    am.addEventListener('click', e => { e.stopPropagation(); toggleAntojos(libro); am.classList.toggle('guardado', antojosContiene(libro)); });
+    div.appendChild(am);
     div.addEventListener('click', () => showDetalle(libro));
     cont.appendChild(div);
   });
@@ -529,22 +576,148 @@ document.getElementById('btnVolver').addEventListener('click', () => {
   document.getElementById('sentimientoGrid').style.display = '';
 });
 
-// Compartir todos — lista con título, autor y género
-document.getElementById('btnCompartirTodos').addEventListener('click', () => {
+// =====================================================
+// ANTOJOS
+// =====================================================
+const ANTOJOS_KEY = 'bibliofа_antojos';
+
+function antojosCargar() {
+  try { return JSON.parse(localStorage.getItem(ANTOJOS_KEY) || '[]'); }
+  catch { return []; }
+}
+function antojosGuardar(items) {
+  localStorage.setItem(ANTOJOS_KEY, JSON.stringify(items));
+}
+function antojosContiene(libro) {
+  const t = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+  return antojosCargar().some(l => (l['Título'] || l['Titulo'] || l['Title'] || '') === t);
+}
+function toggleAntojos(libro) {
+  let items = antojosCargar();
+  const t = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+  const idx = items.findIndex(l => (l['Título'] || l['Titulo'] || l['Title'] || '') === t);
+  if (idx >= 0) items.splice(idx, 1); else items.push(libro);
+  antojosGuardar(items);
+  actualizarAntojosUI();
+}
+
+function actualizarAntojosUI() {
   const items = antojosCargar();
-  if (items.length === 0) return;
-  let texto = '📚 *Mi lista de lectura*\n';
-  texto += `${items.length} libro${items.length !== 1 ? 's' : ''}\n\n`;
-  items.forEach((libro, i) => {
+  const fab = document.getElementById('antojosBtn');
+  fab.style.display = items.length > 0 ? 'flex' : 'none';
+  document.getElementById('antojosCount').textContent = items.length;
+
+  const lista = document.getElementById('antojosLista');
+  lista.innerHTML = '';
+  items.forEach(libro => {
     const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
     const autor  = libro['Autor'] || libro['Author'] || '';
-    const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
-    texto += `${i + 1}. *${titulo}*\n`;
-    texto += `   ${autor}`;
-    if (genero) texto += ` · ${genero}`;
-    texto += '\n';
+    const estrellasRaw = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
+    const numEstrellas = parseInt(estrellasRaw, 10);
+
+    const li = document.createElement('li');
+    li.className = 'antojos-item';
+    li.innerHTML = `
+      <div class="antojos-item-info">
+        <span class="antojos-item-titulo">${escapeHtml(titulo)}</span>
+        <span class="antojos-item-autor">${escapeHtml(autor)}</span>
+        ${numEstrellas > 0 ? `<span class="antojos-item-stars">${'★'.repeat(numEstrellas)}</span>` : ''}
+      </div>
+      <div class="antojos-item-actions">
+        <button class="antojos-item-share" title="Compartir">↗</button>
+        <button class="antojos-item-remove" title="Quitar">✕</button>
+      </div>
+    `;
+    li.querySelector('.antojos-item-share').addEventListener('click', () => compartirLibro(libro));
+    li.querySelector('.antojos-item-remove').addEventListener('click', () => {
+      toggleAntojos(libro);
+      document.querySelectorAll('.btn-antojo').forEach(btn => {
+        const c = btn.closest('tr, .card, .lista-card');
+        if (c && c.textContent.includes(titulo)) btn.classList.remove('guardado');
+      });
+    });
+    lista.appendChild(li);
   });
-  texto += '\n— Recomendado por Fátima Ll · BiblioFa';
-  compartirTexto('Mi lista de lectura', texto);
+}
+
+document.getElementById('antojosBtn').addEventListener('click', () => {
+  document.getElementById('antojosPanel').classList.toggle('hidden');
+});
+document.getElementById('antojosCerrar').addEventListener('click', () => {
+  document.getElementById('antojosPanel').classList.add('hidden');
+});
+document.getElementById('btnVaciarAntojos').addEventListener('click', () => {
+  if (!confirm('¿Vaciar los antojos?')) return;
+  localStorage.removeItem(ANTOJOS_KEY);
+  actualizarAntojosUI();
+  document.querySelectorAll('.btn-antojo.guardado').forEach(b => b.classList.remove('guardado'));
 });
 
+// =====================================================
+// COMPARTIR — Web Share API con fallback a clipboard
+// =====================================================
+function textoLibro(libro) {
+  const titulo    = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+  const autor     = libro['Autor'] || libro['Author'] || '';
+  const genero    = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
+  const tono      = libro['Tono'] || '';
+  const ritmo     = libro['Ritmo'] || '';
+  const publico   = libro['Público'] || libro['Publico'] || '';
+  const resena    = libro['Reseña'] || libro['Resena'] || libro['Review'] || '';
+  const flags     = libro['Flags'] || '';
+  const estrellasRaw = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
+  const numEstrellas = parseInt(estrellasRaw, 10);
+  const estrellas = numEstrellas > 0 ? '★'.repeat(numEstrellas) : '';
+
+  let texto = `📚 *${titulo}*\n`;
+  texto += `✍️ ${autor}\n`;
+  if (estrellas) texto += `${estrellas}\n`;
+  texto += `\n`;
+  if (genero)  texto += `🎭 ${genero}\n`;
+  if (tono)    texto += `🎨 Tono: ${tono}\n`;
+  if (ritmo)   texto += `⏱ Ritmo: ${ritmo}\n`;
+  if (publico) texto += `👤 Público: ${publico}\n`;
+  if (flags && flags.toLowerCase() !== 'ninguno') texto += `⚠️ ${flags}\n`;
+  if (resena)  texto += `\n${resena}\n`;
+  texto += `\n— Recomendado por Fátima Ll · BiblioFa`;
+  return texto;
+}
+
+async function compartirLibro(libro) {
+  const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+  const texto  = textoLibro(libro);
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: titulo, text: texto });
+    } catch (e) {
+      if (e.name !== 'AbortError') copiarAlPortapapeles(texto);
+    }
+  } else {
+    copiarAlPortapapeles(texto);
+  }
+}
+
+function copiarAlPortapapeles(texto) {
+  navigator.clipboard.writeText(texto).then(() => {
+    mostrarToast('📋 Copiado al portapapeles');
+  }).catch(() => {
+    mostrarToast('No se pudo copiar, intenta manualmente');
+  });
+}
+
+function mostrarToast(msg) {
+  let t = document.getElementById('shareToast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'shareToast';
+    t.className = 'share-toast';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), 2800);
+}
+
+// Inicializar
+actualizarAntojosUI();

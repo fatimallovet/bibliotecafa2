@@ -88,10 +88,6 @@
   <h2>Libro al Azar</h2>
   <button id="btnRandom">🎲 ¡Dame otro!</button>
   <div id="randomLibro" class="random"></div>
-  <div class="modal-actions" style="margin-top:16px">
-    <button id="randomBtnAntojo" class="btn-modal-antojo">✓ Guardar en antojos</button>
-    <button id="randomBtnCompartir" class="btn-modal-compartir">↗ Compartir</button>
-  </div>
 </section>
 
 
@@ -236,26 +232,7 @@
     </div>
     <ul id="antojosLista" class="antojos-lista"></ul>
     <div class="antojos-footer-actions">
-      <button id="btnCompartirTodos" class="btn-antojos-primary">↗ Compartir toda la lista</button>
       <button id="btnVaciarAntojos" class="btn-antojos-secondary">🗑️ Vaciar todo</button>
-    </div>
-  </div>
-
-  <!-- Modal de compartir (desktop) -->
-  <div id="shareModal" class="share-modal hidden">
-    <div class="share-modal-box">
-      <div class="share-modal-header">
-        <strong>Compartir</strong>
-        <button id="shareModalCerrar" class="antojos-cerrar">✕</button>
-      </div>
-      <div class="share-modal-body">
-        <button id="shareWhatsapp" class="share-option">
-          <span>💬</span> Enviar por WhatsApp
-        </button>
-        <button id="shareCopiar" class="share-option">
-          <span>📋</span> Copiar al portapapeles
-        </button>
-      </div>
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
