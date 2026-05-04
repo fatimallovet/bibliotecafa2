@@ -264,6 +264,11 @@ function mostrarTarjetas(data){
     ab.title = 'Guardar en antojos'; ab.textContent = '✓';
     ab.addEventListener('click', e => { e.stopPropagation(); toggleAntojos(libro); ab.classList.toggle('guardado', antojosContiene(libro)); });
     div.appendChild(ab);
+    const ab = document.createElement('button');
+    ab.className = 'btn-antojo' + (antojosContiene(libro) ? ' guardado' : '');
+    ab.title = 'Guardar en antojos'; ab.textContent = '✓';
+    ab.addEventListener('click', e => { e.stopPropagation(); toggleAntojos(libro); ab.classList.toggle('guardado', antojosContiene(libro)); });
+    div.appendChild(ab);
     div.addEventListener('click', () => showDetalle(libro));
     cont.appendChild(div);
   });
@@ -290,6 +295,8 @@ function mostrarLibroRandom() {
     ? etiquetas.split(',').map(e => `<span class="etiqueta-tag">${escapeHtml(e.trim())}</span>`).join('')
     : '';
 
+  const _libroRandom = r;
+  document.getElementById('randomAcciones').style.display = '';
   document.getElementById('randomLibro').innerHTML = `
     <div class="random-card-full">
       <div class="random-header">
@@ -306,6 +313,19 @@ function mostrarLibroRandom() {
       ${resena  ? `<p class="random-resena">${escapeHtml(resena)}</p>` : ''}
     </div>
   `;
+}
+
+  // Cablear botones de acción del random
+  const _btnRA = document.getElementById('randomBtnAntojo');
+  const _btnRC = document.getElementById('randomBtnCompartir');
+  const _actualizarRA = () => {
+    const g = antojosContiene(_libroRandom);
+    _btnRA.className = 'btn-modal-antojo' + (g ? ' guardado' : '');
+    _btnRA.textContent = g ? '✓ En mis antojos' : '✓ Guardar en antojos';
+  };
+  _actualizarRA();
+  _btnRA.onclick = () => { toggleAntojos(_libroRandom); _actualizarRA(); };
+  _btnRC.onclick = () => compartirLibro(_libroRandom);
 }
 
 document.getElementById('btnRandom').addEventListener('click', mostrarLibroRandom);
@@ -550,6 +570,11 @@ function mostrarTarjetasMood(data) {
     am.title = 'Guardar en antojos'; am.textContent = '✓';
     am.addEventListener('click', e => { e.stopPropagation(); toggleAntojos(libro); am.classList.toggle('guardado', antojosContiene(libro)); });
     div.appendChild(am);
+    const am = document.createElement('button');
+    am.className = 'btn-antojo' + (antojosContiene(libro) ? ' guardado' : '');
+    am.title = 'Guardar en antojos'; am.textContent = '✓';
+    am.addEventListener('click', e => { e.stopPropagation(); toggleAntojos(libro); am.classList.toggle('guardado', antojosContiene(libro)); });
+    div.appendChild(am);
     div.addEventListener('click', () => showDetalle(libro));
     cont.appendChild(div);
   });
@@ -654,8 +679,10 @@ document.getElementById('btnVaciarAntojos').addEventListener('click', () => {
 });
 
 // =====================================================
-// COMPARTIR — Web Share API con fallback a clipboard
+// COMPARTIR
 // =====================================================
+const PAGINA_URL = 'https://fatimallovet.github.io/bibliotecafa2/';
+
 function textoLibro(libro) {
   const titulo    = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
   const autor     = libro['Autor'] || libro['Author'] || '';
@@ -667,44 +694,84 @@ function textoLibro(libro) {
   const flags     = libro['Flags'] || '';
   const estrellasRaw = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
   const numEstrellas = parseInt(estrellasRaw, 10);
-  const estrellas = numEstrellas > 0 ? '★'.repeat(numEstrellas) : '';
 
-  let texto = `📚 *${titulo}*\n`;
-  texto += `✍️ ${autor}\n`;
-  if (estrellas) texto += `${estrellas}\n`;
-  texto += `\n`;
-  if (genero)  texto += `🎭 ${genero}\n`;
-  if (tono)    texto += `🎨 Tono: ${tono}\n`;
-  if (ritmo)   texto += `⏱ Ritmo: ${ritmo}\n`;
-  if (publico) texto += `👤 Público: ${publico}\n`;
-  if (flags && flags.toLowerCase() !== 'ninguno') texto += `⚠️ ${flags}\n`;
-  if (resena)  texto += `\n${resena}\n`;
-  texto += `\n— Recomendado por Fátima Ll · BiblioFa`;
-  return texto;
+  let t = `📚 *${titulo}*\n✍️ ${autor}\n`;
+  if (numEstrellas > 0) t += `${'★'.repeat(numEstrellas)}\n`;
+  t += `\n`;
+  if (genero)  t += `🎭 ${genero}\n`;
+  if (tono)    t += `🎨 Tono: ${tono}\n`;
+  if (ritmo)   t += `⏱ Ritmo: ${ritmo}\n`;
+  if (publico) t += `👤 Público: ${publico}\n`;
+  if (flags && flags.toLowerCase() !== 'ninguno') t += `⚠️ ${flags}\n`;
+  if (resena)  t += `\n${resena}\n`;
+  t += `\n— Recomendado por Fátima Ll\n🔗 ${PAGINA_URL}`;
+  return t;
 }
 
-async function compartirLibro(libro) {
-  const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
-  const texto  = textoLibro(libro);
+function textoLista(items) {
+  let t = `📚 *Mi lista de lectura*\n${items.length} libro${items.length !== 1 ? 's' : ''}\n\n`;
+  items.forEach((libro, i) => {
+    const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+    const autor  = libro['Autor'] || libro['Author'] || '';
+    const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
+    t += `${i + 1}. *${titulo}*\n   ${autor}`;
+    if (genero) t += ` · ${genero}`;
+    t += '\n';
+  });
+  t += `\n— Recomendado por Fátima Ll\n🔗 ${PAGINA_URL}`;
+  return t;
+}
 
-  if (navigator.share) {
-    try {
-      await navigator.share({ title: titulo, text: texto });
-    } catch (e) {
-      if (e.name !== 'AbortError') copiarAlPortapapeles(texto);
-    }
+function esMobile() {
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
+let _textoCompartir = '';
+
+function compartirTexto(titulo, texto) {
+  _textoCompartir = texto;
+  if (esMobile() && navigator.share) {
+    navigator.share({ title: titulo, text: texto }).catch(e => {
+      if (e.name !== 'AbortError') mostrarShareModal();
+    });
   } else {
-    copiarAlPortapapeles(texto);
+    mostrarShareModal();
   }
 }
 
-function copiarAlPortapapeles(texto) {
-  navigator.clipboard.writeText(texto).then(() => {
-    mostrarToast('📋 Copiado al portapapeles');
-  }).catch(() => {
-    mostrarToast('No se pudo copiar, intenta manualmente');
-  });
+function compartirLibro(libro) {
+  const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+  compartirTexto(titulo, textoLibro(libro));
 }
+
+function mostrarShareModal() {
+  document.getElementById('shareModal').classList.remove('hidden');
+}
+
+document.getElementById('shareModalCerrar').addEventListener('click', () => {
+  document.getElementById('shareModal').classList.add('hidden');
+});
+document.getElementById('shareModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('shareModal'))
+    document.getElementById('shareModal').classList.add('hidden');
+});
+document.getElementById('shareWhatsapp').addEventListener('click', () => {
+  window.open('https://wa.me/?text=' + encodeURIComponent(_textoCompartir), '_blank');
+  document.getElementById('shareModal').classList.add('hidden');
+});
+document.getElementById('shareCopiar').addEventListener('click', () => {
+  navigator.clipboard.writeText(_textoCompartir).then(() => {
+    mostrarToast('📋 Copiado al portapapeles');
+    document.getElementById('shareModal').classList.add('hidden');
+  }).catch(() => mostrarToast('No se pudo copiar'));
+});
+
+// Compartir todos los antojos
+document.getElementById('btnCompartirTodos').addEventListener('click', () => {
+  const items = antojosCargar();
+  if (items.length === 0) return;
+  compartirTexto('Mi lista de lectura', textoLista(items));
+});
 
 function mostrarToast(msg) {
   let t = document.getElementById('shareToast');
