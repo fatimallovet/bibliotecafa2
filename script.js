@@ -502,8 +502,24 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     document.getElementById(target).classList.add('active');
 
     if (target === 'tabRandom') mostrarLibroRandom();
+    if (target === 'tabAbout') cargarInfo();
   });
 });
+
+// Cargar contenido de info.html dinámicamente
+let _infoLoaded = false;
+function cargarInfo() {
+  if (_infoLoaded) return;
+  fetch('info.html')
+    .then(r => r.text())
+    .then(html => {
+      document.getElementById('infoContenido').innerHTML = html;
+      _infoLoaded = true;
+    })
+    .catch(() => {
+      document.getElementById('infoContenido').innerHTML = '<p>No se pudo cargar la información.</p>';
+    });
+}
 
 
 
