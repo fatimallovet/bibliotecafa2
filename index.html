@@ -51,30 +51,20 @@
   <!-- Pestaña principal -->
   <section id="tabLibros" class="tab active">
     <div class="section-header">
-      <h2>🔍</h2>
-      <input id="busqueda" type="text" placeholder="Por título, género, autor o palabras clave...">
+      <div class="search-wrap">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="busqueda" type="text" placeholder="Buscar por título, autor, género...">
+      </div>
+      <select id="ordenSelect" class="orden-select">
+        <option value="recientes">Últimos agregados</option>
+        <option value="calificacion">Mejor calificación</option>
+      </select>
     </div>
 
-    <div class="tabla-wrapper">
-      <table id="tablaLibros">
-        <thead>
-          <tr>
-            <th data-sort="no" class="sorted">No.</th>
-            <th data-sort="calificacion">Calificación</th>
-            <th data-sort="titulo">Título</th>
-            <th data-sort="autor">Autor</th>
-            <th data-sort="genero">Género</th>
-            <th class="col-antojo"></th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-    <div id="listaCards" class="lista-cards" style="display:none"></div>
+    <div id="listaCards" class="lista-cards"></div>
 
     <p id="contadorLibros" class="contador"></p>
-</section> 
+  </section> 
 
 
   <!-- Pestaña de géneros -->
