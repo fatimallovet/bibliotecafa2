@@ -18,8 +18,8 @@ let ordenActual = {col: null, asc: true};
 
 function showError(msg){
   console.error(msg);
-  const tbody = document.querySelector("#tablaLibros tbody");
-  tbody.innerHTML = `<tr><td colspan="3" style="color:#b00020">${msg}</td></tr>`;
+  const cont = document.getElementById('listaCards');
+  if (cont) cont.innerHTML = `<p style="color:#b00020">${msg}</p>`;
 }
 
 Papa.parse(sheetUrl, {
@@ -42,8 +42,6 @@ Papa.parse(sheetUrl, {
       return;
     }
 
-    libros.sort((a, b) => comparar(b, a, 'No.'));
-    ordenActual = { col: 'no', asc: false };
     mostrarTabla(libros);
 
     llenarSelectGeneros(libros);
@@ -72,79 +70,70 @@ function comparar(a, b, col) {
 }
 
 let ultimaData = [];
-function esMobil() { return window.innerWidth <= 600; }
+let ordenSeleccionado = 'recientes';
+
+function ordenarLibros(data, criterio) {
+  const copia = [...data];
+  if (criterio === 'recientes') {
+    copia.sort((a, b) => comparar(b, a, 'No.'));
+  } else if (criterio === 'calificacion') {
+    copia.sort((a, b) => {
+      const ca = parseInt(getCampo(a, 'Calificación', 'Estrellas', 'Stars') || '0');
+      const cb = parseInt(getCampo(b, 'Calificación', 'Estrellas', 'Stars') || '0');
+      return cb - ca;
+    });
+  } else if (criterio === 'anio') {
+    copia.sort((a, b) => {
+      const ya = parseInt(a['Año'] || a['Anio'] || a['Year'] || '0');
+      const yb = parseInt(b['Año'] || b['Anio'] || b['Year'] || '0');
+      return yb - ya;
+    });
+  }
+  return copia;
+}
 
 function mostrarTabla(data) {
   ultimaData = data;
-  esMobil() ? mostrarTarjetasLista(data) : mostrarFilasTabla(data);
+  const ordenados = ordenarLibros(data, ordenSeleccionado);
+  mostrarTarjetasLista(ordenados);
   actualizarContador(data.length);
 }
 
-function mostrarFilasTabla(data) {
-  const listaCardsEl = document.getElementById('listaCards'); if(listaCardsEl) listaCardsEl.style.display = 'none';
-  document.querySelector('.tabla-wrapper').style.display = '';
-  const tbody = document.querySelector("#tablaLibros tbody");
-  tbody.innerHTML = "";
-  data.forEach(libro => {
-    const no = libro['No.'] || libro['No'] || '';
-    const calificacion = libro['Calificación'] || libro['Estrellas'] || libro['Stars'] || '';
-    const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
-    const autor = libro['Autor'] || libro['Author'] || '';
-    const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
-    const generoChips = genero
-      ? genero.split(',').map(g => `<span class="genre-chip">${escapeHtml(g.trim())}</span>`).join(' ')
-      : '';
-    const starsHtml = calificacion
-      ? `<span class="stars-cell">${'★'.repeat(Number(calificacion))}</span>`
-      : '';
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td class="col-no">${escapeHtml(no)}</td>
-      <td>${starsHtml}</td>
-      <td>${escapeHtml(titulo)}</td>
-      <td>${escapeHtml(autor)}</td>
-      <td>${generoChips}</td>
-      <td class="col-antojo"><button class="btn-antojo ${antojosContiene(libro) ? 'guardado' : ''}" title="Guardar en antojos">✓</button></td>
-    `;
-    tr.querySelector('.btn-antojo').addEventListener('click', e => {
-      e.stopPropagation();
-      toggleAntojos(libro);
-      tr.querySelector('.btn-antojo').classList.toggle('guardado', antojosContiene(libro));
-    });
-    tr.addEventListener('click', () => showDetalle(libro));
-    tbody.appendChild(tr);
-  });
-}
-
 function mostrarTarjetasLista(data) {
-  const tablaWrapperEl = document.querySelector('.tabla-wrapper'); if(tablaWrapperEl) tablaWrapperEl.style.display = 'none';
   const cont = document.getElementById('listaCards');
-  cont.style.display = '';
   cont.innerHTML = '';
   if (data.length === 0) {
     cont.innerHTML = '<p style="color:var(--muted)">No se encontraron libros.</p>';
     return;
   }
   data.forEach(libro => {
-    const no = libro['No.'] || libro['No'] || '';
     const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
     const autor = libro['Autor'] || libro['Author'] || '';
     const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
-    const calificacion = libro['Calificación'] || libro['Estrellas'] || libro['Stars'] || '';
+    const calificacion = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
+    const numEstrellas = parseInt(calificacion, 10);
+    const resena = libro['Reseña'] || libro['Resena'] || libro['Review'] || '';
+    const flags = libro['Flags'] || '';
     const generoChips = genero
       ? genero.split(',').map(g => `<span class="genre-chip">${escapeHtml(g.trim())}</span>`).join(' ')
       : '';
-    const starsHtml = calificacion
-      ? `<span class="lista-stars">${'★'.repeat(Number(calificacion))}</span>`
+    const starsHtml = numEstrellas > 0
+      ? `<span class="lista-stars">${'★'.repeat(numEstrellas)}</span>`
       : '';
     const div = document.createElement('div');
     div.className = 'lista-card';
     div.innerHTML = `
-      <div class="lista-card-no">${escapeHtml(no)}</div>
       <div class="lista-card-body">
-        <div class="lista-card-titulo">${escapeHtml(titulo)}</div>
+        <div class="lista-card-top">
+          <div class="lista-card-titulo">${escapeHtml(titulo)}</div>
+          ${starsHtml}
+        </div>
         <div class="lista-card-autor">${escapeHtml(autor)}</div>
-        <div class="lista-card-meta">${generoChips} ${starsHtml}</div>
+        <div class="lista-card-meta">
+          ${generoChips}
+          ${flags && flags.toLowerCase() !== 'ninguno' ? `<span class="flag-tag">${escapeHtml(flags)}</span>` : ''}
+        </div>
+        ${resena ? `<p class="card-resena">${escapeHtml(resena)}</p>` : ''}
       </div>
       <button class="btn-antojo ${antojosContiene(libro) ? 'guardado' : ''}" title="Guardar en antojos">✓</button>
     `;
@@ -158,8 +147,10 @@ function mostrarTarjetasLista(data) {
   });
 }
 
-window.addEventListener('resize', () => {
-  if (ultimaData.length > 0) mostrarTabla(ultimaData);
+// Selector de orden
+document.getElementById('ordenSelect').addEventListener('change', (e) => {
+  ordenSeleccionado = e.target.value;
+  mostrarTabla(ultimaData);
 });
 
 // --- Filtro de géneros con intersección ---
@@ -390,24 +381,7 @@ function normalizar(texto) {
     .replace(/[\u0300-\u036f]/g, ""); // elimina los acentos
 }
 
-// --- Ordenar por columnas ---
-document.querySelectorAll('#tablaLibros th').forEach(th =>{
-  th.addEventListener('click', ()=>{
-    const col = th.dataset.sort;
-    const campo = 
-  col === 'no' ? 'No.' :
-  col === 'autor' ? 'Autor' :
-  col === 'genero' ? 'Género' :
-  col === 'calificacion' ? 'Calificación' :
-  'Título';
-    if(ordenActual.col===col) ordenActual.asc=!ordenActual.asc; else ordenActual={col,asc:true};
-    libros.sort((a,b)=>{
-      const comp = comparar(a,b,campo);
-      return ordenActual.asc ? comp : -comp;
-    });
-    mostrarTabla(libros);
-  });
-});
+
 
 // --- Modal ---
 const modal = document.getElementById('detalleModal');
