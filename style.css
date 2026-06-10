@@ -805,28 +805,43 @@ footer {
   box-shadow: 0 8px 24px rgba(201,162,39,0.45);
 }
 
-/* Modal random — header dorado */
+/* Modal random */
 .random-modal-content {
-  max-width: 600px;
+  max-width: 560px;
+  /* Altura mínima fija para que "Otro →" no se mueva */
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
 }
 .random-modal-header {
-  background: linear-gradient(90deg, #1a3a5c, #1e4976);
+  background: linear-gradient(100deg, #1a3a5c, #1e4976);
   color: #f0d080;
   border-radius: 8px 8px 0 0;
-  margin: -20px -20px 12px -20px;
-  padding: 16px 20px;
+  /* Negativos para compensar el padding del modal-content */
+  margin: -20px -20px 0 -20px;
+  padding: 14px 16px 14px 20px;
   border-bottom: none;
+  /* Fila flex: título a la izquierda, acciones a la derecha */
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 .random-modal-header h3 {
   color: #f0d080 !important;
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   margin: 0;
-  flex: 1;
+  /* Ocupa el espacio disponible sin desbordar */
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .random-modal-header-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  flex-shrink: 0;   /* nunca se encoge: "Otro →" siempre visible */
 }
 .btn-otro-random {
   background: rgba(240,208,128,0.18);
@@ -834,7 +849,7 @@ footer {
   border: 1px solid rgba(240,208,128,0.4);
   border-radius: 20px;
   padding: 4px 14px;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   cursor: pointer;
   transition: background .2s;
   white-space: nowrap;
@@ -846,8 +861,22 @@ footer {
   color: #f0d080;
   opacity: 0.8;
   font-size: 1.4rem;
+  line-height: 1;
 }
 .random-modal-header .close:hover {
   opacity: 1;
   color: #fff;
+}
+/* El cuerpo crece para empujar las acciones al fondo */
+#randomModalCuerpo {
+  flex: 1;
+  padding-top: 14px;
+  overflow-y: auto;
+}
+/* Acciones siempre al pie del modal */
+#randomModalAcciones {
+  flex-shrink: 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--border, rgba(26,39,68,0.08));
+  margin-top: 8px;
 }
