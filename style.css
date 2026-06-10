@@ -805,74 +805,113 @@ footer {
   box-shadow: 0 8px 24px rgba(201,162,39,0.45);
 }
 
-/* Modal random */
-.random-modal-content {
-  max-width: 560px;
-  min-height: 420px;
+/* =====================================================
+   MODAL RANDOM — diseño propio, sin herencia del modal genérico
+   ===================================================== */
+.rm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 16px;          /* margen en móvil */
+  box-sizing: border-box;
+}
+.rm-overlay.hidden { display: none; }
+
+.rm-box {
+  background: var(--surface, #fff);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 520px;
+  height: 520px;          /* altura FIJA — mismo tamaño siempre */
   display: flex;
   flex-direction: column;
-  padding: 0;          /* el padding lo gestionamos por sección */
-  overflow: hidden;    /* el border-radius no se corta */
+  overflow: hidden;       /* recorta el header curvo */
+  box-shadow: 0 8px 40px rgba(0,0,0,0.28);
+  animation: slideUp .22s ease;
 }
-.random-modal-header {
+
+/* HEADER — franja azul marino */
+.rm-header {
   background: linear-gradient(100deg, #1a3a5c, #1e4976);
-  color: #f0d080;
-  border-radius: 8px 8px 0 0;
   padding: 16px 20px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
+  gap: 12px;
+  flex-shrink: 0;         /* nunca se encoge */
 }
-.random-modal-header h3 {
-  color: #f0d080 !important;
-  font-size: 1.1rem;
+.rm-titulo {
+  color: #f0d080;
+  font-size: 1.05rem;
+  font-weight: 600;
   margin: 0;
   flex: 1 1 0;
-  min-width: 0;
+  min-width: 0;           /* permite truncar */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.random-modal-header-actions {
+.rm-header-actions {
   display: flex;
   align-items: center;
   gap: 10px;
   flex-shrink: 0;
 }
-.btn-otro-random {
-  background: rgba(240,208,128,0.18);
+.rm-btn-otro {
+  background: rgba(240,208,128,0.2);
   color: #f0d080;
-  border: 1px solid rgba(240,208,128,0.4);
+  border: 1px solid rgba(240,208,128,0.45);
   border-radius: 20px;
   padding: 5px 16px;
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   cursor: pointer;
-  transition: background .2s;
   white-space: nowrap;
+  transition: background .18s;
 }
-.btn-otro-random:hover {
-  background: rgba(240,208,128,0.32);
-}
-.random-modal-header .close {
+.rm-btn-otro:hover { background: rgba(240,208,128,0.35); }
+
+.rm-cerrar {
+  background: none;
+  border: none;
   color: #f0d080;
-  opacity: 0.8;
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+  opacity: 0.75;
+  transition: opacity .15s;
 }
-.random-modal-header .close:hover {
-  opacity: 1;
-  color: #fff;
-}
-/* Cuerpo: padding generoso en todos los lados, crece para empujar el pie */
-#randomModalCuerpo {
+.rm-cerrar:hover { opacity: 1; }
+
+/* CUERPO — scroll vertical, padding cómodo */
+.rm-cuerpo {
   flex: 1;
-  padding: 20px 24px 8px;
   overflow-y: auto;
+  overflow-x: hidden;
+  padding: 20px 24px 12px;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--text, #1a2744);
 }
-/* Acciones: siempre al pie, con su propio padding */
-#randomModalAcciones {
+.rm-cuerpo p { margin: 0 0 8px; }
+
+/* PIE — botones antojos/compartir, siempre visible */
+.rm-acciones {
   flex-shrink: 0;
-  padding: 12px 24px 20px;
-  border-top: 1px solid var(--border, rgba(26,39,68,0.08));
+  padding: 12px 24px 18px;
+  border-top: 1px solid var(--border, rgba(26,39,68,0.09));
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Responsive: en móvil pequeño la caja ocupa casi toda la pantalla */
+@media (max-width: 560px) {
+  .rm-box {
+    height: 80vh;
+    max-height: 560px;
+  }
 }

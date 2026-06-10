@@ -147,17 +147,17 @@
   <button id="randomFab" class="random-fab" aria-label="Libro al azar">🎲</button>
 
   <!-- Modal Random -->
-  <div id="randomModal" class="modal hidden">
-    <div class="modal-content random-modal-content">
-      <div class="modal-header random-modal-header">
-        <h3 id="randomModalTitulo">Libro al azar</h3>
-        <div class="random-modal-header-actions">
-          <button id="btnOtroRandom" class="btn-otro-random">Otro →</button>
-          <span id="cerrarRandomModal" class="close">&times;</span>
+  <div id="randomModal" class="rm-overlay hidden">
+    <div class="rm-box">
+      <div class="rm-header">
+        <h3 id="randomModalTitulo" class="rm-titulo">Libro al azar</h3>
+        <div class="rm-header-actions">
+          <button id="btnOtroRandom" class="rm-btn-otro">Otro →</button>
+          <button id="cerrarRandomModal" class="rm-cerrar" aria-label="Cerrar">&times;</button>
         </div>
       </div>
-      <div id="randomModalCuerpo" class="modal-body"></div>
-      <div class="modal-actions" id="randomModalAcciones">
+      <div id="randomModalCuerpo" class="rm-cuerpo"></div>
+      <div id="randomModalAcciones" class="rm-acciones">
         <button id="randomModalBtnAntojo" class="btn-modal-antojo">✓ Guardar en antojos</button>
         <button id="randomModalBtnCompartir" class="btn-modal-compartir">↗ Compartir</button>
       </div>
