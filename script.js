@@ -1,3 +1,4 @@
+// BiblioFa script.js · Actualizado: 2026-06-09
 // Busca un campo en el objeto ignorando diferencias de acentos
 function getCampo(obj, ...nombres) {
   for (const nombre of nombres) {
@@ -18,8 +19,8 @@ let ordenActual = {col: null, asc: true};
 
 function showError(msg){
   console.error(msg);
-  const tbody = document.querySelector("#tablaLibros tbody");
-  tbody.innerHTML = `<tr><td colspan="3" style="color:#b00020">${msg}</td></tr>`;
+  const cont = document.getElementById('listaCards');
+  if (cont) cont.innerHTML = `<p style="color:#b00020">${msg}</p>`;
 }
 
 Papa.parse(sheetUrl, {
@@ -72,79 +73,68 @@ function comparar(a, b, col) {
 }
 
 let ultimaData = [];
-function esMobil() { return window.innerWidth <= 600; }
+let ordenSeleccionado = 'recientes';
+
+function ordenarLibros(data, criterio) {
+  const copia = [...data];
+  if (criterio === 'recientes') {
+    copia.sort((a, b) => {
+      const na = Number(a['No.'] || a['No'] || 0);
+      const nb = Number(b['No.'] || b['No'] || 0);
+      return nb - na;
+    });
+  } else if (criterio === 'calificacion') {
+    copia.sort((a, b) => {
+      const ca = parseInt(getCampo(a, 'Calificación', 'Estrellas', 'Stars') || '0');
+      const cb = parseInt(getCampo(b, 'Calificación', 'Estrellas', 'Stars') || '0');
+      return cb - ca;
+    });
+  }
+  return copia;
+}
 
 function mostrarTabla(data) {
   ultimaData = data;
-  esMobil() ? mostrarTarjetasLista(data) : mostrarFilasTabla(data);
+  const ordenados = ordenarLibros(data, ordenSeleccionado);
+  mostrarTarjetasLista(ordenados);
   actualizarContador(data.length);
 }
 
-function mostrarFilasTabla(data) {
-  const listaCardsEl = document.getElementById('listaCards'); if(listaCardsEl) listaCardsEl.style.display = 'none';
-  document.querySelector('.tabla-wrapper').style.display = '';
-  const tbody = document.querySelector("#tablaLibros tbody");
-  tbody.innerHTML = "";
-  data.forEach(libro => {
-    const no = libro['No.'] || libro['No'] || '';
-    const calificacion = libro['Calificación'] || libro['Estrellas'] || libro['Stars'] || '';
-    const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
-    const autor = libro['Autor'] || libro['Author'] || '';
-    const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
-    const generoChips = genero
-      ? genero.split(',').map(g => `<span class="genre-chip">${escapeHtml(g.trim())}</span>`).join(' ')
-      : '';
-    const starsHtml = calificacion
-      ? `<span class="stars-cell">${'★'.repeat(Number(calificacion))}</span>`
-      : '';
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td class="col-no">${escapeHtml(no)}</td>
-      <td>${starsHtml}</td>
-      <td>${escapeHtml(titulo)}</td>
-      <td>${escapeHtml(autor)}</td>
-      <td>${generoChips}</td>
-      <td class="col-antojo"><button class="btn-antojo ${antojosContiene(libro) ? 'guardado' : ''}" title="Guardar en antojos">✓</button></td>
-    `;
-    tr.querySelector('.btn-antojo').addEventListener('click', e => {
-      e.stopPropagation();
-      toggleAntojos(libro);
-      tr.querySelector('.btn-antojo').classList.toggle('guardado', antojosContiene(libro));
-    });
-    tr.addEventListener('click', () => showDetalle(libro));
-    tbody.appendChild(tr);
-  });
-}
-
 function mostrarTarjetasLista(data) {
-  const tablaWrapperEl = document.querySelector('.tabla-wrapper'); if(tablaWrapperEl) tablaWrapperEl.style.display = 'none';
   const cont = document.getElementById('listaCards');
-  cont.style.display = '';
   cont.innerHTML = '';
   if (data.length === 0) {
     cont.innerHTML = '<p style="color:var(--muted)">No se encontraron libros.</p>';
     return;
   }
   data.forEach(libro => {
-    const no = libro['No.'] || libro['No'] || '';
     const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
     const autor = libro['Autor'] || libro['Author'] || '';
     const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
-    const calificacion = libro['Calificación'] || libro['Estrellas'] || libro['Stars'] || '';
+    const calificacion = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
+    const numEstrellas = parseInt(calificacion, 10);
+    const resena = libro['Reseña'] || libro['Resena'] || libro['Review'] || '';
+    const flags = libro['Flags'] || '';
     const generoChips = genero
       ? genero.split(',').map(g => `<span class="genre-chip">${escapeHtml(g.trim())}</span>`).join(' ')
       : '';
-    const starsHtml = calificacion
-      ? `<span class="lista-stars">${'★'.repeat(Number(calificacion))}</span>`
+    const starsHtml = numEstrellas > 0
+      ? `<span class="lista-stars">${'★'.repeat(numEstrellas)}</span>`
       : '';
     const div = document.createElement('div');
     div.className = 'lista-card';
     div.innerHTML = `
-      <div class="lista-card-no">${escapeHtml(no)}</div>
       <div class="lista-card-body">
-        <div class="lista-card-titulo">${escapeHtml(titulo)}</div>
+        <div class="lista-card-top">
+          <div class="lista-card-titulo">${escapeHtml(titulo)}</div>
+          ${starsHtml}
+        </div>
         <div class="lista-card-autor">${escapeHtml(autor)}</div>
-        <div class="lista-card-meta">${generoChips} ${starsHtml}</div>
+        <div class="lista-card-meta">
+          ${generoChips}
+          ${flags && flags.toLowerCase() !== 'ninguno' ? `<span class="flag-tag">${escapeHtml(flags)}</span>` : ''}
+        </div>
+        ${resena ? `<p class="card-resena">${escapeHtml(resena)}</p>` : ''}
       </div>
       <button class="btn-antojo ${antojosContiene(libro) ? 'guardado' : ''}" title="Guardar en antojos">✓</button>
     `;
@@ -158,9 +148,14 @@ function mostrarTarjetasLista(data) {
   });
 }
 
-window.addEventListener('resize', () => {
-  if (ultimaData.length > 0) mostrarTabla(ultimaData);
-});
+// Selector de orden
+const ordenSelectEl = document.getElementById('ordenSelect');
+if (ordenSelectEl) {
+  ordenSelectEl.addEventListener('change', (e) => {
+    ordenSeleccionado = e.target.value;
+    mostrarTabla(ultimaData);
+  });
+}
 
 // --- Filtro de géneros con intersección ---
 const generosActivos = new Set();
@@ -270,10 +265,19 @@ function mostrarTarjetas(data){
 }
 
 
-// Botón libro random
-function mostrarLibroRandom() {
+// =====================================================
+// RANDOM FAB + MODAL
+// =====================================================
+let _libroRandom = null;
+
+function mostrarLibroRandomEnModal() {
   if (libros.length === 0) return;
-  const r = libros[Math.floor(Math.random() * libros.length)];
+  _libroRandom = libros[Math.floor(Math.random() * libros.length)];
+  renderRandomModal(_libroRandom);
+  document.getElementById('randomModal').classList.remove('hidden');
+}
+
+function renderRandomModal(r) {
   const titulo    = r['Título'] || r['Titulo'] || r['Title'] || '';
   const autor     = r['Autor'] || r['Author'] || '';
   const genero    = r['Género'] || r['Genero'] || r['Genre'] || '';
@@ -290,51 +294,45 @@ function mostrarLibroRandom() {
     ? etiquetas.split(',').map(e => `<span class="etiqueta-tag">${escapeHtml(e.trim())}</span>`).join('')
     : '';
 
-  const _libroRandom = r;
-  const _randomAccEl = document.getElementById('randomModalAcciones'); if(_randomAccEl) _randomAccEl.style.display = '';
-  document.getElementById('randomModalLibro').innerHTML = `
-    <div class="random-card-full">
-      <div class="random-header">
-        <h3>${escapeHtml(titulo)}</h3>
-        ${numEstrellas > 0 ? `<span class="random-stars">${'★'.repeat(numEstrellas)}</span>` : ''}
-      </div>
-      <p class="random-autor">${escapeHtml(autor)}</p>
-      <p class="random-genero">${escapeHtml(genero)}</p>
-      ${tono    ? `<p class="random-meta"><span>Tono</span> ${escapeHtml(tono)}</p>` : ''}
-      ${ritmo   ? `<p class="random-meta"><span>Ritmo</span> ${escapeHtml(ritmo)}</p>` : ''}
-      ${publico ? `<p class="random-meta"><span>Público</span> ${escapeHtml(publico)}</p>` : ''}
-      ${etiquetasHtml ? `<div class="random-etiquetas">${etiquetasHtml}</div>` : ''}
-      ${flags && flags.toLowerCase() !== 'ninguno' ? `<p><span class="flag-tag">${escapeHtml(flags)}</span></p>` : ''}
-      ${resena  ? `<p class="random-resena">${escapeHtml(resena)}</p>` : ''}
-    </div>
+  document.getElementById('randomModalTitulo').textContent = titulo;
+  document.getElementById('randomModalCuerpo').innerHTML = `
+    <p class="random-autor"><strong>${escapeHtml(autor)}</strong></p>
+    <p class="random-genero">${escapeHtml(genero)}</p>
+    ${numEstrellas > 0 ? `<p class="random-stars">${'★'.repeat(numEstrellas)}</p>` : ''}
+    ${tono    ? `<p class="random-meta"><span>Tono</span> ${escapeHtml(tono)}</p>` : ''}
+    ${ritmo   ? `<p class="random-meta"><span>Ritmo</span> ${escapeHtml(ritmo)}</p>` : ''}
+    ${publico ? `<p class="random-meta"><span>Público</span> ${escapeHtml(publico)}</p>` : ''}
+    ${etiquetasHtml ? `<div class="random-etiquetas">${etiquetasHtml}</div>` : ''}
+    ${flags && flags.toLowerCase() !== 'ninguno' ? `<p><span class="flag-tag">${escapeHtml(flags)}</span></p>` : ''}
+    ${resena  ? `<p class="random-resena">${escapeHtml(resena)}</p>` : ''}
   `;
 
-  // Cablear botones de acción del random
-  const _btnRA = document.getElementById('randomModalBtnAntojo');
-  const _btnRC = document.getElementById('randomModalBtnCompartir');
-  const _actualizarRA = () => {
-    const g = antojosContiene(_libroRandom);
-    _btnRA.className = 'btn-modal-antojo' + (g ? ' guardado' : '');
-    _btnRA.textContent = g ? '✓ En mis antojos' : '✓ Guardar en antojos';
+  // Botón antojos
+  const btnA = document.getElementById('randomModalBtnAntojo');
+  const actualizarBtnA = () => {
+    const g = antojosContiene(r);
+    btnA.className = 'btn-modal-antojo' + (g ? ' guardado' : '');
+    btnA.textContent = g ? '✓ En mis antojos' : '✓ Guardar en antojos';
   };
-  _actualizarRA();
-  _btnRA.onclick = () => { toggleAntojos(_libroRandom); _actualizarRA(); };
-  _btnRC.onclick = () => compartirLibro(_libroRandom);
+  actualizarBtnA();
+  btnA.onclick = () => { toggleAntojos(r); actualizarBtnA(); };
+
+  // Botón compartir
+  document.getElementById('randomModalBtnCompartir').onclick = () => compartirLibro(r);
 }
 
-document.getElementById('btnRandom').addEventListener('click', mostrarLibroRandom);
-
-// FAB Random
-document.getElementById('randomFab').addEventListener('click', () => {
-  mostrarLibroRandom();
-  document.getElementById('randomModal').classList.remove('hidden');
+document.getElementById('randomFab').addEventListener('click', mostrarLibroRandomEnModal);
+document.getElementById('btnOtroRandom').addEventListener('click', () => {
+  if (libros.length === 0) return;
+  _libroRandom = libros[Math.floor(Math.random() * libros.length)];
+  renderRandomModal(_libroRandom);
 });
-document.getElementById('randomModalCerrar').addEventListener('click', () => {
+document.getElementById('cerrarRandomModal').addEventListener('click', () => {
   document.getElementById('randomModal').classList.add('hidden');
 });
-window.addEventListener('click', e => {
-  const m = document.getElementById('randomModal');
-  if (e.target === m) m.classList.add('hidden');
+document.getElementById('randomModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('randomModal'))
+    document.getElementById('randomModal').classList.add('hidden');
 });
 
 // --- Buscador (ahora ignora acentos) ---
@@ -403,24 +401,6 @@ function normalizar(texto) {
     .replace(/[\u0300-\u036f]/g, ""); // elimina los acentos
 }
 
-// --- Ordenar por columnas ---
-document.querySelectorAll('#tablaLibros th').forEach(th =>{
-  th.addEventListener('click', ()=>{
-    const col = th.dataset.sort;
-    const campo = 
-  col === 'no' ? 'No.' :
-  col === 'autor' ? 'Autor' :
-  col === 'genero' ? 'Género' :
-  col === 'calificacion' ? 'Calificación' :
-  'Título';
-    if(ordenActual.col===col) ordenActual.asc=!ordenActual.asc; else ordenActual={col,asc:true};
-    libros.sort((a,b)=>{
-      const comp = comparar(a,b,campo);
-      return ordenActual.asc ? comp : -comp;
-    });
-    mostrarTabla(libros);
-  });
-});
 
 // --- Modal ---
 const modal = document.getElementById('detalleModal');
@@ -513,7 +493,6 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     const target = btn.dataset.tab;
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.getElementById(target).classList.add('active');
-
 
     if (target === 'tabAbout') cargarInfo();
   });

@@ -1,3 +1,4 @@
+<!-- BiblioFa index.html · Actualizado: 2026-06-09 -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -43,37 +44,27 @@
     <!-- BOTÓN BUYMEACOFFEE -->
     <a class="btn-bmc" href="https://www.buymeacoffee.com/fatimallovet" target="_blank">
       <span class="icon">☕</span>
-      <span class="text">Buy me a coffee</span>
+      <span class="text">Apoyar</span>
     </a>
   </div>
 
   <!-- Pestaña principal -->
   <section id="tabLibros" class="tab active">
     <div class="section-header">
-      <h2>🔍</h2>
-      <input id="busqueda" type="text" placeholder="Por título, género, autor o palabras clave...">
+      <div class="search-wrap">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="busqueda" type="text" placeholder="Buscar por título, autor, género...">
+      </div>
+      <select id="ordenSelect" class="orden-select">
+        <option value="recientes">Últimos agregados</option>
+        <option value="calificacion">Mejor calificación</option>
+      </select>
     </div>
 
-    <div class="tabla-wrapper">
-      <table id="tablaLibros">
-        <thead>
-          <tr>
-            <th data-sort="no" class="sorted">No.</th>
-            <th data-sort="calificacion">Calificación</th>
-            <th data-sort="titulo">Título</th>
-            <th data-sort="autor">Autor</th>
-            <th data-sort="genero">Género</th>
-            <th class="col-antojo"></th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-    <div id="listaCards" class="lista-cards" style="display:none"></div>
+    <div id="listaCards" class="lista-cards"></div>
 
     <p id="contadorLibros" class="contador"></p>
-</section> 
+  </section> 
 
 
   <!-- Pestaña de géneros -->
@@ -82,8 +73,6 @@
     <div id="generoBtns" class="genero-btns"></div>
     <div id="tarjetasLibros" class="tarjetas"></div>
   </section>
-
-
 
 
 
@@ -154,8 +143,26 @@
   </div>
 
 
-  <!-- FAB Random (izquierda) -->
-  <button id="randomFab" class="random-fab" title="Libro al azar">🎲</button>
+  <!-- FAB Random 🎲 -->
+  <button id="randomFab" class="random-fab" aria-label="Libro al azar">🎲</button>
+
+  <!-- Modal Random -->
+  <div id="randomModal" class="modal hidden">
+    <div class="modal-content random-modal-content">
+      <div class="modal-header random-modal-header">
+        <h3 id="randomModalTitulo">Libro al azar</h3>
+        <div class="random-modal-header-actions">
+          <button id="btnOtroRandom" class="btn-otro-random">Otro →</button>
+          <span id="cerrarRandomModal" class="close">&times;</span>
+        </div>
+      </div>
+      <div id="randomModalCuerpo" class="modal-body"></div>
+      <div class="modal-actions" id="randomModalAcciones">
+        <button id="randomModalBtnAntojo" class="btn-modal-antojo">✓ Guardar en antojos</button>
+        <button id="randomModalBtnCompartir" class="btn-modal-compartir">↗ Compartir</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Panel de Antojos flotante -->
   <button id="antojosBtn" class="antojos-fab" style="display:none" aria-label="Mis antojos">
@@ -185,26 +192,6 @@
       <div class="share-modal-body">
         <button id="shareWhatsapp" class="share-option">💬 Enviar por WhatsApp</button>
         <button id="shareCopiar" class="share-option">📋 Copiar al portapapeles</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Random -->
-  <div id="randomModal" class="random-modal hidden">
-    <div class="random-modal-box">
-      <div class="random-modal-header">
-        <span class="random-modal-title">🎲 Libro al azar</span>
-        <div style="display:flex;gap:8px;align-items:center">
-          <button id="btnRandom" class="btn-random-nuevo">Otro →</button>
-          <button id="randomModalCerrar" class="antojos-cerrar">✕</button>
-        </div>
-      </div>
-      <div class="random-modal-body">
-        <div id="randomModalLibro"></div>
-        <div class="modal-actions" id="randomModalAcciones" style="display:none">
-          <button id="randomModalBtnAntojo" class="btn-modal-antojo">✓ Guardar en antojos</button>
-          <button id="randomModalBtnCompartir" class="btn-modal-compartir">↗ Compartir</button>
-        </div>
       </div>
     </div>
   </div>
