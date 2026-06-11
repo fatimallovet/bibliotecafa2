@@ -915,3 +915,100 @@ footer {
     max-height: 560px;
   }
 }
+
+/* =====================================================
+   BARRA INFERIOR — solo móvil (≤ 600px)
+   ===================================================== */
+.bottom-nav {
+  display: none; /* oculta en desktop */
+}
+
+@media (max-width: 600px) {
+  /* Espacio para que el contenido no quede tapado por la barra */
+  body { padding-bottom: 72px; }
+
+  /* Ocultar tabs y FABs en móvil — la barra inferior los reemplaza */
+  .tabs { display: none; }
+  .random-fab { display: none; }
+  .antojos-fab { display: none; }
+
+  /* La barra */
+  .bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: var(--surface, #fff);
+    border-top: 1px solid var(--border, rgba(26,39,68,0.1));
+    box-shadow: 0 -2px 12px rgba(26,39,68,0.08);
+    z-index: 150;
+    align-items: stretch;
+  }
+
+  .bn-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px 2px 4px;
+    position: relative;
+    color: var(--muted, #6b7a99);
+    transition: color .15s;
+  }
+
+  .bn-item.active {
+    color: var(--navy, #1a2744);
+  }
+
+  /* Línea indicadora arriba del ítem activo */
+  .bn-item.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 20%;
+    right: 20%;
+    height: 2px;
+    background: var(--gold, #f0c040);
+    border-radius: 0 0 2px 2px;
+  }
+
+  /* Random — acento dorado */
+  .bn-item#bnRandom { color: #c9a227; }
+  .bn-item#bnRandom.active,
+  .bn-item#bnRandom:active { color: #a07810; }
+
+  /* Wishlist — acento navy */
+  .bn-item#bnWishlist { color: var(--muted); }
+  .bn-item#bnWishlist.active { color: var(--navy, #1a2744); }
+
+  .bn-icon { font-size: 1.25rem; line-height: 1; }
+  .bn-label { font-size: 0.6rem; font-weight: 500; letter-spacing: 0.02em; line-height: 1; }
+
+  /* Badge contador wishlist */
+  .bn-badge {
+    position: absolute;
+    top: 4px;
+    right: calc(50% - 18px);
+    background: var(--navy, #1a2744);
+    color: var(--gold, #f0c040);
+    font-size: 0.55rem;
+    font-weight: 700;
+    min-width: 14px;
+    height: 14px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3px;
+  }
+
+  /* Panel de antojos: ajustar posición con barra inferior */
+  .antojos-panel { bottom: 68px; }
+}

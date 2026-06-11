@@ -628,6 +628,12 @@ function actualizarAntojosUI() {
   const fab = document.getElementById('antojosBtn');
   fab.style.display = items.length > 0 ? 'flex' : 'none';
   document.getElementById('antojosCount').textContent = items.length;
+  // Actualizar badge en barra inferior
+  const bnBadge = document.getElementById('bnAntojosCount');
+  if (bnBadge) {
+    bnBadge.textContent = items.length;
+    bnBadge.style.display = items.length > 0 ? 'flex' : 'none';
+  }
 
   const lista = document.getElementById('antojosLista');
   lista.innerHTML = '';
@@ -785,3 +791,57 @@ function mostrarToast(msg) {
 
 // Inicializar
 actualizarAntojosUI();
+
+// =====================================================
+// BARRA DE NAVEGACIÓN INFERIOR (solo móvil)
+// =====================================================
+(function () {
+  // Función compartida para cambiar de tab (reutiliza lógica existente)
+  function activarTab(target) {
+    // Tabs superiores (desktop)
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    const desktopBtn = document.querySelector(`.tab-btn[data-tab="${target}"]`);
+    if (desktopBtn) desktopBtn.classList.add('active');
+
+    // Contenido
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    const section = document.getElementById(target);
+    if (section) section.classList.add('active');
+
+    if (target === 'tabAbout') cargarInfo();
+
+    // Barra inferior: marcar activo solo en los 4 tabs (no en acciones)
+    document.querySelectorAll('.bn-item[data-tab]').forEach(b => b.classList.remove('active'));
+    const bnBtn = document.querySelector(`.bn-item[data-tab="${target}"]`);
+    if (bnBtn) bnBtn.classList.add('active');
+  }
+
+  // Tabs en barra inferior
+  document.querySelectorAll('.bn-item[data-tab]').forEach(btn => {
+    btn.addEventListener('click', () => activarTab(btn.dataset.tab));
+  });
+
+  // Sincronizar barra inferior cuando se usa el menú desktop
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.tab;
+      document.querySelectorAll('.bn-item[data-tab]').forEach(b => b.classList.remove('active'));
+      const bnBtn = document.querySelector(`.bn-item[data-tab="${target}"]`);
+      if (bnBtn) bnBtn.classList.add('active');
+    });
+  });
+
+  // Wishlist en barra inferior
+  const bnWishlist = document.getElementById('bnWishlist');
+  if (bnWishlist) {
+    bnWishlist.addEventListener('click', () => {
+      document.getElementById('antojosPanel').classList.toggle('hidden');
+    });
+  }
+
+  // Random en barra inferior
+  const bnRandom = document.getElementById('bnRandom');
+  if (bnRandom) {
+    bnRandom.addEventListener('click', mostrarLibroRandomEnModal);
+  }
+})();

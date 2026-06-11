@@ -33,7 +33,7 @@
   <div class="tabs">
     <button class="tab-btn active" data-tab="tabLibros">📚 Lista</button>
     <button class="tab-btn" data-tab="tabGeneros">🎭 Géneros</button>
-    <button class="tab-btn" data-tab="tabSentimiento">👀 ¡Sorpréndeme!</button>  
+    <button class="tab-btn" data-tab="tabSentimiento">👀 Mood</button>  
     <button class="tab-btn" data-tab="tabAbout">ℹ️ Info</button>
     
     <a class="video-pill" href="https://fatimallovet.github.io/videotecafatima/" target="_blank">
@@ -197,5 +197,35 @@
   </div>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="script.js?v=1.0.6"></script>
+
+  <!-- Barra de navegación inferior (solo móvil) -->
+  <nav class="bottom-nav" id="bottomNav">
+    <button class="bn-item active" data-tab="tabLibros">
+      <span class="bn-icon">📚</span>
+      <span class="bn-label">Lista</span>
+    </button>
+    <button class="bn-item" data-tab="tabGeneros">
+      <span class="bn-icon">🎭</span>
+      <span class="bn-label">Géneros</span>
+    </button>
+    <button class="bn-item" data-tab="tabSentimiento">
+      <span class="bn-icon">👀</span>
+      <span class="bn-label">Mood</span>
+    </button>
+    <button class="bn-item" data-tab="tabAbout">
+      <span class="bn-icon">ℹ️</span>
+      <span class="bn-label">Info</span>
+    </button>
+    <button class="bn-item bn-action" id="bnWishlist">
+      <span class="bn-icon">🤤</span>
+      <span class="bn-label">Wishlist</span>
+      <span id="bnAntojosCount" class="bn-badge" style="display:none">0</span>
+    </button>
+    <button class="bn-item bn-action" id="bnRandom">
+      <span class="bn-icon">🎲</span>
+      <span class="bn-label">Random</span>
+    </button>
+  </nav>
+
 </body>
 </html>
