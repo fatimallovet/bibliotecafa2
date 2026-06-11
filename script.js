@@ -1,4 +1,4 @@
-// BiblioFa script.js · Actualizado: 2026-06-10
+// BiblioFa script.js · Actualizado: 2026-06-11
 // Busca un campo en el objeto ignorando diferencias de acentos
 function getCampo(obj, ...nombres) {
   for (const nombre of nombres) {
@@ -157,19 +157,50 @@ if (ordenSelectEl) {
   });
 }
 
-// --- Filtro de géneros con intersección ---
-const generosActivos = new Set();
+// --- Mapa de agrupación de géneros ---
+// Cualquier género que contenga alguna de estas palabras clave se agrupa bajo el nombre del grupo.
+const GRUPOS_GENERO = [
+  { grupo: 'Fantasía',        palabras: ['fantasía', 'fantasia'] },
+  { grupo: 'Romance',         palabras: ['romance'] },
+  { grupo: 'Ciencia ficción', palabras: ['ciencia ficción', 'ciencia ficcion', 'sci-fi', 'scifi'] },
+  { grupo: 'Terror',          palabras: ['terror', 'horror'] },
+  { grupo: 'Thriller',        palabras: ['thriller', 'suspense'] },
+  { grupo: 'Drama',           palabras: ['drama'] },
+  { grupo: 'Comedia',         palabras: ['comedia', 'humor'] },
+  { grupo: 'Histórico',       palabras: ['históric', 'historic'] },
+  { grupo: 'Misterio',        palabras: ['misterio', 'policial', 'detectives', 'noir'] },
+  { grupo: 'Aventura',        palabras: ['aventura'] },
+  { grupo: 'Distopía',        palabras: ['distopía', 'distopia'] },
+  { grupo: 'No ficción',      palabras: ['no ficción', 'no ficcion', 'ensayo', 'divulgación', 'divulgacion', 'autobiografía', 'autobiografia', 'memorias', 'crónica', 'cronica'] },
+  { grupo: 'Clásicos',        palabras: ['clásico', 'clasico'] },
+];
+
+function agruparGenero(genero) {
+  const norm = genero.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  for (const { grupo, palabras } of GRUPOS_GENERO) {
+    if (palabras.some(p => norm.includes(p.normalize("NFD").replace(/[\u0300-\u036f]/g, "")))) {
+      return grupo;
+    }
+  }
+  return genero; // sin grupo → se muestra tal cual
+}
+
+// --- Filtro de géneros con agrupación ---
+const generosActivos = new Set(); // guarda GRUPOS, no géneros exactos
 
 function getGenerosLibro(libro) {
   return (libro['Género'] || libro['Genero'] || libro['Genre'] || '')
     .split(',').map(s => s.trim()).filter(Boolean);
 }
 
+function libroTieneGrupo(libro, grupo) {
+  return getGenerosLibro(libro).some(g => agruparGenero(g) === grupo);
+}
+
 function librosFiltradosPorGenero() {
   if (generosActivos.size === 0) return libros;
-  // Intersección: el libro debe tener TODOS los géneros activos
   return libros.filter(l =>
-    [...generosActivos].every(g => getGenerosLibro(l).includes(g))
+    [...generosActivos].every(g => libroTieneGrupo(l, g))
   );
 }
 
@@ -177,18 +208,17 @@ function renderGeneroBtns() {
   const cont = document.getElementById('generoBtns'); if(!cont) return;
   const resultado = librosFiltradosPorGenero();
 
-  // Géneros disponibles dado el filtro actual (para desactivar los que no aplican)
-  const disponibles = new Set();
-  resultado.forEach(l => getGenerosLibro(l).forEach(g => disponibles.add(g)));
+  // Grupos disponibles dado el filtro actual
+  const gruposDisponibles = new Set();
+  resultado.forEach(l => getGenerosLibro(l).forEach(g => gruposDisponibles.add(agruparGenero(g))));
 
-  // Todos los géneros existentes en la biblioteca
-  const todosGeneros = Array.from(
-    new Set(libros.flatMap(l => getGenerosLibro(l)))
+  // Todos los grupos existentes en la biblioteca
+  const todosGrupos = Array.from(
+    new Set(libros.flatMap(l => getGenerosLibro(l).map(g => agruparGenero(g))))
   ).sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
 
   cont.innerHTML = '';
 
-  // Botón "Todos"
   const btnTodos = document.createElement('button');
   btnTodos.className = 'genero-btn' + (generosActivos.size === 0 ? ' active' : '');
   btnTodos.textContent = 'Todos';
@@ -199,11 +229,10 @@ function renderGeneroBtns() {
   });
   cont.appendChild(btnTodos);
 
-  // Un botón por género
-  todosGeneros.forEach(g => {
+  todosGrupos.forEach(g => {
     const btn = document.createElement('button');
     const activo = generosActivos.has(g);
-    const disponible = activo || disponibles.has(g);
+    const disponible = activo || gruposDisponibles.has(g);
 
     btn.className = 'genero-btn' + (activo ? ' active' : '') + (!disponible ? ' desactivado' : '');
     btn.textContent = g;

@@ -1,4 +1,4 @@
-/* BiblioFa style.css · Actualizado: 2026-06-10 */
+/* BiblioFa style.css · Actualizado: 2026-06-11 */
 /* =====================================================
    BiblioFa — Azul Medianoche + Dorado
    ===================================================== */
@@ -768,7 +768,7 @@ footer {
 
 
 .lista-cards { grid-template-columns: 1fr; }
-  .tarjetas { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tarjetas { grid-template-columns: 1fr; gap: 10px; }
   .sentimiento-grid { grid-template-columns: repeat(2,1fr); gap: 10px; }
   .sentimiento-btn { padding: 16px 8px; }
   .mood-icon { font-size: 1.7rem; }
