@@ -928,9 +928,9 @@ footer {
   body { padding-bottom: 72px; }
 
   /* Ocultar tabs y FABs en móvil — la barra inferior los reemplaza */
-  .tabs { display: none; }
-  .random-fab { display: none; }
-  .antojos-fab { display: none; }
+  .tabs { display: none !important; }
+  .random-fab { display: none !important; }
+  .antojos-fab { display: none !important; }
 
   /* La barra */
   .bottom-nav {
@@ -943,7 +943,7 @@ footer {
     background: var(--surface, #fff);
     border-top: 1px solid var(--border, rgba(26,39,68,0.1));
     box-shadow: 0 -2px 12px rgba(26,39,68,0.08);
-    z-index: 150;
+    z-index: 500;          /* por encima de todo */
     align-items: stretch;
   }
 
@@ -961,6 +961,8 @@ footer {
     position: relative;
     color: var(--muted, #6b7a99);
     transition: color .15s;
+    pointer-events: auto;   /* garantizar clicabilidad */
+    -webkit-tap-highlight-color: transparent;
   }
 
   .bn-item.active {
