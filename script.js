@@ -272,6 +272,7 @@ let _libroRandom = null;
 
 function mostrarLibroRandomEnModal() {
   if (libros.length === 0) return;
+  document.getElementById('antojosPanel').classList.add('hidden');
   _libroRandom = libros[Math.floor(Math.random() * libros.length)];
   renderRandomModal(_libroRandom);
   document.getElementById('randomModal').classList.remove('hidden');
@@ -679,6 +680,7 @@ function actualizarAntojosUI() {
 }
 
 document.getElementById('antojosBtn').addEventListener('click', () => {
+  document.getElementById('randomModal').classList.add('hidden');
   document.getElementById('antojosPanel').classList.toggle('hidden');
 });
 document.getElementById('antojosCerrar').addEventListener('click', () => {
@@ -813,6 +815,7 @@ document.querySelectorAll('.bn-item[data-tab]').forEach(btn => {
 
 // Wishlist
 document.getElementById('bnWishlist').addEventListener('click', () => {
+  document.getElementById('randomModal').classList.add('hidden');
   document.getElementById('antojosPanel').classList.toggle('hidden');
 });
 
