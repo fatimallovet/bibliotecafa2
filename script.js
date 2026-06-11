@@ -1,4 +1,4 @@
-// BiblioFa script.js · Actualizado: 2026-06-09
+// BiblioFa script.js · Actualizado: 2026-06-10
 // Busca un campo en el objeto ignorando diferencias de acentos
 function getCampo(obj, ...nombres) {
   for (const nombre of nombres) {
@@ -100,8 +100,8 @@ function mostrarTabla(data) {
   actualizarContador(data.length);
 }
 
-function mostrarTarjetasLista(data) {
-  const cont = document.getElementById('listaCards');
+function mostrarTarjetasLista(data, containerId) {
+  const cont = document.getElementById(containerId || 'listaCards');
   cont.innerHTML = '';
   if (data.length === 0) {
     cont.innerHTML = '<p style="color:var(--muted)">No se encontraron libros.</p>';
@@ -195,7 +195,7 @@ function renderGeneroBtns() {
   btnTodos.addEventListener('click', () => {
     generosActivos.clear();
     renderGeneroBtns();
-    mostrarTarjetas(libros);
+    mostrarTarjetasLista(libros, 'tarjetasLibros');
   });
   cont.appendChild(btnTodos);
 
@@ -216,7 +216,7 @@ function renderGeneroBtns() {
         generosActivos.add(g);
       }
       renderGeneroBtns();
-      mostrarTarjetas(librosFiltradosPorGenero());
+      mostrarTarjetasLista(librosFiltradosPorGenero(), 'tarjetasLibros');
     });
     cont.appendChild(btn);
   });
@@ -224,7 +224,7 @@ function renderGeneroBtns() {
 
 function llenarSelectGeneros(data) {
   renderGeneroBtns();
-  mostrarTarjetas(libros);
+  mostrarTarjetasLista(libros, 'tarjetasLibros');
 }
 
 function mostrarTarjetas(data){
@@ -488,6 +488,9 @@ function escapeHtml(s){
 // --- Tabs ---
 // Función central de navegación — usada por desktop y barra móvil
 function activarTab(target) {
+  // Cerrar modales flotantes al cambiar de sección
+  document.getElementById('randomModal').classList.add('hidden');
+  document.getElementById('antojosPanel').classList.add('hidden');
   // Tabs desktop
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   const desktopBtn = document.querySelector(`.tab-btn[data-tab="${target}"]`);
@@ -598,7 +601,9 @@ document.querySelectorAll('.sentimiento-btn').forEach(btn => {
       alert('No encontré libros para ese estado de ánimo 😔');
       return;
     }
-    mostrarTarjetasMood(resultado);
+    mostrarTarjetasLista(resultado, 'sentimientoTarjetas');
+    document.getElementById('sentimientoContador').textContent =
+      `${resultado.length} libro${resultado.length !== 1 ? 's' : ''} para este momento`;
     document.getElementById('sentimientoGrid').style.display = 'none';
     document.getElementById('sentimientoResultado').style.display = '';
   });
