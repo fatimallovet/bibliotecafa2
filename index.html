@@ -1,4 +1,4 @@
-<!-- BiblioFa index.html · Actualizado: 2026-08-02 -->
+<!-- BiblioFa index.html · Actualizado: 2026-08-02 (v2) -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -37,10 +37,13 @@
 <body>
   <header class="site-header">
   <nav class="navbar">
-    <h1 class="site-title editorial">
-      <strong>Biblioteca</strong>
-      <span>Fátima Ll</span>
-    </h1>
+    <div class="site-title-wrap">
+      <h1 class="site-title editorial">
+        <strong>Biblioteca</strong>
+        <span>Fátima Ll</span>
+      </h1>
+      <p class="site-tagline">mis recomendaciones, sin filtro</p>
+    </div>
     <div class="header-pills">
       <a class="header-pill" href="https://fatimallovet.github.io/videotecafatima/" target="_blank">
         <span>🎬</span><span class="pill-text">Videoteca</span>
@@ -225,19 +228,10 @@
       <span class="bn-icon">ℹ️</span>
       <span class="bn-label">Info</span>
     </button>
-    <button class="bn-item bn-action" id="bnWishlist">
-      <span class="bn-icon">🤤</span>
-      <span class="bn-label">Wishlist</span>
-      <span id="bnAntojosCount" class="bn-badge" style="display:none">0</span>
-    </button>
-    <button class="bn-item bn-action" id="bnRandom">
-      <span class="bn-icon">🎲</span>
-      <span class="bn-label">Random</span>
-    </button>
   </nav>
 
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="script.js?v=1.0.8"></script>
+  <script src="script.js?v=1.0.9"></script>
 
   <!-- Cloudflare Web Analytics -->
   <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "85978fa0985645ffb561da2af953aad6"}'>

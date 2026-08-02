@@ -1,4 +1,6 @@
-// BiblioFa script.js · Actualizado: 2026-08-01
+// BiblioFa script.js · Actualizado: 2026-08-02
+// - Barra inferior móvil: solo 4 tabs; Random/Wishlist son botones flotantes también en móvil
+// - Acento dorado "favorita" para libros de 5 estrellas
 // - Botón Atrás del navegador: navega entre tabs, resultados de Mood y cierra modales/paneles (historial)
 // Busca un campo en el objeto ignorando diferencias de acentos
 function getCampo(obj, ...nombres) {
@@ -122,12 +124,13 @@ function mostrarTarjetasLista(data, containerId) {
     const starsHtml = numEstrellas > 0
       ? `<span class="lista-stars">${'★'.repeat(numEstrellas)}</span>`
       : '';
+    const esFavorita = numEstrellas === 5;
     const div = document.createElement('div');
-    div.className = 'lista-card';
+    div.className = 'lista-card' + (esFavorita ? ' top-pick' : '');
     div.innerHTML = `
       <div class="lista-card-body">
         <div class="lista-card-top">
-          <div class="lista-card-titulo">${escapeHtml(titulo)}</div>
+          <div class="lista-card-titulo">${escapeHtml(titulo)}${esFavorita ? ' <span class="top-pick-badge">★ favorita</span>' : ''}</div>
           ${starsHtml}
         </div>
         <div class="lista-card-autor">${escapeHtml(autor)}</div>
@@ -742,12 +745,6 @@ function actualizarAntojosUI() {
   const fab = document.getElementById('antojosBtn');
   fab.style.display = items.length > 0 ? 'flex' : 'none';
   document.getElementById('antojosCount').textContent = items.length;
-  // Actualizar badge en barra inferior
-  const bnBadge = document.getElementById('bnAntojosCount');
-  if (bnBadge) {
-    bnBadge.textContent = items.length;
-    bnBadge.style.display = items.length > 0 ? 'flex' : 'none';
-  }
 
   const lista = document.getElementById('antojosLista');
   lista.innerHTML = '';
@@ -928,11 +925,8 @@ document.querySelectorAll('.bn-item[data-tab]').forEach(btn => {
   btn.addEventListener('click', () => activarTab(btn.dataset.tab));
 });
 
-// Wishlist
-document.getElementById('bnWishlist').addEventListener('click', toggleAntojosPanel);
-
-// Random
-document.getElementById('bnRandom').addEventListener('click', mostrarLibroRandomEnModal);
+// Random y Wishlist ahora son botones flotantes (randomFab/antojosBtn),
+// visibles también en móvil — ya tienen sus listeners más abajo, no hace falta duplicarlos.
 
 // =====================================================
 // NAVEGACIÓN CON EL BOTÓN ATRÁS / ADELANTE DEL NAVEGADOR
