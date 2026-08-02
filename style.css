@@ -1,4 +1,4 @@
-/* BiblioFa style.css · Actualizado: 2026-06-11 */
+/* BiblioFa style.css · Actualizado: 2026-08-01 */
 /* =====================================================
    BiblioFa — Azul Medianoche + Dorado
    ===================================================== */
@@ -510,13 +510,130 @@ h2 {
 .btn-volver:hover { border-color: var(--navy); color: var(--navy); }
 
 /* ── About/Info ─────────────────────────────────────── */
-#tabAbout { max-width: 680px; }
-#tabAbout h2 { font-size: 1.1rem; font-weight: 600; color: var(--navy); margin: 20px 0 8px; }
-#tabAbout h2:first-child { margin-top: 0; }
+#tabAbout { max-width: 760px; }
 #tabAbout p { font-size: 0.92rem; line-height: 1.75; color: var(--text); margin-bottom: 12px; }
-#tabAbout ul { margin: 4px 0 14px 20px; display: flex; flex-direction: column; gap: 6px; }
-#tabAbout li { font-size: 0.92rem; line-height: 1.6; }
+#tabAbout p:last-child { margin-bottom: 0; }
 #tabAbout strong { color: var(--navy); font-weight: 600; }
+
+.info-hero {
+  text-align: center;
+  padding: 4px 4px 26px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 26px;
+}
+.info-hero-icon {
+  font-size: 2.1rem;
+  display: inline-flex;
+  align-items: center; justify-content: center;
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: var(--navy);
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-md);
+}
+.info-hero h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: var(--navy);
+  margin-bottom: 12px;
+}
+.info-hero p { text-align: left; max-width: 560px; margin-left: auto; margin-right: auto; }
+
+.info-section { margin-bottom: 30px; }
+.info-section-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.info-badge {
+  flex-shrink: 0;
+  width: 34px; height: 34px;
+  border-radius: 10px;
+  background: var(--navy);
+  color: var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+  box-shadow: var(--shadow-sm);
+}
+.info-section-head h3 {
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+}
+.info-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+  transition: transform .18s, box-shadow .18s;
+}
+.info-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.info-card-icon { font-size: 1.3rem; display: block; margin-bottom: 8px; }
+.info-card h4 { font-size: 0.9rem; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
+.info-card p { font-size: 0.8rem; color: var(--muted); line-height: 1.5; margin: 0; }
+
+.info-stars-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.info-star-chip {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--gold-lt);
+  border: 1px solid rgba(240,192,64,0.4);
+  border-radius: var(--radius-md);
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+.info-star-chip strong { color: var(--gold-dk); letter-spacing: 1px; }
+
+.install-section {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+.install-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 14px;
+}
+.install-col {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+}
+.install-col-head {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 600; color: var(--navy);
+  font-size: 0.92rem;
+  margin-bottom: 8px;
+}
+.install-col ol { margin: 0 0 0 18px; display: flex; flex-direction: column; gap: 6px; }
+.install-col li { font-size: 0.85rem; line-height: 1.5; color: var(--text); }
+
+.info-footer-note {
+  text-align: center;
+  margin-top: 6px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 600px) {
+  .install-cols { grid-template-columns: 1fr; }
+  .info-hero-icon { width: 48px; height: 48px; font-size: 1.8rem; }
+}
 
 /* ── Modal ──────────────────────────────────────────── */
 .modal {

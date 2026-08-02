@@ -1,4 +1,5 @@
-// BiblioFa script.js · Actualizado: 2026-06-11
+// BiblioFa script.js · Actualizado: 2026-08-01
+// - Botón Atrás del navegador: navega entre tabs, resultados de Mood y cierra modales/paneles (historial)
 // Busca un campo en el objeto ignorando diferencias de acentos
 function getCampo(obj, ...nombres) {
   for (const nombre of nombres) {
@@ -305,6 +306,19 @@ function mostrarLibroRandomEnModal() {
   _libroRandom = libros[Math.floor(Math.random() * libros.length)];
   renderRandomModal(_libroRandom);
   document.getElementById('randomModal').classList.remove('hidden');
+  history.pushState({ tab: _tabActual, overlay: 'random' }, '', '#random');
+}
+
+// Reabre el modal random con el último libro mostrado (usado al navegar con Adelante)
+function reabrirRandomModal() {
+  if (!_libroRandom) return;
+  renderRandomModal(_libroRandom);
+  document.getElementById('randomModal').classList.remove('hidden');
+}
+
+function cerrarRandomModal() {
+  document.getElementById('randomModal').classList.add('hidden');
+  if (history.state && history.state.overlay === 'random') history.back();
 }
 
 function renderRandomModal(r) {
@@ -357,12 +371,9 @@ document.getElementById('btnOtroRandom').addEventListener('click', () => {
   _libroRandom = libros[Math.floor(Math.random() * libros.length)];
   renderRandomModal(_libroRandom);
 });
-document.getElementById('cerrarRandomModal').addEventListener('click', () => {
-  document.getElementById('randomModal').classList.add('hidden');
-});
+document.getElementById('cerrarRandomModal').addEventListener('click', cerrarRandomModal);
 document.getElementById('randomModal').addEventListener('click', e => {
-  if (e.target === document.getElementById('randomModal'))
-    document.getElementById('randomModal').classList.add('hidden');
+  if (e.target === document.getElementById('randomModal')) cerrarRandomModal();
 });
 
 // --- Buscador (ahora ignora acentos) ---
@@ -438,9 +449,25 @@ const modal = document.getElementById('detalleModal');
 const detalleContenido = document.getElementById('detalleContenido');
 
 
-window.addEventListener('click', e=>{ if(e.target===modal) modal.classList.add('hidden'); });
+window.addEventListener('click', e=>{ if(e.target===modal) cerrarDetalleModal(); });
+
+let _ultimoLibroDetalle = null;
+
+function cerrarDetalleModal() {
+  modal.classList.add('hidden');
+  if (history.state && history.state.overlay === 'detalle') history.back();
+}
 
 function showDetalle(libro){
+  _ultimoLibroDetalle = libro;
+  renderDetalleModal(libro);
+  modal.classList.remove('hidden');
+  history.pushState({ tab: _tabActual, overlay: 'detalle' }, '', '#detalle');
+}
+
+// Construye el contenido del modal de detalle (sin tocar el historial); la usan
+// showDetalle() y el manejador de popstate al reabrir con Adelante.
+function renderDetalleModal(libro){
   const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
   const autor = libro['Autor'] || libro['Author'] || '';
   const genero = libro['Género'] || libro['Genero'] || '';
@@ -472,7 +499,7 @@ detalleContenido.innerHTML = `
 `;
 
 document.getElementById('cerrarModalInterno')
-  .addEventListener('click', ()=> modal.classList.add('hidden'));
+  .addEventListener('click', cerrarDetalleModal);
 
   // Acciones del modal
   const modalActions = document.createElement('div');
@@ -497,7 +524,12 @@ document.getElementById('cerrarModalInterno')
   modalActions.appendChild(btnAntojo);
   modalActions.appendChild(btnCompartir);
   document.querySelector('#detalleContenido .modal-body').appendChild(modalActions);
+}
 
+// Reabre el modal de detalle con el último libro visto (usado al navegar con Adelante)
+function reabrirDetalleModal() {
+  if (!_ultimoLibroDetalle) return;
+  renderDetalleModal(_ultimoLibroDetalle);
   modal.classList.remove('hidden');
 }
 
@@ -515,11 +547,20 @@ function escapeHtml(s){
 
 
 // --- Tabs ---
-// Función central de navegación — usada por desktop y barra móvil
-function activarTab(target) {
-  // Cerrar modales flotantes al cambiar de sección
+// Tab actualmente visible (para reconstruir el estado al usar el botón Atrás)
+let _tabActual = 'tabLibros';
+
+// Oculta todo lo flotante (modales/paneles) sin tocar el historial
+function cerrarFlotantesUI() {
   document.getElementById('randomModal').classList.add('hidden');
   document.getElementById('antojosPanel').classList.add('hidden');
+  document.getElementById('detalleModal').classList.add('hidden');
+  document.getElementById('shareModal').classList.add('hidden');
+}
+
+// Aplica visualmente un tab, sin tocar el historial (la usan activarTab() y el manejador de popstate)
+function _aplicarTabDOM(target) {
+  cerrarFlotantesUI();
   // Tabs desktop
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   const desktopBtn = document.querySelector(`.tab-btn[data-tab="${target}"]`);
@@ -533,8 +574,19 @@ function activarTab(target) {
   const bnBtn = document.querySelector(`.bn-item[data-tab="${target}"]`);
   if (bnBtn) bnBtn.classList.add('active');
 
+  _tabActual = target;
   if (target === 'tabAbout') cargarInfo();
 }
+
+// Función central de navegación — usada por desktop y barra móvil.
+// Registra el cambio en el historial para que el botón Atrás funcione.
+function activarTab(target) {
+  _aplicarTabDOM(target);
+  history.pushState({ tab: target }, '', '#' + target);
+}
+
+// Estado inicial del historial (así el primer "Atrás" tiene a dónde volver)
+history.replaceState({ tab: _tabActual }, '', location.pathname + '#' + _tabActual);
 
 // Tabs desktop
 document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -622,25 +674,42 @@ function mostrarTarjetasMood(data) {
     `${data.length} libro${data.length !== 1 ? 's' : ''} para este momento`;
 }
 
+// Muestra los resultados de un mood. push=false se usa al restaurar desde el historial.
+function mostrarResultadoMood(mood, push) {
+  if (push === undefined) push = true;
+  const resultado = librosParaMood(mood);
+  if (resultado.length === 0) {
+    if (push) alert('No encontré libros para ese estado de ánimo 😔');
+    return false;
+  }
+  mostrarTarjetasLista(resultado, 'sentimientoTarjetas');
+  document.getElementById('sentimientoContador').textContent =
+    `${resultado.length} libro${resultado.length !== 1 ? 's' : ''} para este momento`;
+  document.getElementById('sentimientoGrid').style.display = 'none';
+  document.getElementById('sentimientoResultado').style.display = '';
+  if (push) history.pushState({ tab: 'tabSentimiento', mood }, '', '#mood-' + mood);
+  return true;
+}
+
+// Muestra la cuadrícula de moods. push=false se usa al restaurar desde el historial.
+function mostrarGridMood(push) {
+  if (push === undefined) push = true;
+  document.getElementById('sentimientoResultado').style.display = 'none';
+  document.getElementById('sentimientoGrid').style.display = '';
+  if (push) history.pushState({ tab: 'tabSentimiento' }, '', '#tabSentimiento');
+}
+
 document.querySelectorAll('.sentimiento-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const mood = btn.dataset.mood;
-    const resultado = librosParaMood(mood);
-    if (resultado.length === 0) {
-      alert('No encontré libros para ese estado de ánimo 😔');
-      return;
-    }
-    mostrarTarjetasLista(resultado, 'sentimientoTarjetas');
-    document.getElementById('sentimientoContador').textContent =
-      `${resultado.length} libro${resultado.length !== 1 ? 's' : ''} para este momento`;
-    document.getElementById('sentimientoGrid').style.display = 'none';
-    document.getElementById('sentimientoResultado').style.display = '';
-  });
+  btn.addEventListener('click', () => mostrarResultadoMood(btn.dataset.mood));
 });
 
 document.getElementById('btnVolver').addEventListener('click', () => {
-  document.getElementById('sentimientoResultado').style.display = 'none';
-  document.getElementById('sentimientoGrid').style.display = '';
+  // Si venimos de un estado con mood en el historial, usar Atrás mantiene todo sincronizado
+  if (history.state && history.state.tab === 'tabSentimiento' && history.state.mood) {
+    history.back();
+  } else {
+    mostrarGridMood(false);
+  }
 });
 
 // =====================================================
@@ -713,13 +782,23 @@ function actualizarAntojosUI() {
   });
 }
 
-document.getElementById('antojosBtn').addEventListener('click', () => {
+function abrirAntojosPanel() {
   document.getElementById('randomModal').classList.add('hidden');
-  document.getElementById('antojosPanel').classList.toggle('hidden');
-});
-document.getElementById('antojosCerrar').addEventListener('click', () => {
+  document.getElementById('antojosPanel').classList.remove('hidden');
+  history.pushState({ tab: _tabActual, overlay: 'antojos' }, '', '#antojos');
+}
+function cerrarAntojosPanel() {
   document.getElementById('antojosPanel').classList.add('hidden');
-});
+  if (history.state && history.state.overlay === 'antojos') history.back();
+}
+function toggleAntojosPanel() {
+  const panel = document.getElementById('antojosPanel');
+  if (panel.classList.contains('hidden')) abrirAntojosPanel();
+  else cerrarAntojosPanel();
+}
+
+document.getElementById('antojosBtn').addEventListener('click', toggleAntojosPanel);
+document.getElementById('antojosCerrar').addEventListener('click', cerrarAntojosPanel);
 document.getElementById('btnVaciarAntojos').addEventListener('click', () => {
   if (!confirm('¿Vaciar los antojos?')) return;
   localStorage.removeItem(ANTOJOS_KEY);
@@ -795,23 +874,25 @@ function compartirLibro(libro) {
 
 function mostrarShareModal() {
   document.getElementById('shareModal').classList.remove('hidden');
+  history.pushState({ tab: _tabActual, overlay: 'share' }, '', '#share');
+}
+function cerrarShareModal() {
+  document.getElementById('shareModal').classList.add('hidden');
+  if (history.state && history.state.overlay === 'share') history.back();
 }
 
-document.getElementById('shareModalCerrar').addEventListener('click', () => {
-  document.getElementById('shareModal').classList.add('hidden');
-});
+document.getElementById('shareModalCerrar').addEventListener('click', cerrarShareModal);
 document.getElementById('shareModal').addEventListener('click', e => {
-  if (e.target === document.getElementById('shareModal'))
-    document.getElementById('shareModal').classList.add('hidden');
+  if (e.target === document.getElementById('shareModal')) cerrarShareModal();
 });
 document.getElementById('shareWhatsapp').addEventListener('click', () => {
   window.open('https://wa.me/?text=' + encodeURIComponent(_textoCompartir), '_blank');
-  document.getElementById('shareModal').classList.add('hidden');
+  cerrarShareModal();
 });
 document.getElementById('shareCopiar').addEventListener('click', () => {
   navigator.clipboard.writeText(_textoCompartir).then(() => {
     mostrarToast('📋 Copiado al portapapeles');
-    document.getElementById('shareModal').classList.add('hidden');
+    cerrarShareModal();
   }).catch(() => mostrarToast('No se pudo copiar'));
 });
 
@@ -848,10 +929,28 @@ document.querySelectorAll('.bn-item[data-tab]').forEach(btn => {
 });
 
 // Wishlist
-document.getElementById('bnWishlist').addEventListener('click', () => {
-  document.getElementById('randomModal').classList.add('hidden');
-  document.getElementById('antojosPanel').classList.toggle('hidden');
-});
+document.getElementById('bnWishlist').addEventListener('click', toggleAntojosPanel);
 
 // Random
 document.getElementById('bnRandom').addEventListener('click', mostrarLibroRandomEnModal);
+
+// =====================================================
+// NAVEGACIÓN CON EL BOTÓN ATRÁS / ADELANTE DEL NAVEGADOR
+// =====================================================
+window.addEventListener('popstate', (e) => {
+  const state = e.state || { tab: 'tabLibros' };
+
+  // Siempre partimos de "todo cerrado" y reconstruimos según el estado
+  cerrarFlotantesUI();
+  _aplicarTabDOM(state.tab || 'tabLibros');
+
+  if (state.tab === 'tabSentimiento') {
+    if (state.mood) mostrarResultadoMood(state.mood, false);
+    else mostrarGridMood(false);
+  }
+
+  if (state.overlay === 'detalle') reabrirDetalleModal();
+  else if (state.overlay === 'random') reabrirRandomModal();
+  else if (state.overlay === 'antojos') document.getElementById('antojosPanel').classList.remove('hidden');
+  else if (state.overlay === 'share') document.getElementById('shareModal').classList.remove('hidden');
+});
