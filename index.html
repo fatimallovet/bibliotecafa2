@@ -1,12 +1,28 @@
+<!-- BiblioFa index.html · Actualizado: 2026-08-02 (v3) -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-PD7KRF1SW0"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-PD7KRF1SW0');
+    </script>
+    
+    
+    
+    
   <link href="https://fonts.googleapis.com/css2?family=Cookie&display=swap" rel="stylesheet">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BiblioFa</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=1.1.1" />
 
   <!-- Favicon -->
 <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96">
@@ -21,10 +37,21 @@
 <body>
   <header class="site-header">
   <nav class="navbar">
-    <h1 class="site-title editorial">
-      <strong>Biblioteca</strong>
-      <span>Fátima Ll</span>
-    </h1>
+    <div class="site-title-wrap">
+      <h1 class="site-title editorial">
+        <strong>Biblioteca</strong>
+        <span>Fátima Ll</span>
+      </h1>
+      <p class="site-tagline">mis recomendaciones, sin filtro</p>
+    </div>
+    <div class="header-pills">
+      <a class="header-pill" href="https://fatimallovet.github.io/videotecafatima/" target="_blank">
+        <span>🎬</span><span class="pill-text">Videoteca</span>
+      </a>
+      <a class="header-pill header-pill--gold" href="https://www.buymeacoffee.com/fatimallovet" target="_blank">
+        <span>👍</span><span class="pill-text">Apoyar</span>
+      </a>
+    </div>
   </nav>
   </header>
 
@@ -32,152 +59,89 @@
   <div class="tabs">
     <button class="tab-btn active" data-tab="tabLibros">📚 Lista</button>
     <button class="tab-btn" data-tab="tabGeneros">🎭 Géneros</button>
-    <button class="tab-btn" data-tab="tabRandom">🎲 Random</button>  
-    <button class="tab-btn" data-tab="tabAbout">🧠 Cómo funciona</button>
-    
-    <a class="video-pill" href="https://fatimallovet.github.io/videotecafatima/" target="_blank">
-      <span class="icon">🎬</span>
-      <span class="text">Videoteca</span>
-    </a>
-
-    <!-- BOTÓN BUYMEACOFFEE -->
-    <a class="btn-bmc" href="https://www.buymeacoffee.com/fatimallovet" target="_blank">
-      <span class="icon">☕</span>
-      <span class="text">Buy me a coffee</span>
-    </a>
+    <button class="tab-btn" data-tab="tabSentimiento">👀 Mood</button>  
+    <button class="tab-btn" data-tab="tabAbout">ℹ️ Info</button>
   </div>
 
   <!-- Pestaña principal -->
   <section id="tabLibros" class="tab active">
     <div class="section-header">
-      <h2>🔍</h2>
-      <input id="busqueda" type="text" placeholder="Por título, género, autor o palabras clave...">
+      <div class="search-wrap">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="busqueda" type="text" placeholder="Buscar por título, autor, género...">
+      </div>
+      <select id="ordenSelect" class="orden-select">
+        <option value="recientes">Últimos agregados</option>
+        <option value="calificacion">Mejor calificación</option>
+      </select>
     </div>
 
-    <div class="tabla-wrapper">
-      <table id="tablaLibros">
-        <thead>
-          <tr>
-            <th data-sort="no" class="sorted">No.</th>
-            <th data-sort="calificacion">Calificación</th>
-            <th data-sort="titulo">Título</th>
-            <th data-sort="autor">Autor</th>
-            <th data-sort="genero">Género</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
+    <div id="listaCards" class="lista-cards"></div>
 
     <p id="contadorLibros" class="contador"></p>
-</section> 
+  </section> 
 
 
   <!-- Pestaña de géneros -->
   <section id="tabGeneros" class="tab">
-    <h2>Filtrar por Género</h2>
-    <select id="generoSelect">
-      <option value="">Todos</option>
-    </select>
+    <h2>Filtrar por género</h2>
+    <div id="generoBtns" class="genero-btns"></div>
     <div id="tarjetasLibros" class="tarjetas"></div>
   </section>
 
 
-<section id="tabRandom" class="tab">
-  <h2>Libro al Azar</h2>
-  <button id="btnRandom">🎲 Dame un libro random</button>
-  <div id="randomLibro" class="random"></div>
-</section>
-
 
 <section id="tabAbout" class="tab">
-  <h2>Sobre este proyecto</h2>
-
-   <p>
-    Esta biblioteca empezó casi por casualidad: a base de recibir mensajes y peticiones del tipo
-    “oye, ¿me recomiendas un libro?”, o "¿qué has leído últimamente?"...
-    Como mi memoria no me da para tener en la mente todo lo que he leído, y adaptarlo a los gustos de cada quien,
-    decidí crear un espacio donde tenga una lista ordenada y clasificada de todas mis recomendaciones.
-  </p>
-
-  <p>
-    Obviamente es un proyecto en crecimiento, que voy a ir alimentando con los libros que,
-    por una u otra razón, me han parecido <strong>valiosos</strong>. Aquí puedes encontrar desde mis 
-    clásicos favoritos o los best sellers del momento, hasta títulos menos conocidos que han llamado mi atención
-    y merecen ser descubiertos.
-  </p>
-
-  <p>
-    La selección y la calificación son totalmente <strong>subjetivas</strong> y responden únicamente
-    a mis gustos personales. No me considero una crítica calificada, solo una lectora entusiasta y
-    bastante exigente.
-  </p>
-
-  <p>
-    El sistema de calificación funciona así:
-  </p>
-
-  <ul>
-    <li><strong>3 estrellas:</strong> recomendable.</li>
-    <li><strong>4 estrellas:</strong> sobresaliente.</li>
-    <li><strong>5 estrellas:</strong> excepcional y entre mis favoritas personales.</li>
-  </ul>
-
-  <p>
-    Los libros que he calificado con <strong>dos estrellas o menos</strong> no los verás aquí, porque son
-    aquellos que de plano <strong>no recomendaría</strong>, ya sea porque me ha decepcionado su baja calidad
-    o porque tienen algo que no me ha gustado y no recomendaría para otros. 
-  </p>
-
-  <p>
-    Cada entrada incluye un apartado que señala la <strong>edad mínima recomendada</strong>.
-    Esta indicación es orientativa y subjetiva: un adulto puede disfrutar perfectamente un libro
-    pensado para lectores más jóvenes si está bien escrito y la historia tiene algo que decir.
-    Del mismo modo, seguro hay lectores jóvenes con la madurez suficiente para apreciar sin problema
-    obras dirigidas a un público mayor.
-  </p>
-
-  <p>
-    Por esto, intento ofrecer información suficiente sobre cada libro para que puedas decidir
-    con mayor criterio si es adecuado para ti o para la persona a quien planeas recomendarlo.
-    La idea no es poner etiquetas rígidas, sino dar contexto y facilitar una elección informada.
-  </p>
-
-  <p>
-    Los libros están <strong>numerados en el orden en que los fui agregando a la base de datos</strong>,
-    lo que facilita volver más adelante y localizar rápidamente las nuevas incorporaciones.
-    Además, puedes <strong>ordenar por título o autor</strong>, filtrar por géneros, utilizar la
-    barra de búsqueda o dejar que el botón random te sorprenda.
-  </p>
-
-  <p>
-    Cuando se trata de <strong>sagas o trilogías</strong>, normalmente encontrarás listado el
-    <strong>primer libro</strong>, y se indica claramente si tiene continuación. Así puedes saber
-    desde el inicio si se trata de una historia independiente o del comienzo de un universo más amplio.
-  </p>
-
-  <p>
-    Espero que esta página te sirva de ayuda o inspiración. 
-  </p>
-  <p>
-    Si deseas una recomendación más personalizada, ayuda para conseguir algún libro o simplemente
-    conversar sobre historias que valen la pena, <strong>estaré feliz de que me contactes</strong>.
-  </p>
-  <p>
-    Y por supuesto, también estaré encantada de que me compartas sugerencias sobre la página, o recomendaciones de los 
-    que a tí te han gustado y no veas por aquí ✍️
-  </p>
-  <p>
-    (Por privacidad, no publicaré aquí medios de contacto... si llegaste a esta página, es porque me conoces, 
-    o conoces a alguien que me conoce, así que seguro tienes forma de contactarme). 
-  </p>
-
-  <p>
-    ¡Gracias por confiar en mis recomendaciones! 📚✨💙
-  </p>
+  <div id="infoContenido"><p style="color:var(--muted)">Cargando...</p></div>
 </section>
 
 
+
+
+<section id="tabSentimiento" class="tab">
+  <div id="sentimientoGrid" class="sentimiento-grid">
+    <button class="sentimiento-btn" data-mood="evadir">
+      <span class="mood-icon">🌙</span>
+      <span class="mood-label">Quiero evadir<br>la realidad</span>
+    </button>
+    <button class="sentimiento-btn" data-mood="reir">
+      <span class="mood-icon">😂</span>
+      <span class="mood-label">Solo quiero<br>divertirme</span>
+    </button>
+    <button class="sentimiento-btn" data-mood="llorar">
+      <span class="mood-icon">😮‍💨</span>
+      <span class="mood-label">Quiero muchas<br>emociones</span>
+    </button>
+    <button class="sentimiento-btn" data-mood="aprender">
+      <span class="mood-icon">🧠</span>
+      <span class="mood-label">Quiero<br>aprender algo</span>
+    </button>
+    <button class="sentimiento-btn" data-mood="crecer">
+      <span class="mood-icon">🌱</span>
+      <span class="mood-label">Quiero crecer<br>por dentro</span>
+    </button>
+    <button class="sentimiento-btn" data-mood="tension">
+      <span class="mood-icon">😬</span>
+      <span class="mood-label">Quiero intriga<br>y tensión</span>
+    </button>
+    <button class="sentimiento-btn" data-mood="clasico">
+      <span class="mood-icon">📜</span>
+      <span class="mood-label">Me apetece<br>un clásico</span>
+    </button>
+    <button class="sentimiento-btn" data-mood="ligero">
+      <span class="mood-icon">☁️</span>
+      <span class="mood-label">Algo ligero<br>y sin drama</span>
+    </button>
+  </div>
+
+  <div id="sentimientoResultado" class="sentimiento-resultado" style="display:none">
+    <div class="sentimiento-header">
+      <button id="btnVolver" class="btn-volver">← Cambiar estado de ánimo</button>
+      <p id="sentimientoContador" class="contador"></p>
+    </div>
+    <div id="sentimientoTarjetas" class="tarjetas"></div>
+  </div>
+</section>
 
 </main>
 
@@ -193,7 +157,87 @@
     </div>
   </div>
 
+
+  <!-- FAB Random 🎲 -->
+  <button id="randomFab" class="random-fab" aria-label="Libro al azar">🎲</button>
+
+  <!-- Modal Random -->
+  <div id="randomModal" class="rm-overlay hidden">
+    <div class="rm-box">
+      <div class="rm-header">
+        <h3 id="randomModalTitulo" class="rm-titulo">Libro al azar</h3>
+        <div class="rm-header-actions">
+          <button id="btnOtroRandom" class="rm-btn-otro">Otro →</button>
+          <button id="cerrarRandomModal" class="rm-cerrar" aria-label="Cerrar">&times;</button>
+        </div>
+      </div>
+      <div id="randomModalCuerpo" class="rm-cuerpo"></div>
+      <div id="randomModalAcciones" class="rm-acciones">
+        <button id="randomModalBtnAntojo" class="btn-modal-antojo">✓ Guardar en antojos</button>
+        <button id="randomModalBtnCompartir" class="btn-modal-compartir">↗ Compartir</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel de Antojos flotante -->
+  <button id="antojosBtn" class="antojos-fab" style="display:none" aria-label="Mis antojos">
+    <span>🤤</span>
+    <span id="antojosCount" class="antojos-count">0</span>
+  </button>
+
+  <div id="antojosPanel" class="antojos-panel hidden">
+    <div class="antojos-panel-header">
+      <strong>Mis antojos</strong>
+      <button id="antojosCerrar" class="antojos-cerrar">✕</button>
+    </div>
+    <ul id="antojosLista" class="antojos-lista"></ul>
+    <div class="antojos-footer-actions">
+      <button id="btnCompartirTodos" class="btn-antojos-primary">↗ Compartir lista</button>
+      <button id="btnVaciarAntojos" class="btn-antojos-secondary">🗑️ Vaciar todo</button>
+    </div>
+  </div>
+
+  <!-- Modal compartir desktop -->
+  <div id="shareModal" class="share-modal hidden">
+    <div class="share-modal-box">
+      <div class="share-modal-header">
+        <strong>Compartir</strong>
+        <button id="shareModalCerrar" class="antojos-cerrar">✕</button>
+      </div>
+      <div class="share-modal-body">
+        <button id="shareWhatsapp" class="share-option">💬 Enviar por WhatsApp</button>
+        <button id="shareCopiar" class="share-option">📋 Copiar al portapapeles</button>
+      </div>
+    </div>
+  </div>
+  <!-- Barra de navegación inferior (solo móvil) -->
+  <nav class="bottom-nav" id="bottomNav">
+    <button class="bn-item active" data-tab="tabLibros">
+      <span class="bn-icon">📚</span>
+      <span class="bn-label">Lista</span>
+    </button>
+    <button class="bn-item" data-tab="tabGeneros">
+      <span class="bn-icon">🎭</span>
+      <span class="bn-label">Géneros</span>
+    </button>
+    <button class="bn-item" data-tab="tabSentimiento">
+      <span class="bn-icon">👀</span>
+      <span class="bn-label">Mood</span>
+    </button>
+    <button class="bn-item" data-tab="tabAbout">
+      <span class="bn-icon">ℹ️</span>
+      <span class="bn-label">Info</span>
+    </button>
+  </nav>
+
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="script.js?v=1.0.8"></script>
+  <script src="script.js?v=1.1.1"></script>
+
+  <!-- Cloudflare Web Analytics -->
+  <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "85978fa0985645ffb561da2af953aad6"}'>
+  </script>
+  <!-- End Cloudflare Web Analytics -->
+
+
 </body>
 </html>
