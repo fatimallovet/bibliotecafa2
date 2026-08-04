@@ -2,7 +2,8 @@
    · 2026-08-03: tarjetas más legibles (reseña tipo cita, ícono en flags y autor) y más anchas en desktop (≥901px)
    · 2026-08-03: ficha de detalle rediseñada — header con subtítulo, ficha técnica en grid, reseña como cita, más ancha en desktop
    · 2026-08-03 (v2): ficha de detalle vuelta a hacer — hero navy tipo solapa de libro, specs en línea con divisores en vez de cajitas grises, sin alerta roja genérica, cita editorial sin caja
-   · 2026-08-03 (v3): ficha en 2 columnas en desktop (specs a la izq., reseña a la der. — menos scroll), modal más ancho, reseña en tipografía normal del sitio (no serif itálica) para mejor lectura */
+   · 2026-08-03 (v3): ficha en 2 columnas en desktop (specs a la izq., reseña a la der. — menos scroll), modal más ancho, reseña en tipografía normal del sitio (no serif itálica) para mejor lectura
+   · 2026-08-03 (v4): ficha más compacta en móvil (menos padding/gaps); botón de género activo con checkmark y más contraste; géneros sin coincidencias se ocultan al filtrar */
 /* =====================================================
    BiblioFa — Azul Medianoche + Dorado
    ===================================================== */
@@ -424,7 +425,14 @@ h2 {
   box-shadow: var(--shadow-sm);
 }
 .genero-btn:hover:not(:disabled) { border-color: var(--navy); color: var(--navy); }
-.genero-btn.active { background: var(--navy); border-color: var(--navy); color: var(--gold); font-weight: 600; }
+.genero-btn.active {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: var(--gold);
+  font-weight: 600;
+  box-shadow: 0 3px 10px rgba(26,39,68,0.28);
+}
+.genero-btn.active::before { content: "✓ "; }
 .genero-btn.desactivado, .genero-btn:disabled { opacity: 0.25; cursor: not-allowed; pointer-events: none; }
 
 /* ── Tarjetas (géneros + mood) — mismo grid que Lista ── */
@@ -872,9 +880,6 @@ h2 {
   border-left: 3px solid var(--gold);
   margin-top: 4px;
 }
-@media (max-width: 700px) {
-  .modal-resena { margin-top: 18px; }
-}
 
 /* ── Botones modal: píldoras, mismo lenguaje que el resto del sitio ─ */
 .modal-actions {
@@ -1064,6 +1069,23 @@ footer {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 3px; }
 
+/* ── Ficha de detalle: más compacta en móvil ─────────── */
+@media (max-width: 700px) {
+  .modal-hero { padding: 20px 20px 16px; }
+  .modal-hero-title { font-size: 1.32rem; }
+  .modal-hero-autor { margin-top: 4px; }
+  .modal-hero-stars { margin-top: 10px; }
+
+  .modal-body { padding: 16px 18px 16px; }
+  .modal-specs-row { margin-bottom: 10px; }
+  .modal-colophon { padding: 10px 0; margin-bottom: 10px; gap: 7px; }
+  .modal-etiquetas { margin-bottom: 10px; }
+  .modal-flags { margin-bottom: 10px; padding: 8px 12px; }
+  .modal-resena { margin-top: 10px; }
+
+  .modal-actions { margin-top: 12px; padding-top: 12px; }
+}
+
 /* ── Mobile ─────────────────────────────────────────── */
 @media (max-width: 600px) {
   .site-header { padding: 14px 16px; }
@@ -1078,7 +1100,7 @@ footer {
   .mood-label { font-size: 0.74rem; }
   .random-card-full { padding: 18px; }
   .modal-content { width: 96%; border-radius: var(--radius-lg); max-height: 92vh; }
-  .modal-header, .modal-body { padding-left: 16px; padding-right: 16px; }
+  .modal-hero, .modal-body { padding-left: 16px; padding-right: 16px; }
   .antojos-panel { right: 12px; width: calc(100vw - 24px); }
   .section-header { gap: 8px; }
   .orden-select { font-size: 0.8rem; padding: 8px 10px; }

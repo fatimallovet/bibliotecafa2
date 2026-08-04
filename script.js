@@ -8,6 +8,8 @@
 //   specs en línea con divisores en vez de cajas, reseña como pull-quote sin fondo
 // - Ficha de detalle v3: layout de 2 columnas en desktop (specs | reseña) para reducir scroll,
 //   reseña en fuente normal del sitio (DM Sans, no cursiva) para mejor legibilidad
+// - Filtro de géneros: al seleccionar uno, los géneros sin coincidencias se ocultan por completo
+//   (antes solo se atenuaban). Botón activo con checkmark para que siempre se note seleccionado.
 // Busca un campo en el objeto ignorando diferencias de acentos
 function getCampo(obj, ...nombres) {
   for (const nombre of nombres) {
@@ -240,13 +242,15 @@ function renderGeneroBtns() {
   cont.appendChild(btnTodos);
 
   todosGrupos.forEach(g => {
-    const btn = document.createElement('button');
     const activo = generosActivos.has(g);
     const disponible = activo || gruposDisponibles.has(g);
 
-    btn.className = 'genero-btn' + (activo ? ' active' : '') + (!disponible ? ' desactivado' : '');
+    // Si no hay coincidencias con el filtro actual, ni lo mostramos
+    if (!disponible) return;
+
+    const btn = document.createElement('button');
+    btn.className = 'genero-btn' + (activo ? ' active' : '');
     btn.textContent = g;
-    btn.disabled = !disponible;
 
     btn.addEventListener('click', () => {
       if (generosActivos.has(g)) {
