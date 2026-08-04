@@ -6,6 +6,8 @@
 //   (tono/ritmo/público) en grid, etiquetas, banner de flags y reseña como cita destacada
 // - Ficha de detalle v2: hero navy tipo solapa de libro (título+autor+estrellas en blanco/dorado),
 //   specs en línea con divisores en vez de cajas, reseña como pull-quote sin fondo
+// - Ficha de detalle v3: layout de 2 columnas en desktop (specs | reseña) para reducir scroll,
+//   reseña en fuente normal del sitio (DM Sans, no cursiva) para mejor legibilidad
 // Busca un campo en el objeto ignorando diferencias de acentos
 function getCampo(obj, ...nombres) {
   for (const nombre of nombres) {
@@ -511,24 +513,30 @@ detalleContenido.innerHTML = `
   </div>
 
   <div class="modal-body">
-    ${(generoChips || esFavorita) ? `
-    <div class="modal-specs-row">
-      ${esFavorita ? `<span class="top-pick-badge">★ favorita</span>` : ''}
-      ${generoChips}
-    </div>` : ''}
+    <div class="modal-layout">
+      <div class="modal-side">
+        ${(generoChips || esFavorita) ? `
+        <div class="modal-specs-row">
+          ${esFavorita ? `<span class="top-pick-badge">★ favorita</span>` : ''}
+          ${generoChips}
+        </div>` : ''}
 
-    ${(tono || ritmo || publico) ? `
-    <div class="modal-colophon">
-      ${tono ? specItem('Tono', tono) : ''}
-      ${ritmo ? specItem('Ritmo', ritmo) : ''}
-      ${publico ? specItem('Público', publico) : ''}
-    </div>` : ''}
+        ${(tono || ritmo || publico) ? `
+        <div class="modal-colophon">
+          ${tono ? specItem('Tono', tono) : ''}
+          ${ritmo ? specItem('Ritmo', ritmo) : ''}
+          ${publico ? specItem('Público', publico) : ''}
+        </div>` : ''}
 
-    ${etiquetasHtml ? `<div class="modal-etiquetas">${etiquetasHtml}</div>` : ''}
+        ${etiquetasHtml ? `<div class="modal-etiquetas">${etiquetasHtml}</div>` : ''}
 
-    ${flags && flags.toLowerCase() !== 'ninguno' ? `<div class="modal-flags">⚠ ${escapeHtml(flags)}</div>` : ''}
+        ${flags && flags.toLowerCase() !== 'ninguno' ? `<div class="modal-flags">⚠ ${escapeHtml(flags)}</div>` : ''}
+      </div>
 
-    ${resena ? `<p class="modal-resena">${escapeHtml(resena)}</p>` : ''}
+      <div class="modal-main">
+        ${resena ? `<p class="modal-resena">${escapeHtml(resena)}</p>` : ''}
+      </div>
+    </div>
   </div>
 `;
 

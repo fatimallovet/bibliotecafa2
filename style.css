@@ -1,7 +1,8 @@
 /* BiblioFa style.css · Actualizado: 2026-08-03 — rediseño: serif editorial, fondo cálido, botones píldora, acento dorado en favoritas, barra inferior de 4 tabs + FABs
    · 2026-08-03: tarjetas más legibles (reseña tipo cita, ícono en flags y autor) y más anchas en desktop (≥901px)
    · 2026-08-03: ficha de detalle rediseñada — header con subtítulo, ficha técnica en grid, reseña como cita, más ancha en desktop
-   · 2026-08-03 (v2): ficha de detalle vuelta a hacer — hero navy tipo solapa de libro, specs en línea con divisores en vez de cajitas grises, sin alerta roja genérica, cita editorial sin caja */
+   · 2026-08-03 (v2): ficha de detalle vuelta a hacer — hero navy tipo solapa de libro, specs en línea con divisores en vez de cajitas grises, sin alerta roja genérica, cita editorial sin caja
+   · 2026-08-03 (v3): ficha en 2 columnas en desktop (specs a la izq., reseña a la der. — menos scroll), modal más ancho, reseña en tipografía normal del sitio (no serif itálica) para mejor lectura */
 /* =====================================================
    BiblioFa — Azul Medianoche + Dorado
    ===================================================== */
@@ -736,8 +737,11 @@ h2 {
 }
 
 /* En escritorio, la ficha aprovecha más espacio horizontal */
-@media (min-width: 901px) {
-  .modal-content { max-width: 780px; }
+@media (min-width: 701px) {
+  .modal-content { max-width: 760px; }
+}
+@media (min-width: 1000px) {
+  .modal-content { max-width: 880px; }
 }
 
 @keyframes slideUp {
@@ -794,6 +798,20 @@ h2 {
   font-size: 0.92rem; line-height: 1.6;
 }
 
+/* En pantallas anchas, specs a la izquierda y reseña a la derecha:
+   así se ve casi todo sin necesidad de hacer scroll */
+.modal-layout { display: block; }
+@media (min-width: 701px) {
+  .modal-layout {
+    display: grid;
+    grid-template-columns: 210px 1fr;
+    gap: 30px;
+    align-items: start;
+  }
+  .modal-side { padding-top: 2px; }
+  .modal-main { min-width: 0; }
+}
+
 /* ── Géneros + badge favorita ────────────────────────── */
 .modal-specs-row {
   display: flex; flex-wrap: wrap; align-items: center;
@@ -801,35 +819,30 @@ h2 {
   margin-bottom: 16px;
 }
 
-/* ── Colofón: tono / ritmo / público en línea, sin cajas ─ */
+/* ── Colofón: tono / ritmo / público como lista compacta ─ */
 .modal-colophon {
-  display: flex; flex-wrap: wrap;
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 14px 0;
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
-  padding: 14px 0;
   margin-bottom: 16px;
 }
 .modal-spec {
-  display: flex; flex-direction: column; gap: 3px;
-  padding: 0 18px;
-  border-right: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 10px;
 }
-.modal-spec:first-child { padding-left: 0; }
-.modal-spec:last-child { border-right: none; }
 .modal-spec-label {
   font-size: 0.64rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--gold-dk);
+  flex-shrink: 0;
 }
 .modal-spec-value {
   font-size: 0.87rem;
   color: var(--text);
-}
-@media (max-width: 480px) {
-  .modal-colophon { flex-direction: column; gap: 10px; }
-  .modal-spec { border-right: none; padding: 0; }
+  text-align: right;
 }
 
 .modal-etiquetas {
@@ -845,19 +858,22 @@ h2 {
   font-weight: 500;
   padding: 10px 14px;
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  margin-bottom: 16px;
 }
 
-/* ── Reseña: cita editorial, sin caja ni ícono de clip-art ─ */
+/* ── Reseña: texto normal del sitio, sin cursiva ni serif pesada ─ */
 .modal-resena {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: 1.05rem;
-  line-height: 1.85;
-  color: var(--text);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 0.98rem;
+  line-height: 1.75;
+  color: rgba(26,39,68,0.82);
   padding-left: 18px;
   border-left: 3px solid var(--gold);
   margin-top: 4px;
+}
+@media (max-width: 700px) {
+  .modal-resena { margin-top: 18px; }
 }
 
 /* ── Botones modal: píldoras, mismo lenguaje que el resto del sitio ─ */
