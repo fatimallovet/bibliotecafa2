@@ -4,6 +4,8 @@
 // - Botón Atrás del navegador: navega entre tabs, resultados de Mood y cierra modales/paneles (historial)
 // - Ficha de detalle rediseñada: header con subtítulo de autor, chips de género, ficha técnica
 //   (tono/ritmo/público) en grid, etiquetas, banner de flags y reseña como cita destacada
+// - Ficha de detalle v2: hero navy tipo solapa de libro (título+autor+estrellas en blanco/dorado),
+//   specs en línea con divisores en vez de cajas, reseña como pull-quote sin fondo
 // Busca un campo en el objeto ignorando diferencias de acentos
 function getCampo(obj, ...nombres) {
   for (const nombre of nombres) {
@@ -494,40 +496,39 @@ function renderDetalleModal(libro){
     ? etiquetas.split(',').map(e => `<span class="etiqueta-tag">${escapeHtml(e.trim())}</span>`).join('')
     : '';
 
-  const metaItem = (label, value) => `
-    <div class="modal-meta-item">
-      <span class="modal-meta-label">${label}</span>
-      <span class="modal-meta-value">${escapeHtml(value)}</span>
+  const specItem = (label, value) => `
+    <div class="modal-spec">
+      <span class="modal-spec-label">${label}</span>
+      <span class="modal-spec-value">${escapeHtml(value)}</span>
     </div>`;
 
 detalleContenido.innerHTML = `
-  <div class="modal-header">
-    <div class="modal-header-text">
-      <h3>${escapeHtml(titulo)}</h3>
-      <p class="modal-subtitle">✍️ ${escapeHtml(autor)}</p>
-    </div>
-    <span id="cerrarModalInterno" class="close">&times;</span>
+  <div class="modal-hero">
+    <span id="cerrarModalInterno" class="modal-close" aria-label="Cerrar">&times;</span>
+    <h3 class="modal-hero-title">${escapeHtml(titulo)}</h3>
+    <p class="modal-hero-autor">${escapeHtml(autor)}</p>
+    ${numEstrellas > 0 ? `<p class="modal-hero-stars">${'★'.repeat(numEstrellas)}<span class="modal-hero-stars-off">${'★'.repeat(Math.max(0, 5 - numEstrellas))}</span></p>` : ''}
   </div>
 
   <div class="modal-body">
-    <div class="modal-top-row">
-      ${numEstrellas > 0 ? `<span class="modal-stars">${'★'.repeat(numEstrellas)}</span>` : ''}
+    ${(generoChips || esFavorita) ? `
+    <div class="modal-specs-row">
       ${esFavorita ? `<span class="top-pick-badge">★ favorita</span>` : ''}
       ${generoChips}
-    </div>
+    </div>` : ''}
 
     ${(tono || ritmo || publico) ? `
-    <div class="modal-meta-grid">
-      ${tono ? metaItem('Tono', tono) : ''}
-      ${ritmo ? metaItem('Ritmo', ritmo) : ''}
-      ${publico ? metaItem('Público', publico) : ''}
+    <div class="modal-colophon">
+      ${tono ? specItem('Tono', tono) : ''}
+      ${ritmo ? specItem('Ritmo', ritmo) : ''}
+      ${publico ? specItem('Público', publico) : ''}
     </div>` : ''}
 
     ${etiquetasHtml ? `<div class="modal-etiquetas">${etiquetasHtml}</div>` : ''}
 
     ${flags && flags.toLowerCase() !== 'ninguno' ? `<div class="modal-flags">⚠ ${escapeHtml(flags)}</div>` : ''}
 
-    ${resena ? `<div class="modal-resena"><span class="quote-mark">&ldquo;</span>${escapeHtml(resena)}</div>` : ''}
+    ${resena ? `<p class="modal-resena">${escapeHtml(resena)}</p>` : ''}
   </div>
 `;
 
