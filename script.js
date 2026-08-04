@@ -1,7 +1,9 @@
-// BiblioFa script.js · Actualizado: 2026-08-02
+// BiblioFa script.js · Actualizado: 2026-08-03
 // - Barra inferior móvil: solo 4 tabs; Random/Wishlist son botones flotantes también en móvil
 // - Acento dorado "favorita" para libros de 5 estrellas
 // - Botón Atrás del navegador: navega entre tabs, resultados de Mood y cierra modales/paneles (historial)
+// - Ficha de detalle rediseñada: header con subtítulo de autor, chips de género, ficha técnica
+//   (tono/ritmo/público) en grid, etiquetas, banner de flags y reseña como cita destacada
 // Busca un campo en el objeto ignorando diferencias de acentos
 function getCampo(obj, ...nombres) {
   for (const nombre of nombres) {
@@ -480,24 +482,52 @@ function renderDetalleModal(libro){
   const etiquetas = libro['Etiquetas'] || libro['Tags'] || '';
   const resena = libro['Reseña'] || libro['Resena'] || libro['Review'] || '';
   const flags = libro['Flags'] || '';
-  const estrellas = libro['Estrellas'] || libro['Calificación'] || '';
+  const estrellasRaw = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
+  const numEstrellas = parseInt(estrellasRaw, 10);
+  const esFavorita = numEstrellas === 5;
+
+  const generoChips = genero
+    ? genero.split(',').map(g => `<span class="genre-chip">${escapeHtml(g.trim())}</span>`).join(' ')
+    : '';
+
+  const etiquetasHtml = etiquetas
+    ? etiquetas.split(',').map(e => `<span class="etiqueta-tag">${escapeHtml(e.trim())}</span>`).join('')
+    : '';
+
+  const metaItem = (label, value) => `
+    <div class="modal-meta-item">
+      <span class="modal-meta-label">${label}</span>
+      <span class="modal-meta-value">${escapeHtml(value)}</span>
+    </div>`;
 
 detalleContenido.innerHTML = `
   <div class="modal-header">
-    <h3>${escapeHtml(titulo)}</h3>
+    <div class="modal-header-text">
+      <h3>${escapeHtml(titulo)}</h3>
+      <p class="modal-subtitle">✍️ ${escapeHtml(autor)}</p>
+    </div>
     <span id="cerrarModalInterno" class="close">&times;</span>
   </div>
 
   <div class="modal-body">
-    <p><strong>Autor:</strong> ${escapeHtml(autor)}</p>
-    <p><strong>Género:</strong> ${escapeHtml(genero)}</p>
-    ${tono ? `<p><strong>Tono:</strong> ${escapeHtml(tono)}</p>` : ''}
-    ${ritmo ? `<p><strong>Ritmo:</strong> ${escapeHtml(ritmo)}</p>` : ''}
-    ${publico ? `<p><strong>Público:</strong> ${escapeHtml(publico)}</p>` : ''}
-    ${etiquetas ? `<p><strong>Etiquetas:</strong> ${escapeHtml(etiquetas)}</p>` : ''}
-    ${flags ? `<p><strong>Flags:</strong> ${escapeHtml(flags)}</p>` : ''}
-    ${estrellas ? `<p><strong>Calificación:</strong> ${"⭐".repeat(Number(estrellas))} (${estrellas})</p>` : ''}
-    <p class="resena">${escapeHtml(resena)}</p>
+    <div class="modal-top-row">
+      ${numEstrellas > 0 ? `<span class="modal-stars">${'★'.repeat(numEstrellas)}</span>` : ''}
+      ${esFavorita ? `<span class="top-pick-badge">★ favorita</span>` : ''}
+      ${generoChips}
+    </div>
+
+    ${(tono || ritmo || publico) ? `
+    <div class="modal-meta-grid">
+      ${tono ? metaItem('Tono', tono) : ''}
+      ${ritmo ? metaItem('Ritmo', ritmo) : ''}
+      ${publico ? metaItem('Público', publico) : ''}
+    </div>` : ''}
+
+    ${etiquetasHtml ? `<div class="modal-etiquetas">${etiquetasHtml}</div>` : ''}
+
+    ${flags && flags.toLowerCase() !== 'ninguno' ? `<div class="modal-flags">⚠ ${escapeHtml(flags)}</div>` : ''}
+
+    ${resena ? `<div class="modal-resena"><span class="quote-mark">&ldquo;</span>${escapeHtml(resena)}</div>` : ''}
   </div>
 `;
 

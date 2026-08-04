@@ -1,5 +1,6 @@
 /* BiblioFa style.css · Actualizado: 2026-08-03 — rediseño: serif editorial, fondo cálido, botones píldora, acento dorado en favoritas, barra inferior de 4 tabs + FABs
-   · 2026-08-03: tarjetas más legibles (reseña tipo cita, ícono en flags y autor) y más anchas en desktop (≥901px) */
+   · 2026-08-03: tarjetas más legibles (reseña tipo cita, ícono en flags y autor) y más anchas en desktop (≥901px)
+   · 2026-08-03: ficha de detalle rediseñada — header con subtítulo, ficha técnica en grid, reseña como cita, más ancha en desktop */
 /* =====================================================
    BiblioFa — Azul Medianoche + Dorado
    ===================================================== */
@@ -733,6 +734,11 @@ h2 {
   animation: slideUp .22s ease;
 }
 
+/* En escritorio, la ficha aprovecha más espacio horizontal */
+@media (min-width: 901px) {
+  .modal-content { max-width: 780px; }
+}
+
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -746,10 +752,16 @@ h2 {
   display: flex; align-items: flex-start;
   justify-content: space-between; gap: 12px;
 }
+.modal-header-text { min-width: 0; }
 .modal-header h3 {
   font-family: 'DM Serif Display', Georgia, serif;
   font-size: 1.3rem; font-weight: 400; font-style: italic;
   color: var(--text); line-height: 1.3; margin: 0;
+}
+.modal-subtitle {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 4px 0 0;
 }
 .close {
   font-size: 22px; cursor: pointer;
@@ -762,19 +774,88 @@ h2 {
   padding: 20px 24px 24px;
   font-size: 0.92rem; line-height: 1.6;
 }
-.modal-body p {
-  margin-bottom: 10px;
-  display: flex; align-items: baseline; gap: 6px;
+
+/* ── Ficha: estrellas + badge + géneros ─────────────── */
+.modal-top-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
 }
-.modal-body p strong {
-  font-size: 0.75rem; font-weight: 600;
-  text-transform: uppercase; letter-spacing: 0.05em;
-  color: var(--muted); min-width: 72px; flex-shrink: 0;
+.modal-stars {
+  color: var(--gold-dk);
+  font-size: 1.05rem;
+  letter-spacing: 2px;
 }
-.modal-body .resena {
-  display: block; margin-top: 14px;
-  padding-top: 14px; border-top: 1px solid var(--border);
-  font-size: 0.92rem; line-height: 1.75; color: var(--text);
+
+/* ── Ficha técnica: tono / ritmo / público ───────────── */
+.modal-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+@media (min-width: 500px) {
+  .modal-meta-grid { grid-template-columns: repeat(3, 1fr); }
+}
+.modal-meta-item {
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+}
+.modal-meta-label {
+  display: block;
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+.modal-meta-value {
+  display: block;
+  font-size: 0.87rem;
+  color: var(--text);
+}
+
+.modal-etiquetas {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-bottom: 14px;
+}
+
+.modal-flags {
+  background: #fdecea;
+  color: #c0392b;
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+}
+
+/* ── Reseña como cita destacada ──────────────────────── */
+.modal-resena {
+  position: relative;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--text);
+  background: var(--surface2);
+  border-radius: var(--radius-md);
+  padding: 20px 22px 20px 46px;
+  margin-top: 4px;
+}
+.modal-resena .quote-mark {
+  position: absolute;
+  left: 14px;
+  top: 6px;
+  font-size: 2.6rem;
+  font-family: var(--font-serif);
+  color: var(--gold);
+  opacity: 0.55;
+  line-height: 1;
 }
 
 /* ── Botones modal ──────────────────────────────────── */
@@ -782,6 +863,10 @@ h2 {
   display: flex; gap: 10px; flex-wrap: wrap;
   margin-top: 20px; padding-top: 16px;
   border-top: 1px solid var(--border);
+  position: sticky;
+  bottom: 0;
+  background: var(--surface);
+  padding-bottom: 4px;
 }
 .btn-modal-antojo {
   font-family: 'DM Sans', system-ui, sans-serif;
