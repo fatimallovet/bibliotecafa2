@@ -12,6 +12,10 @@
 //   (antes solo se atenuaban). Botón activo con checkmark para que siempre se note seleccionado.
 // - Modal random (renderRandomModal) reescrito para usar el mismo layout que la ficha completa
 //   (hero navy + specs + reseña en 2 columnas), con "Otro →" integrado en el hero
+// - Rediseño v2 de la ficha (detalle + random): ambos modales ahora se arman con la misma función
+//   construirFichaHTML() — una sola columna, encabezado compacto de 2 líneas, tono/ritmo/público/
+//   flags como texto plano, "Otro →" movido a la fila de acciones (ya no compite con el título).
+//   Acciones ya no son sticky (evita que se encimen con la barra inferior en móvil).
 // Busca un campo en el objeto ignorando diferencias de acentos
 function getCampo(obj, ...nombres) {
   for (const nombre of nombres) {
@@ -337,78 +341,10 @@ function cerrarRandomModal() {
 }
 
 function renderRandomModal(r) {
-  const titulo    = r['Título'] || r['Titulo'] || r['Title'] || '';
-  const autor     = r['Autor'] || r['Author'] || '';
-  const genero    = r['Género'] || r['Genero'] || r['Genre'] || '';
-  const tono      = r['Tono'] || r['Tone'] || '';
-  const ritmo     = r['Ritmo'] || '';
-  const publico   = r['Público'] || r['Publico'] || '';
-  const resena    = r['Reseña'] || r['Resena'] || r['Review'] || '';
-  const flags     = r['Flags'] || '';
-  const etiquetas = r['Etiquetas'] || r['Tags'] || '';
-  const estrellasRaw = getCampo(r, 'Calificación', 'Estrellas', 'Stars');
-  const numEstrellas = parseInt(estrellasRaw, 10);
-  const esFavorita = numEstrellas === 5;
+  document.getElementById('randomModalCuerpo').innerHTML =
+    construirFichaHTML(r, '', 'cerrarRandomModal');
 
-  const generoChips = genero
-    ? genero.split(',').map(g => `<span class="genre-chip">${escapeHtml(g.trim())}</span>`).join(' ')
-    : '';
-
-  const etiquetasHtml = etiquetas
-    ? etiquetas.split(',').map(e => `<span class="etiqueta-tag">${escapeHtml(e.trim())}</span>`).join('')
-    : '';
-
-  const specItem = (label, value) => `
-    <div class="modal-spec">
-      <span class="modal-spec-label">${label}</span>
-      <span class="modal-spec-value">${escapeHtml(value)}</span>
-    </div>`;
-
-  document.getElementById('randomModalCuerpo').innerHTML = `
-    <div class="modal-hero">
-      <div class="modal-hero-actions">
-        <button id="btnOtroRandom" class="rm-btn-otro">🎲 Otro →</button>
-        <span id="cerrarRandomModal" class="modal-close" aria-label="Cerrar">&times;</span>
-      </div>
-      <h3 class="modal-hero-title">${escapeHtml(titulo)}</h3>
-      <p class="modal-hero-autor">${escapeHtml(autor)}</p>
-      ${numEstrellas > 0 ? `<p class="modal-hero-stars">${'★'.repeat(numEstrellas)}<span class="modal-hero-stars-off">${'★'.repeat(Math.max(0, 5 - numEstrellas))}</span></p>` : ''}
-    </div>
-
-    <div class="modal-body">
-      <div class="modal-layout">
-        <div class="modal-side">
-          ${(generoChips || esFavorita) ? `
-          <div class="modal-specs-row">
-            ${esFavorita ? `<span class="top-pick-badge">★ favorita</span>` : ''}
-            ${generoChips}
-          </div>` : ''}
-
-          ${(tono || ritmo || publico) ? `
-          <div class="modal-colophon">
-            ${tono ? specItem('Tono', tono) : ''}
-            ${ritmo ? specItem('Ritmo', ritmo) : ''}
-            ${publico ? specItem('Público', publico) : ''}
-          </div>` : ''}
-
-          ${etiquetasHtml ? `<div class="modal-etiquetas">${etiquetasHtml}</div>` : ''}
-
-          ${flags && flags.toLowerCase() !== 'ninguno' ? `<div class="modal-flags">⚠ ${escapeHtml(flags)}</div>` : ''}
-        </div>
-
-        <div class="modal-main">
-          ${resena ? `<p class="modal-resena">${escapeHtml(resena)}</p>` : ''}
-        </div>
-      </div>
-    </div>
-  `;
-
-  // Botón "Otro →" y cerrar se recrean en cada render, hay que re-enganchar los listeners
-  document.getElementById('btnOtroRandom').addEventListener('click', () => {
-    if (libros.length === 0) return;
-    _libroRandom = libros[Math.floor(Math.random() * libros.length)];
-    renderRandomModal(_libroRandom);
-  });
+  // El botón de cerrar se recrea en cada render; hay que re-enganchar el listener
   document.getElementById('cerrarRandomModal').addEventListener('click', cerrarRandomModal);
 
   // Botón antojos
@@ -426,6 +362,11 @@ function renderRandomModal(r) {
 }
 
 document.getElementById('randomFab').addEventListener('click', mostrarLibroRandomEnModal);
+document.getElementById('btnOtroRandom').addEventListener('click', () => {
+  if (libros.length === 0) return;
+  _libroRandom = libros[Math.floor(Math.random() * libros.length)];
+  renderRandomModal(_libroRandom);
+});
 document.getElementById('randomModal').addEventListener('click', e => {
   if (e.target === document.getElementById('randomModal')) cerrarRandomModal();
 });
@@ -522,71 +463,10 @@ function showDetalle(libro){
 // Construye el contenido del modal de detalle (sin tocar el historial); la usan
 // showDetalle() y el manejador de popstate al reabrir con Adelante.
 function renderDetalleModal(libro){
-  const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
-  const autor = libro['Autor'] || libro['Author'] || '';
-  const genero = libro['Género'] || libro['Genero'] || '';
-  const tono = libro['Tono'] || libro['Tone'] || '';
-  const ritmo = libro['Ritmo'] || '';
-  const publico = libro['Público'] || libro['Publico'] || '';
-  const etiquetas = libro['Etiquetas'] || libro['Tags'] || '';
-  const resena = libro['Reseña'] || libro['Resena'] || libro['Review'] || '';
-  const flags = libro['Flags'] || '';
-  const estrellasRaw = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
-  const numEstrellas = parseInt(estrellasRaw, 10);
-  const esFavorita = numEstrellas === 5;
+  detalleContenido.innerHTML = construirFichaHTML(libro, '');
 
-  const generoChips = genero
-    ? genero.split(',').map(g => `<span class="genre-chip">${escapeHtml(g.trim())}</span>`).join(' ')
-    : '';
-
-  const etiquetasHtml = etiquetas
-    ? etiquetas.split(',').map(e => `<span class="etiqueta-tag">${escapeHtml(e.trim())}</span>`).join('')
-    : '';
-
-  const specItem = (label, value) => `
-    <div class="modal-spec">
-      <span class="modal-spec-label">${label}</span>
-      <span class="modal-spec-value">${escapeHtml(value)}</span>
-    </div>`;
-
-detalleContenido.innerHTML = `
-  <div class="modal-hero">
-    <span id="cerrarModalInterno" class="modal-close" aria-label="Cerrar">&times;</span>
-    <h3 class="modal-hero-title">${escapeHtml(titulo)}</h3>
-    <p class="modal-hero-autor">${escapeHtml(autor)}</p>
-    ${numEstrellas > 0 ? `<p class="modal-hero-stars">${'★'.repeat(numEstrellas)}<span class="modal-hero-stars-off">${'★'.repeat(Math.max(0, 5 - numEstrellas))}</span></p>` : ''}
-  </div>
-
-  <div class="modal-body">
-    <div class="modal-layout">
-      <div class="modal-side">
-        ${(generoChips || esFavorita) ? `
-        <div class="modal-specs-row">
-          ${esFavorita ? `<span class="top-pick-badge">★ favorita</span>` : ''}
-          ${generoChips}
-        </div>` : ''}
-
-        ${(tono || ritmo || publico) ? `
-        <div class="modal-colophon">
-          ${tono ? specItem('Tono', tono) : ''}
-          ${ritmo ? specItem('Ritmo', ritmo) : ''}
-          ${publico ? specItem('Público', publico) : ''}
-        </div>` : ''}
-
-        ${etiquetasHtml ? `<div class="modal-etiquetas">${etiquetasHtml}</div>` : ''}
-
-        ${flags && flags.toLowerCase() !== 'ninguno' ? `<div class="modal-flags">⚠ ${escapeHtml(flags)}</div>` : ''}
-      </div>
-
-      <div class="modal-main">
-        ${resena ? `<p class="modal-resena">${escapeHtml(resena)}</p>` : ''}
-      </div>
-    </div>
-  </div>
-`;
-
-document.getElementById('cerrarModalInterno')
-  .addEventListener('click', cerrarDetalleModal);
+  document.getElementById('cerrarModalInterno')
+    .addEventListener('click', cerrarDetalleModal);
 
   // Acciones del modal
   const modalActions = document.createElement('div');
@@ -610,7 +490,65 @@ document.getElementById('cerrarModalInterno')
 
   modalActions.appendChild(btnAntojo);
   modalActions.appendChild(btnCompartir);
-  document.querySelector('#detalleContenido .modal-body').appendChild(modalActions);
+  detalleContenido.appendChild(modalActions);
+}
+
+// Construye el hero + cuerpo de una ficha de libro (compartido entre el detalle
+// normal y el modal random, para que ambos se vean siempre igual).
+// `idCerrar` es el id que debe llevar el botón de cerrar (varía entre modales).
+// `extraHeroBtnHtml` permite inyectar un botón extra en la esquina del hero (p. ej. "Otro →").
+function construirFichaHTML(libro, extraHeroBtnHtml, idCerrar) {
+  idCerrar = idCerrar || 'cerrarModalInterno';
+  const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+  const autor = libro['Autor'] || libro['Author'] || '';
+  const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
+  const tono = libro['Tono'] || libro['Tone'] || '';
+  const ritmo = libro['Ritmo'] || '';
+  const publico = libro['Público'] || libro['Publico'] || '';
+  const etiquetas = libro['Etiquetas'] || libro['Tags'] || '';
+  const resena = libro['Reseña'] || libro['Resena'] || libro['Review'] || '';
+  const flags = libro['Flags'] || '';
+  const estrellasRaw = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
+  const numEstrellas = parseInt(estrellasRaw, 10);
+  const esFavorita = numEstrellas === 5;
+
+  const estrellasHtml = numEstrellas > 0
+    ? `<span class="modal-hero-stars">${'★'.repeat(numEstrellas)}<span class="modal-hero-stars-off">${'★'.repeat(Math.max(0, 5 - numEstrellas))}</span></span>`
+    : '';
+
+  const subPartes = [];
+  if (autor) subPartes.push('✍️ ' + escapeHtml(autor));
+  if (genero) subPartes.push(escapeHtml(genero));
+  if (esFavorita) subPartes.push('★ favorita');
+  const subLinea = subPartes.join(' &nbsp;·&nbsp; ');
+
+  const etiquetasHtml = etiquetas
+    ? etiquetas.split(',').map(e => `<span class="etiqueta-tag">${escapeHtml(e.trim())}</span>`).join('')
+    : '';
+
+  const factsPartes = [];
+  if (tono) factsPartes.push(`Tono: <b>${escapeHtml(tono)}</b>`);
+  if (ritmo) factsPartes.push(`Ritmo: <b>${escapeHtml(ritmo)}</b>`);
+  if (publico) factsPartes.push(`Público: <b>${escapeHtml(publico)}</b>`);
+  const factsHtml = factsPartes.length
+    ? `<p class="modal-facts">${factsPartes.join(' &nbsp;·&nbsp; ')}</p>` : '';
+
+  return `
+    <div class="modal-hero">
+      <div class="modal-hero-top">
+        ${extraHeroBtnHtml || ''}
+        <span id="${idCerrar}" class="modal-close" aria-label="Cerrar">&times;</span>
+      </div>
+      <h3 class="modal-hero-title">${escapeHtml(titulo)}</h3>
+      <p class="modal-hero-sub">${estrellasHtml}${(estrellasHtml && subLinea) ? ' &nbsp;·&nbsp; ' : ''}${subLinea}</p>
+    </div>
+    <div class="modal-body">
+      ${factsHtml}
+      ${etiquetasHtml ? `<div class="modal-etiquetas">${etiquetasHtml}</div>` : ''}
+      ${flags && flags.toLowerCase() !== 'ninguno' ? `<p class="modal-flags">⚠️ ${escapeHtml(flags)}</p>` : ''}
+      ${resena ? `<p class="modal-resena">${escapeHtml(resena)}</p>` : ''}
+    </div>
+  `;
 }
 
 // Reabre el modal de detalle con el último libro visto (usado al navegar con Adelante)

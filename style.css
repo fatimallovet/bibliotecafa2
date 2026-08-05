@@ -4,7 +4,13 @@
    · 2026-08-03 (v2): ficha de detalle vuelta a hacer — hero navy tipo solapa de libro, specs en línea con divisores en vez de cajitas grises, sin alerta roja genérica, cita editorial sin caja
    · 2026-08-03 (v3): ficha en 2 columnas en desktop (specs a la izq., reseña a la der. — menos scroll), modal más ancho, reseña en tipografía normal del sitio (no serif itálica) para mejor lectura
    · 2026-08-03 (v4): ficha más compacta en móvil (menos padding/gaps); botón de género activo con checkmark y más contraste; géneros sin coincidencias se ocultan al filtrar
-   · 2026-08-03 (v5): modal random ahora reutiliza el mismo diseño que la ficha completa (hero navy, specs, reseña) en vez de su propia caja fija de 520px — ya no trunca el título */
+   · 2026-08-03 (v5): modal random ahora reutiliza el mismo diseño que la ficha completa (hero navy, specs, reseña) en vez de su propia caja fija de 520px — ya no trunca el título
+   · 2026-08-03 (v6): rediseño completo de la ficha — una sola columna (nada de layout de 2 columnas,
+     que dejaba huecos raros con reseñas cortas), encabezado navy compacto con todo en 2 líneas,
+     tono/ritmo/público y flags como texto plano (sin cajas), ritmo de márgenes uniforme (flex+gap),
+     botones de acción ya no son sticky (causaban que se encimaran con la barra inferior en móvil),
+     z-index de los overlays subido por encima de la barra inferior. Ficha completa y random comparten
+     ahora la misma función de armado (construirFichaHTML) para que luzcan siempre idénticas. */
 /* =====================================================
    BiblioFa — Azul Medianoche + Dorado
    ===================================================== */
@@ -732,25 +738,22 @@ h2 {
   position: fixed; inset: 0;
   background: rgba(26,39,68,0.5);
   display: flex; justify-content: center; align-items: center;
-  z-index: 100; backdrop-filter: blur(4px);
+  z-index: 600; backdrop-filter: blur(4px);
 }
 .modal.hidden { display: none; }
 
 .modal-content {
   background: var(--surface);
   border-radius: var(--radius-xl);
-  width: 92%; max-width: 620px;
-  max-height: 88vh; overflow-y: auto;
+  width: 92%; max-width: 560px;
+  max-height: 86vh; overflow-y: auto;
   box-shadow: var(--shadow-lg);
   animation: slideUp .22s ease;
 }
 
-/* En escritorio, la ficha aprovecha más espacio horizontal */
+/* En escritorio un poco más de aire, sin exagerar */
 @media (min-width: 701px) {
-  .modal-content { max-width: 760px; }
-}
-@media (min-width: 1000px) {
-  .modal-content { max-width: 880px; }
+  .modal-content { max-width: 640px; }
 }
 
 @keyframes slideUp {
@@ -758,115 +761,84 @@ h2 {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ── Encabezado: banda navy compacta, todo en 2 líneas ─ */
 .modal-hero {
-  position: sticky;
-  top: 0;
-  z-index: 2;
+  position: relative;
   background: linear-gradient(135deg, var(--navy), var(--navy-lt));
-  padding: 30px 26px 24px;
+  padding: 22px 50px 20px 24px;
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
 }
 .modal-hero-title {
   font-family: var(--font-serif);
   font-style: italic;
   font-weight: 400;
-  font-size: 1.55rem;
+  font-size: 1.35rem;
   color: #fff;
-  line-height: 1.28;
-  padding-right: 34px;
+  line-height: 1.3;
 }
-.modal-hero-autor {
-  font-size: 0.85rem;
-  color: rgba(255,255,255,0.65);
-  margin-top: 6px;
+.modal-hero-sub {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.7);
+  margin-top: 8px;
+  line-height: 1.5;
 }
-.modal-hero-autor::before { content: "✍️ "; opacity: 0.8; }
-.modal-hero-stars {
-  margin-top: 14px;
-  color: var(--gold);
-  font-size: 1rem;
-  letter-spacing: 3px;
-}
-.modal-hero-stars-off { color: rgba(255,255,255,0.22); }
+.modal-hero-stars { color: var(--gold); letter-spacing: 1px; }
+.modal-hero-stars-off { color: rgba(255,255,255,0.25); }
 
-.modal-close {
+.modal-hero-top {
   position: absolute;
-  top: 16px; right: 18px;
-  width: 30px; height: 30px;
+  top: 14px; right: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.modal-close {
+  width: 28px; height: 28px;
   display: flex; align-items: center; justify-content: center;
   border-radius: 50%;
   background: rgba(255,255,255,0.12);
   color: rgba(255,255,255,0.85);
-  font-size: 20px; line-height: 1; cursor: pointer;
+  font-size: 19px; line-height: 1; cursor: pointer;
   transition: background .15s, color .15s;
 }
 .modal-close:hover { background: rgba(255,255,255,0.24); color: #fff; }
 
+.rm-btn-otro {
+  background: rgba(240,192,64,0.16);
+  color: var(--gold);
+  border: 1px solid rgba(240,192,64,0.4);
+  border-radius: 100px;
+  padding: 5px 14px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .18s;
+}
+.rm-btn-otro:hover { background: rgba(240,192,64,0.3); }
+
+/* ── Cuerpo: una sola columna, ritmo de espacios uniforme ─ */
 .modal-body {
-  padding: 22px 26px 22px;
-  font-size: 0.92rem; line-height: 1.6;
+  padding: 20px 24px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-/* En pantallas anchas, specs a la izquierda y reseña a la derecha:
-   así se ve casi todo sin necesidad de hacer scroll */
-.modal-layout { display: block; }
-@media (min-width: 701px) {
-  .modal-layout {
-    display: grid;
-    grid-template-columns: 210px 1fr;
-    gap: 30px;
-    align-items: start;
-  }
-  .modal-side { padding-top: 2px; }
-  .modal-main { min-width: 0; }
+.modal-facts {
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.6;
 }
-
-/* ── Géneros + badge favorita ────────────────────────── */
-.modal-specs-row {
-  display: flex; flex-wrap: wrap; align-items: center;
-  gap: 6px;
-  margin-bottom: 16px;
-}
-
-/* ── Colofón: tono / ritmo / público como lista compacta ─ */
-.modal-colophon {
-  display: flex; flex-direction: column; gap: 10px;
-  padding: 14px 0;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 16px;
-}
-.modal-spec {
-  display: flex; justify-content: space-between; align-items: baseline;
-  gap: 10px;
-}
-.modal-spec-label {
-  font-size: 0.64rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--gold-dk);
-  flex-shrink: 0;
-}
-.modal-spec-value {
-  font-size: 0.87rem;
-  color: var(--text);
-  text-align: right;
-}
+.modal-facts b { color: var(--text); font-weight: 600; }
 
 .modal-etiquetas {
   display: flex; flex-wrap: wrap; gap: 6px;
-  margin-bottom: 16px;
 }
 
 .modal-flags {
-  background: var(--gold-lt);
-  border-left: 3px solid var(--gold-dk);
-  color: var(--navy);
   font-size: 0.85rem;
   font-weight: 500;
-  padding: 10px 14px;
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: #9a5b13;
+  line-height: 1.5;
 }
 
 /* ── Reseña: texto normal del sitio, sin cursiva ni serif pesada ─ */
@@ -874,23 +846,18 @@ h2 {
   font-family: 'DM Sans', system-ui, sans-serif;
   font-style: normal;
   font-weight: 400;
-  font-size: 0.98rem;
-  line-height: 1.75;
+  font-size: 0.96rem;
+  line-height: 1.7;
   color: rgba(26,39,68,0.82);
-  padding-left: 18px;
+  padding-left: 16px;
   border-left: 3px solid var(--gold);
-  margin-top: 4px;
 }
 
 /* ── Botones modal: píldoras, mismo lenguaje que el resto del sitio ─ */
 .modal-actions {
   display: flex; gap: 10px; flex-wrap: wrap;
-  margin-top: 6px; padding-top: 18px;
+  padding: 16px 24px 20px;
   border-top: 1px solid var(--border);
-  position: sticky;
-  bottom: 0;
-  background: var(--surface);
-  padding-bottom: 4px;
 }
 .btn-modal-antojo,
 .btn-modal-compartir {
@@ -912,6 +879,9 @@ h2 {
   color: var(--muted);
 }
 .btn-modal-compartir:hover { border-color: var(--navy); color: var(--navy); }
+
+/* Random: reutiliza exactamente el mismo modal-content que la ficha completa */
+.rm-content { animation: slideUp .22s ease; }
 
 /* ── Botón palomita ──────────────────────────────────── */
 .btn-antojo {
@@ -1021,7 +991,7 @@ h2 {
   position: fixed; inset: 0;
   background: rgba(26,39,68,0.5);
   display: flex; align-items: center; justify-content: center;
-  z-index: 200; backdrop-filter: blur(4px);
+  z-index: 600; backdrop-filter: blur(4px);
 }
 .share-modal.hidden { display: none; }
 .share-modal-box {
@@ -1070,21 +1040,12 @@ footer {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 3px; }
 
-/* ── Ficha de detalle: más compacta en móvil ─────────── */
+/* ── Ficha de detalle: un poco más compacta en móvil ─── */
 @media (max-width: 700px) {
-  .modal-hero { padding: 20px 20px 16px; }
-  .modal-hero-title { font-size: 1.32rem; }
-  .modal-hero-autor { margin-top: 4px; }
-  .modal-hero-stars { margin-top: 10px; }
-
-  .modal-body { padding: 16px 18px 16px; }
-  .modal-specs-row { margin-bottom: 10px; }
-  .modal-colophon { padding: 10px 0; margin-bottom: 10px; gap: 7px; }
-  .modal-etiquetas { margin-bottom: 10px; }
-  .modal-flags { margin-bottom: 10px; padding: 8px 12px; }
-  .modal-resena { margin-top: 10px; }
-
-  .modal-actions { margin-top: 12px; padding-top: 12px; }
+  .modal-hero { padding: 18px 46px 16px 18px; }
+  .modal-hero-title { font-size: 1.22rem; }
+  .modal-body { padding: 16px 18px 18px; gap: 12px; }
+  .modal-actions { padding: 14px 18px 18px; }
 }
 
 /* ── Mobile ─────────────────────────────────────────── */
@@ -1158,40 +1119,11 @@ footer {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 200;
+  z-index: 600;
   padding: 16px;
   box-sizing: border-box;
 }
 .rm-overlay.hidden { display: none; }
-
-/* El cuadro del random reutiliza el mismo look que la ficha completa (modal-content) */
-.rm-content { animation: slideUp .22s ease; }
-
-/* Fila de acciones dentro del hero: botón "Otro →" + cerrar */
-.modal-hero-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-.modal-hero-actions .modal-close {
-  position: static;
-  background: rgba(255,255,255,0.12);
-}
-.rm-btn-otro {
-  background: rgba(240,192,64,0.16);
-  color: var(--gold);
-  border: 1px solid rgba(240,192,64,0.4);
-  border-radius: 100px;
-  padding: 6px 16px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background .18s;
-}
-.rm-btn-otro:hover { background: rgba(240,192,64,0.3); }
 
 /* =====================================================
    BARRA INFERIOR — solo móvil (≤ 600px)
