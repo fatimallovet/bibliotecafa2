@@ -10,6 +10,8 @@
 //   reseña en fuente normal del sitio (DM Sans, no cursiva) para mejor legibilidad
 // - Filtro de géneros: al seleccionar uno, los géneros sin coincidencias se ocultan por completo
 //   (antes solo se atenuaban). Botón activo con checkmark para que siempre se note seleccionado.
+// - Modal random (renderRandomModal) reescrito para usar el mismo layout que la ficha completa
+//   (hero navy + specs + reseña en 2 columnas), con "Otro →" integrado en el hero
 // Busca un campo en el objeto ignorando diferencias de acentos
 function getCampo(obj, ...nombres) {
   for (const nombre of nombres) {
@@ -346,23 +348,68 @@ function renderRandomModal(r) {
   const etiquetas = r['Etiquetas'] || r['Tags'] || '';
   const estrellasRaw = getCampo(r, 'Calificación', 'Estrellas', 'Stars');
   const numEstrellas = parseInt(estrellasRaw, 10);
+  const esFavorita = numEstrellas === 5;
+
+  const generoChips = genero
+    ? genero.split(',').map(g => `<span class="genre-chip">${escapeHtml(g.trim())}</span>`).join(' ')
+    : '';
 
   const etiquetasHtml = etiquetas
     ? etiquetas.split(',').map(e => `<span class="etiqueta-tag">${escapeHtml(e.trim())}</span>`).join('')
     : '';
 
-  document.getElementById('randomModalTitulo').textContent = titulo;
+  const specItem = (label, value) => `
+    <div class="modal-spec">
+      <span class="modal-spec-label">${label}</span>
+      <span class="modal-spec-value">${escapeHtml(value)}</span>
+    </div>`;
+
   document.getElementById('randomModalCuerpo').innerHTML = `
-    <p class="random-autor"><strong>${escapeHtml(autor)}</strong></p>
-    <p class="random-genero">${escapeHtml(genero)}</p>
-    ${numEstrellas > 0 ? `<p class="random-stars">${'★'.repeat(numEstrellas)}</p>` : ''}
-    ${tono    ? `<p class="random-meta"><span>Tono</span> ${escapeHtml(tono)}</p>` : ''}
-    ${ritmo   ? `<p class="random-meta"><span>Ritmo</span> ${escapeHtml(ritmo)}</p>` : ''}
-    ${publico ? `<p class="random-meta"><span>Público</span> ${escapeHtml(publico)}</p>` : ''}
-    ${etiquetasHtml ? `<div class="random-etiquetas">${etiquetasHtml}</div>` : ''}
-    ${flags && flags.toLowerCase() !== 'ninguno' ? `<p><span class="flag-tag">${escapeHtml(flags)}</span></p>` : ''}
-    ${resena  ? `<p class="random-resena">${escapeHtml(resena)}</p>` : ''}
+    <div class="modal-hero">
+      <div class="modal-hero-actions">
+        <button id="btnOtroRandom" class="rm-btn-otro">🎲 Otro →</button>
+        <span id="cerrarRandomModal" class="modal-close" aria-label="Cerrar">&times;</span>
+      </div>
+      <h3 class="modal-hero-title">${escapeHtml(titulo)}</h3>
+      <p class="modal-hero-autor">${escapeHtml(autor)}</p>
+      ${numEstrellas > 0 ? `<p class="modal-hero-stars">${'★'.repeat(numEstrellas)}<span class="modal-hero-stars-off">${'★'.repeat(Math.max(0, 5 - numEstrellas))}</span></p>` : ''}
+    </div>
+
+    <div class="modal-body">
+      <div class="modal-layout">
+        <div class="modal-side">
+          ${(generoChips || esFavorita) ? `
+          <div class="modal-specs-row">
+            ${esFavorita ? `<span class="top-pick-badge">★ favorita</span>` : ''}
+            ${generoChips}
+          </div>` : ''}
+
+          ${(tono || ritmo || publico) ? `
+          <div class="modal-colophon">
+            ${tono ? specItem('Tono', tono) : ''}
+            ${ritmo ? specItem('Ritmo', ritmo) : ''}
+            ${publico ? specItem('Público', publico) : ''}
+          </div>` : ''}
+
+          ${etiquetasHtml ? `<div class="modal-etiquetas">${etiquetasHtml}</div>` : ''}
+
+          ${flags && flags.toLowerCase() !== 'ninguno' ? `<div class="modal-flags">⚠ ${escapeHtml(flags)}</div>` : ''}
+        </div>
+
+        <div class="modal-main">
+          ${resena ? `<p class="modal-resena">${escapeHtml(resena)}</p>` : ''}
+        </div>
+      </div>
+    </div>
   `;
+
+  // Botón "Otro →" y cerrar se recrean en cada render, hay que re-enganchar los listeners
+  document.getElementById('btnOtroRandom').addEventListener('click', () => {
+    if (libros.length === 0) return;
+    _libroRandom = libros[Math.floor(Math.random() * libros.length)];
+    renderRandomModal(_libroRandom);
+  });
+  document.getElementById('cerrarRandomModal').addEventListener('click', cerrarRandomModal);
 
   // Botón antojos
   const btnA = document.getElementById('randomModalBtnAntojo');
@@ -379,12 +426,6 @@ function renderRandomModal(r) {
 }
 
 document.getElementById('randomFab').addEventListener('click', mostrarLibroRandomEnModal);
-document.getElementById('btnOtroRandom').addEventListener('click', () => {
-  if (libros.length === 0) return;
-  _libroRandom = libros[Math.floor(Math.random() * libros.length)];
-  renderRandomModal(_libroRandom);
-});
-document.getElementById('cerrarRandomModal').addEventListener('click', cerrarRandomModal);
 document.getElementById('randomModal').addEventListener('click', e => {
   if (e.target === document.getElementById('randomModal')) cerrarRandomModal();
 });

@@ -3,7 +3,8 @@
    · 2026-08-03: ficha de detalle rediseñada — header con subtítulo, ficha técnica en grid, reseña como cita, más ancha en desktop
    · 2026-08-03 (v2): ficha de detalle vuelta a hacer — hero navy tipo solapa de libro, specs en línea con divisores en vez de cajitas grises, sin alerta roja genérica, cita editorial sin caja
    · 2026-08-03 (v3): ficha en 2 columnas en desktop (specs a la izq., reseña a la der. — menos scroll), modal más ancho, reseña en tipografía normal del sitio (no serif itálica) para mejor lectura
-   · 2026-08-03 (v4): ficha más compacta en móvil (menos padding/gaps); botón de género activo con checkmark y más contraste; géneros sin coincidencias se ocultan al filtrar */
+   · 2026-08-03 (v4): ficha más compacta en móvil (menos padding/gaps); botón de género activo con checkmark y más contraste; géneros sin coincidencias se ocultan al filtrar
+   · 2026-08-03 (v5): modal random ahora reutiliza el mismo diseño que la ficha completa (hero navy, specs, reseña) en vez de su propia caja fija de 520px — ya no trunca el título */
 /* =====================================================
    BiblioFa — Azul Medianoche + Dorado
    ===================================================== */
@@ -1158,106 +1159,39 @@ footer {
   align-items: center;
   justify-content: center;
   z-index: 200;
-  padding: 16px;          /* margen en móvil */
+  padding: 16px;
   box-sizing: border-box;
 }
 .rm-overlay.hidden { display: none; }
 
-.rm-box {
-  background: var(--surface, #fff);
-  border-radius: 16px;
-  width: 100%;
-  max-width: 520px;
-  height: 520px;          /* altura FIJA — mismo tamaño siempre */
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;       /* recorta el header curvo */
-  box-shadow: 0 8px 40px rgba(0,0,0,0.28);
-  animation: slideUp .22s ease;
-}
+/* El cuadro del random reutiliza el mismo look que la ficha completa (modal-content) */
+.rm-content { animation: slideUp .22s ease; }
 
-/* HEADER — franja azul marino */
-.rm-header {
-  background: linear-gradient(100deg, #1a3a5c, #1e4976);
-  padding: 16px 20px;
+/* Fila de acciones dentro del hero: botón "Otro →" + cerrar */
+.modal-hero-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex-shrink: 0;         /* nunca se encoge */
-}
-.rm-titulo {
-  font-family: var(--font-serif);
-  color: #f0d080;
-  font-size: 1.15rem;
-  font-weight: 400;
-  margin: 0;
-  flex: 1 1 0;
-  min-width: 0;           /* permite truncar */
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.rm-header-actions {
-  display: flex;
-  align-items: center;
+  justify-content: flex-end;
   gap: 10px;
-  flex-shrink: 0;
+  margin-bottom: 10px;
+}
+.modal-hero-actions .modal-close {
+  position: static;
+  background: rgba(255,255,255,0.12);
 }
 .rm-btn-otro {
-  background: rgba(240,208,128,0.2);
-  color: #f0d080;
-  border: 1px solid rgba(240,208,128,0.45);
-  border-radius: 20px;
-  padding: 5px 16px;
-  font-size: 0.85rem;
+  background: rgba(240,192,64,0.16);
+  color: var(--gold);
+  border: 1px solid rgba(240,192,64,0.4);
+  border-radius: 100px;
+  padding: 6px 16px;
+  font-size: 0.82rem;
+  font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
   transition: background .18s;
 }
-.rm-btn-otro:hover { background: rgba(240,208,128,0.35); }
-
-.rm-cerrar {
-  background: none;
-  border: none;
-  color: #f0d080;
-  font-size: 1.5rem;
-  line-height: 1;
-  cursor: pointer;
-  padding: 0 2px;
-  opacity: 0.75;
-  transition: opacity .15s;
-}
-.rm-cerrar:hover { opacity: 1; }
-
-/* CUERPO — scroll vertical, padding cómodo */
-.rm-cuerpo {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 20px 24px 12px;
-  font-size: 0.92rem;
-  line-height: 1.6;
-  color: var(--text, #1a2744);
-}
-.rm-cuerpo p { margin: 0 0 8px; }
-
-/* PIE — botones antojos/compartir, siempre visible */
-.rm-acciones {
-  flex-shrink: 0;
-  padding: 12px 24px 18px;
-  border-top: 1px solid var(--border, rgba(26,39,68,0.09));
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-/* Responsive: en móvil pequeño la caja ocupa casi toda la pantalla */
-@media (max-width: 560px) {
-  .rm-box {
-    height: 80vh;
-    max-height: 560px;
-  }
-}
+.rm-btn-otro:hover { background: rgba(240,192,64,0.3); }
 
 /* =====================================================
    BARRA INFERIOR — solo móvil (≤ 600px)

@@ -22,7 +22,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BiblioFa</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.1.5" />
+  <link rel="stylesheet" href="style.css?v=1.1.6" />
 
   <!-- Favicon -->
 <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96">
@@ -163,16 +163,9 @@
 
   <!-- Modal Random -->
   <div id="randomModal" class="rm-overlay hidden">
-    <div class="rm-box">
-      <div class="rm-header">
-        <h3 id="randomModalTitulo" class="rm-titulo">Libro al azar</h3>
-        <div class="rm-header-actions">
-          <button id="btnOtroRandom" class="rm-btn-otro">Otro →</button>
-          <button id="cerrarRandomModal" class="rm-cerrar" aria-label="Cerrar">&times;</button>
-        </div>
-      </div>
-      <div id="randomModalCuerpo" class="rm-cuerpo"></div>
-      <div id="randomModalAcciones" class="rm-acciones">
+    <div class="modal-content rm-content">
+      <div id="randomModalCuerpo"></div>
+      <div id="randomModalAcciones" class="modal-actions">
         <button id="randomModalBtnAntojo" class="btn-modal-antojo">✓ Guardar en antojos</button>
         <button id="randomModalBtnCompartir" class="btn-modal-compartir">↗ Compartir</button>
       </div>
@@ -231,7 +224,7 @@
   </nav>
 
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="script.js?v=1.1.5"></script>
+  <script src="script.js?v=1.1.6"></script>
 
   <!-- Cloudflare Web Analytics -->
   <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "85978fa0985645ffb561da2af953aad6"}'>
