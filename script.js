@@ -21,6 +21,8 @@
 // - Campo "Publicado" (año de publicación) agregado a la ficha completa y al texto para compartir.
 // - Orden de la lista: nuevo criterio "Año de publicación" + botón de dirección (↑ ascendente /
 //   ↓ descendente) que aplica a cualquier criterio seleccionado.
+// - Campo "Lo mejor" agregado a la ficha (después de la reseña, en bloque destacado) y al texto
+//   para compartir. Modal más ancho en escritorio (hasta 780px).
 // Busca un campo en el objeto ignorando diferencias de acentos
 function getCampo(obj, ...nombres) {
   for (const nombre of nombres) {
@@ -548,6 +550,7 @@ function construirFichaHTML(libro, extraHeroBtnHtml, idCerrar) {
   const publicado = getCampo(libro, 'Publicado', 'Publicación', 'Publicacion', 'Año', 'Ano', 'Year');
   const etiquetas = libro['Etiquetas'] || libro['Tags'] || '';
   const resena = libro['Reseña'] || libro['Resena'] || libro['Review'] || '';
+  const loMejor = getCampo(libro, 'Lo mejor', 'Lo Mejor', 'LoMejor', 'Best');
   const flags = libro['Flags'] || '';
   const calificacion = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
   const { texto: textoEstrellas, vacias: estrellasVacias, valor: numEstrellas } = desglosarEstrellas(calificacion);
@@ -589,6 +592,7 @@ function construirFichaHTML(libro, extraHeroBtnHtml, idCerrar) {
       ${etiquetasHtml ? `<div class="modal-etiquetas">${etiquetasHtml}</div>` : ''}
       ${flags && flags.toLowerCase() !== 'ninguno' ? `<p class="modal-flags">⚠️ ${escapeHtml(flags)}</p>` : ''}
       ${resena ? `<p class="modal-resena">${escapeHtml(resena)}</p>` : ''}
+      ${loMejor ? `<div class="modal-lomejor"><span class="modal-lomejor-label">✨ Lo mejor</span><p class="modal-lomejor-texto">${escapeHtml(loMejor)}</p></div>` : ''}
     </div>
   `;
 }
@@ -881,6 +885,7 @@ function textoLibro(libro) {
   const publico   = libro['Público'] || libro['Publico'] || '';
   const publicado = getCampo(libro, 'Publicado', 'Publicación', 'Publicacion', 'Año', 'Ano', 'Year');
   const resena    = libro['Reseña'] || libro['Resena'] || libro['Review'] || '';
+  const loMejor   = getCampo(libro, 'Lo mejor', 'Lo Mejor', 'LoMejor', 'Best');
   const flags     = libro['Flags'] || '';
   const estrellasRaw = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
   const { texto: textoEstrellas } = desglosarEstrellas(estrellasRaw);
@@ -895,6 +900,7 @@ function textoLibro(libro) {
   if (publico) t += `👤 Público: ${publico}\n`;
   if (flags && flags.toLowerCase() !== 'ninguno') t += `⚠️ ${flags}\n`;
   if (resena)  t += `\n${resena}\n`;
+  if (loMejor) t += `\n✨ Lo mejor: ${loMejor}\n`;
   t += `\n— Recomendado por Fátima Ll\n🔗 ${PAGINA_URL}`;
   return t;
 }

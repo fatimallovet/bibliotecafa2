@@ -11,7 +11,9 @@
      botones de acción ya no son sticky (causaban que se encimaran con la barra inferior en móvil),
      z-index de los overlays subido por encima de la barra inferior. Ficha completa y random comparten
      ahora la misma función de armado (construirFichaHTML) para que luzcan siempre idénticas.
-   · 2026-08-03 (v7): botón de dirección de orden (asc/desc) junto al selector de criterio */
+   · 2026-08-03 (v7): botón de dirección de orden (asc/desc) junto al selector de criterio
+   · 2026-08-03 (v8): bloque destacado "Lo mejor" después de la reseña; modal más ancho en escritorio
+     (700px / 780px según el ancho de pantalla) */
 /* =====================================================
    BiblioFa — Azul Medianoche + Dorado
    ===================================================== */
@@ -775,7 +777,10 @@ h2 {
 
 /* En escritorio un poco más de aire, sin exagerar */
 @media (min-width: 701px) {
-  .modal-content { max-width: 640px; }
+  .modal-content { max-width: 700px; }
+}
+@media (min-width: 1000px) {
+  .modal-content { max-width: 780px; }
 }
 
 @keyframes slideUp {
@@ -873,6 +878,30 @@ h2 {
   color: rgba(26,39,68,0.82);
   padding-left: 16px;
   border-left: 3px solid var(--gold);
+}
+
+/* ── Lo mejor: bloque destacado, distinto de la reseña a propósito ─ */
+.modal-lomejor {
+  background: var(--gold-lt);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+}
+.modal-lomejor-label {
+  display: block;
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gold-dk);
+  margin-bottom: 5px;
+}
+.modal-lomejor-texto {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.08rem;
+  font-weight: 400;
+  color: var(--navy);
+  line-height: 1.4;
 }
 
 /* ── Botones modal: píldoras, mismo lenguaje que el resto del sitio ─ */
