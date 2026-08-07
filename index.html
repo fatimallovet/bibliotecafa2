@@ -22,7 +22,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BiblioFa</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.2.1" />
+  <link rel="stylesheet" href="style.css?v=1.3.0" />
 
   <!-- Favicon -->
 <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96">
@@ -104,37 +104,45 @@
 
 <section id="tabSentimiento" class="tab">
   <div id="sentimientoGrid" class="sentimiento-grid">
-    <button class="sentimiento-btn" data-mood="evadir">
-      <span class="mood-icon">🌙</span>
-      <span class="mood-label">Quiero evadir<br>la realidad</span>
+    <button class="sentimiento-btn" data-mood="feliz">
+      <span class="mood-icon-wrap"><span class="mood-icon">🌞</span></span>
+      <span class="mood-label">Algo que me<br>haga feliz</span>
+    </button>
+    <button class="sentimiento-btn" data-mood="emocion">
+      <span class="mood-icon-wrap"><span class="mood-icon">❤️</span></span>
+      <span class="mood-label">Quiero<br>emocionarme</span>
+    </button>
+    <button class="sentimiento-btn" data-mood="atrapar">
+      <span class="mood-icon-wrap"><span class="mood-icon">🕵️</span></span>
+      <span class="mood-label">Un libro que no<br>pueda soltar</span>
+    </button>
+    <button class="sentimiento-btn" data-mood="aventura">
+      <span class="mood-icon-wrap"><span class="mood-icon">⚔️</span></span>
+      <span class="mood-label">Quiero vivir<br>una aventura</span>
+    </button>
+    <button class="sentimiento-btn" data-mood="pasado">
+      <span class="mood-icon-wrap"><span class="mood-icon">🏰</span></span>
+      <span class="mood-label">Quiero viajar<br>al pasado</span>
+    </button>
+    <button class="sentimiento-btn" data-mood="reflexion">
+      <span class="mood-icon-wrap"><span class="mood-icon">🌿</span></span>
+      <span class="mood-label">Quiero<br>reflexionar</span>
+    </button>
+    <button class="sentimiento-btn" data-mood="inspiracion">
+      <span class="mood-icon-wrap"><span class="mood-icon">💪</span></span>
+      <span class="mood-label">Necesito<br>inspiración</span>
     </button>
     <button class="sentimiento-btn" data-mood="reir">
-      <span class="mood-icon">😂</span>
-      <span class="mood-label">Solo quiero<br>divertirme</span>
-    </button>
-    <button class="sentimiento-btn" data-mood="llorar">
-      <span class="mood-icon">😮‍💨</span>
-      <span class="mood-label">Quiero muchas<br>emociones</span>
-    </button>
-    <button class="sentimiento-btn" data-mood="aprender">
-      <span class="mood-icon">🧠</span>
-      <span class="mood-label">Quiero<br>aprender algo</span>
-    </button>
-    <button class="sentimiento-btn" data-mood="crecer">
-      <span class="mood-icon">🌱</span>
-      <span class="mood-label">Quiero crecer<br>por dentro</span>
-    </button>
-    <button class="sentimiento-btn" data-mood="tension">
-      <span class="mood-icon">😬</span>
-      <span class="mood-label">Quiero intriga<br>y tensión</span>
+      <span class="mood-icon-wrap"><span class="mood-icon">😂</span></span>
+      <span class="mood-label">Para pasar un<br>buen rato</span>
     </button>
     <button class="sentimiento-btn" data-mood="clasico">
-      <span class="mood-icon">📜</span>
-      <span class="mood-label">Me apetece<br>un clásico</span>
+      <span class="mood-icon-wrap"><span class="mood-icon">👑</span></span>
+      <span class="mood-label">Volver a los<br>clásicos</span>
     </button>
-    <button class="sentimiento-btn" data-mood="ligero">
-      <span class="mood-icon">☁️</span>
-      <span class="mood-label">Algo ligero<br>y sin drama</span>
+    <button class="sentimiento-btn" data-mood="humanidad">
+      <span class="mood-icon-wrap"><span class="mood-icon">✨</span></span>
+      <span class="mood-label">Recuperar la fe<br>en la humanidad</span>
     </button>
   </div>
 
@@ -229,7 +237,7 @@
   </nav>
 
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="script.js?v=1.2.1"></script>
+  <script src="script.js?v=1.3.0"></script>
 
   <!-- Cloudflare Web Analytics -->
   <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "85978fa0985645ffb561da2af953aad6"}'>

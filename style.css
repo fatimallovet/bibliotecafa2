@@ -13,7 +13,10 @@
      ahora la misma función de armado (construirFichaHTML) para que luzcan siempre idénticas.
    · 2026-08-03 (v7): botón de dirección de orden (asc/desc) junto al selector de criterio
    · 2026-08-03 (v8): bloque destacado "Lo mejor" después de la reseña; modal más ancho en escritorio
-     (700px / 780px según el ancho de pantalla) */
+     (700px / 780px según el ancho de pantalla)
+   · 2026-08-03 (v9): rediseño de la sección Mood — ícono en círculo dorado (navy al hover), etiqueta
+     en serif itálica, acento dorado arriba de la tarjeta al pasar el mouse, grid responsivo con
+     auto-fill en vez de 4 columnas fijas (ahora son 10 categorías) */
 /* =====================================================
    BiblioFa — Azul Medianoche + Dorado
    ===================================================== */
@@ -550,8 +553,8 @@ h2 {
 /* ── Sentimiento ────────────────────────────────────── */
 .sentimiento-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
   margin-top: 4px;
 }
 
@@ -560,23 +563,58 @@ h2 {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 22px 10px;
+  padding: 26px 12px 22px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  transition: all .2s;
+  gap: 14px;
+  transition: border-color .2s, transform .2s, box-shadow .2s;
   text-align: center;
   box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+.sentimiento-btn::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .25s ease;
 }
 .sentimiento-btn:hover {
   border-color: var(--navy);
-  transform: translateY(-3px);
+  transform: translateY(-4px);
   box-shadow: var(--shadow-md);
 }
-.mood-icon { font-size: 2rem; line-height: 1; }
-.mood-label { font-size: 0.78rem; font-weight: 500; color: var(--text); line-height: 1.4; }
+.sentimiento-btn:hover::before { transform: scaleX(1); }
+
+.mood-icon-wrap {
+  width: 54px; height: 54px;
+  border-radius: 50%;
+  background: var(--gold-lt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .22s ease, transform .22s ease;
+}
+.mood-icon { font-size: 1.6rem; line-height: 1; }
+.sentimiento-btn:hover .mood-icon-wrap {
+  background: var(--navy);
+  transform: scale(1.08);
+}
+
+.mood-label {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--text);
+  line-height: 1.35;
+}
 
 .sentimiento-header {
   display: flex; align-items: center; justify-content: space-between;
@@ -1108,9 +1146,10 @@ footer {
 .lista-cards { grid-template-columns: 1fr; }
   .tarjetas { grid-template-columns: 1fr; gap: 10px; }
   .sentimiento-grid { grid-template-columns: repeat(2,1fr); gap: 10px; }
-  .sentimiento-btn { padding: 16px 8px; }
-  .mood-icon { font-size: 1.7rem; }
-  .mood-label { font-size: 0.74rem; }
+  .sentimiento-btn { padding: 20px 8px 18px; gap: 10px; }
+  .mood-icon-wrap { width: 46px; height: 46px; }
+  .mood-icon { font-size: 1.4rem; }
+  .mood-label { font-size: 0.82rem; }
   .random-card-full { padding: 18px; }
   .modal-content { width: 96%; border-radius: var(--radius-lg); max-height: 92vh; }
   .modal-hero, .modal-body { padding-left: 16px; padding-right: 16px; }

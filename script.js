@@ -23,6 +23,10 @@
 //   ↓ descendente) que aplica a cualquier criterio seleccionado.
 // - Campo "Lo mejor" agregado a la ficha (después de la reseña, en bloque destacado) y al texto
 //   para compartir. Modal más ancho en escritorio (hasta 780px).
+// - Sección Mood reestructurada: 10 categorías nuevas (feliz, emocion, atrapar, aventura, pasado,
+//   reflexion, inspiracion, reir, clasico, humanidad). Reglas de género+tono+etiquetas ajustadas
+//   contra la BD real (Biblioteca_Fatima_BD_COMPLETA_revisado.xlsx). El match ahora es OR entre
+//   género/tono/etiquetas (antes era género Y tono, más restrictivo) y compara sin acentos.
 // Busca un campo en el objeto ignorando diferencias de acentos
 function getCampo(obj, ...nombres) {
   for (const nombre of nombres) {
@@ -687,24 +691,71 @@ function cargarInfo() {
 
 // --- Recomendador: ¿Cómo me siento? ---
 const MOODS = {
-  evadir:  { generos: ['fantasía','aventura','ciencia ficción','distópico','realismo mágico','fantasía épica','fantasía gótica'], tonos: [] },
-  reir:    { generos: ['humor','comedia','sátira','comedia social','comedia negra'], tonos: ['humorístico','ingenioso','disparatado','irónico'] },
-  llorar:  { generos: [], tonos: ['conmovedor','melancólico','desgarrador','emotivo','nostálgico','dramático'] },
-  aprender:{ generos: ['biográfico','testimonial','memorias','biografía novelada'], tonos: [] },
-  crecer:  { generos: ['espiritualidad','cristianismo','religión','desarrollo personal','conversos'], tonos: ['reflexivo','inspirador','esperanzador'] },
-  tension: { generos: ['thriller','misterio','suspenso','intriga','crimen','policíaca','espionaje','thriller psicológico'], tonos: ['intrigante','tenso'] },
-  clasico: { generos: ['clásico'], tonos: [] },
-  ligero:  { generos: ['juvenil','contemporáneo','ficción contemporánea','comedia','humor','infantil','aventura'], tonos: ['ligero','tierno','cálido','humorístico','optimista'] },
+  feliz: {
+    generos: ['comedia', 'humor', 'comedia social'],
+    tonos: ['ligero', 'cálido', 'tierno', 'optimista', 'esperanzador', 'ameno'],
+    etiquetas: ['alegría', 'felicidad', 'ternura', 'bondad', 'divertido', 'humor']
+  },
+  emocion: {
+    generos: ['romance', 'drama', 'drama familiar', 'novela psicológica', 'drama contemporáneo'],
+    tonos: ['conmovedor', 'emotivo', 'desgarrador', 'melancólico', 'dramático', 'nostálgico', 'trágico', 'tierno'],
+    etiquetas: ['amor', 'pérdida', 'duelo', 'redención', 'amor incondicional', 'ternura']
+  },
+  atrapar: {
+    generos: ['thriller', 'misterio', 'suspenso', 'intriga', 'crimen', 'policíaca', 'espionaje', 'thriller psicológico', 'novela negra'],
+    tonos: ['intrigante', 'tenso', 'audaz'],
+    etiquetas: ['giros narrativos', 'giros inesperados', 'conspiración', 'asesinatos', 'intriga']
+  },
+  aventura: {
+    generos: ['aventura', 'fantasía', 'fantasía épica', 'ciencia ficción', 'guerra', 'espionaje', 'fantasía gótica'],
+    tonos: ['épico', 'heroico', 'audaz', 'imaginativo'],
+    etiquetas: ['aventura', 'riesgo', 'viaje', 'dragones', 'magia', 'exploración', 'batallas']
+  },
+  pasado: {
+    generos: ['histórico', 'novela histórica', 'ficción histórica', 'romance histórico', 'historia'],
+    tonos: [],
+    etiquetas: ['siglo', 'guerra mundial', 'imperio', 'medieval', 'victoriana', 'revolución', 'edad media', 'antigua grecia', 'roma antigua']
+  },
+  reflexion: {
+    generos: ['ensayo', 'desarrollo personal', 'no ficción', 'fábula filosófica'],
+    tonos: ['reflexivo', 'contemplativo', 'introspectivo', 'profundo', 'poético', 'sobrio', 'solemne'],
+    etiquetas: ['filosofía', 'crisis existencial', 'autodescubrimiento', 'búsqueda interior', 'preguntas existenciales']
+  },
+  inspiracion: {
+    generos: ['desarrollo personal', 'biografía', 'memorias', 'testimonial', 'espiritualidad', 'cristianismo'],
+    tonos: ['inspirador', 'esperanzador', 'heroico'],
+    etiquetas: ['superación', 'superación personal', 'resiliencia', 'coraje', 'valentía', 'crecimiento personal', 'sacrificio', 'redención']
+  },
+  reir: {
+    generos: ['comedia', 'humor', 'sátira', 'comedia social', 'comedia negra'],
+    tonos: ['humorístico', 'disparatado', 'ingenioso', 'irónico', 'absurdo', 'ligero'],
+    etiquetas: ['humor', 'situaciones absurdas', 'disparate']
+  },
+  clasico: {
+    generos: ['clásico'],
+    tonos: [],
+    etiquetas: ['clásico', 'obra clásica española', 'grandes clásicos', 'clasicismo', 'shakespeare']
+  },
+  humanidad: {
+    generos: [],
+    tonos: ['esperanzador', 'conmovedor', 'cálido', 'tierno'],
+    etiquetas: ['bondad', 'compasión', 'solidaridad', 'generosidad', 'empatía', 'humanidad', 'esperanza', 'redención', 'resiliencia', 'dignidad humana', 'perdón']
+  }
 };
 
 function librosParaMood(mood) {
-  const { generos, tonos } = MOODS[mood];
+  const { generos, tonos, etiquetas } = MOODS[mood];
   return libros.filter(l => {
-    const g = (l['Género'] || '').toLowerCase();
-    const t = (l['Tono'] || '').toLowerCase();
-    const genOk = generos.length === 0 || generos.some(x => g.includes(x));
-    const tonOk = tonos.length === 0 || tonos.some(x => t.includes(x));
-    return genOk && tonOk;
+    const g = normalizar(l['Género'] || l['Genero'] || '');
+    const t = normalizar(l['Tono'] || '');
+    const e = normalizar(l['Etiquetas'] || l['Tags'] || '');
+
+    const genOk = generos.length > 0 && generos.some(x => g.includes(normalizar(x)));
+    const tonOk = tonos.length > 0 && tonos.some(x => t.includes(normalizar(x)));
+    const etiOk = etiquetas.length > 0 && etiquetas.some(x => e.includes(normalizar(x)));
+
+    // Con cualquiera de las tres señales (género, tono o etiquetas) es suficiente
+    return genOk || tonOk || etiOk;
   });
 }
 
