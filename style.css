@@ -10,7 +10,8 @@
      tono/ritmo/público y flags como texto plano (sin cajas), ritmo de márgenes uniforme (flex+gap),
      botones de acción ya no son sticky (causaban que se encimaran con la barra inferior en móvil),
      z-index de los overlays subido por encima de la barra inferior. Ficha completa y random comparten
-     ahora la misma función de armado (construirFichaHTML) para que luzcan siempre idénticas. */
+     ahora la misma función de armado (construirFichaHTML) para que luzcan siempre idénticas.
+   · 2026-08-03 (v7): botón de dirección de orden (asc/desc) junto al selector de criterio */
 /* =====================================================
    BiblioFa — Azul Medianoche + Dorado
    ===================================================== */
@@ -270,6 +271,27 @@ main {
   white-space: nowrap;
 }
 .orden-select:focus { border-color: var(--navy); }
+
+.orden-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.orden-dir-btn {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--navy);
+  width: 34px; height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--border-md);
+  background: var(--surface);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: border-color .18s, background .18s;
+  flex-shrink: 0;
+}
+.orden-dir-btn:hover { border-color: var(--navy); background: var(--accent-lt); }
 
 /* ── Tarjetas lista principal ───────────────────────── */
 .lista-cards {
@@ -1066,6 +1088,7 @@ footer {
   .antojos-panel { right: 12px; width: calc(100vw - 24px); }
   .section-header { gap: 8px; }
   .orden-select { font-size: 0.8rem; padding: 8px 10px; }
+  .orden-dir-btn { width: 32px; height: 32px; }
 }
 
 @media (min-width: 601px) and (max-width: 900px) {

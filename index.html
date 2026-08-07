@@ -22,7 +22,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BiblioFa</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.1.7" />
+  <link rel="stylesheet" href="style.css?v=1.2.0" />
 
   <!-- Favicon -->
 <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96">
@@ -70,10 +70,14 @@
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input id="busqueda" type="text" placeholder="Buscar por título, autor, género...">
       </div>
-      <select id="ordenSelect" class="orden-select">
-        <option value="recientes">Últimos agregados</option>
-        <option value="calificacion">Mejor calificación</option>
-      </select>
+      <div class="orden-wrap">
+        <select id="ordenSelect" class="orden-select">
+          <option value="recientes">Agregado</option>
+          <option value="calificacion">Calificación</option>
+          <option value="publicacion">Año de publicación</option>
+        </select>
+        <button id="ordenDireccion" class="orden-dir-btn" type="button" aria-label="Cambiar dirección de orden" title="Descendente">↓</button>
+      </div>
     </div>
 
     <div id="listaCards" class="lista-cards"></div>
@@ -225,7 +229,7 @@
   </nav>
 
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="script.js?v=1.1.7"></script>
+  <script src="script.js?v=1.2.0"></script>
 
   <!-- Cloudflare Web Analytics -->
   <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "85978fa0985645ffb561da2af953aad6"}'>

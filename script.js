@@ -16,6 +16,11 @@
 //   construirFichaHTML() — una sola columna, encabezado compacto de 2 líneas, tono/ritmo/público/
 //   flags como texto plano, "Otro →" movido a la fila de acciones (ya no compite con el título).
 //   Acciones ya no son sticky (evita que se encimen con la barra inferior en móvil).
+// - Calificaciones con medio punto (ej. 3.5): nuevo helper desglosarEstrellas() usado en todas
+//   las estrellas del sitio (tarjetas, ficha, antojos, texto para compartir).
+// - Campo "Publicado" (año de publicación) agregado a la ficha completa y al texto para compartir.
+// - Orden de la lista: nuevo criterio "Año de publicación" + botón de dirección (↑ ascendente /
+//   ↓ descendente) que aplica a cualquier criterio seleccionado.
 // Busca un campo en el objeto ignorando diferencias de acentos
 function getCampo(obj, ...nombres) {
   for (const nombre of nombres) {
@@ -28,6 +33,21 @@ function getCampo(obj, ...nombres) {
     if (key && obj[key] !== '') return obj[key];
   }
   return '';
+}
+
+// Convierte una calificación (puede tener medios puntos, ej. 3.5) en estrellas.
+// .25–.74 cuenta como media estrella (½); .75+ redondea hacia la estrella completa siguiente.
+function desglosarEstrellas(valorCrudo) {
+  const num = parseFloat(valorCrudo) || 0;
+  if (num <= 0) return { llenas: 0, media: false, vacias: 0, valor: 0, texto: '' };
+  let llenas = Math.floor(num);
+  const frac = num - llenas;
+  let media = false;
+  if (frac >= 0.75) llenas += 1;
+  else if (frac >= 0.25) media = true;
+  llenas = Math.min(5, llenas);
+  const vacias = Math.max(0, 5 - llenas - (media ? 1 : 0));
+  return { llenas, media, vacias, valor: num, texto: '★'.repeat(llenas) + (media ? '½' : '') };
 }
 
 const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR_lN4MQGP2PigjKJFOV8ZK92MvfpQWj8aH7qqntBJHOKv6XsvLAxriHmjU3WcD7kafNvNbj3pTFqND/pub?gid=0&single=true&output=csv";
@@ -91,20 +111,24 @@ function comparar(a, b, col) {
 
 let ultimaData = [];
 let ordenSeleccionado = 'recientes';
+let ordenAscendente = false;
 
-function ordenarLibros(data, criterio) {
+function ordenarLibros(data, criterio, ascendente) {
   const copia = [...data];
+  const dir = ascendente ? 1 : -1;
   if (criterio === 'recientes') {
-    copia.sort((a, b) => {
-      const na = Number(a['No.'] || a['No'] || 0);
-      const nb = Number(b['No.'] || b['No'] || 0);
-      return nb - na;
-    });
+    copia.sort((a, b) => dir * (Number(a['No.'] || a['No'] || 0) - Number(b['No.'] || b['No'] || 0)));
   } else if (criterio === 'calificacion') {
     copia.sort((a, b) => {
-      const ca = parseInt(getCampo(a, 'Calificación', 'Estrellas', 'Stars') || '0');
-      const cb = parseInt(getCampo(b, 'Calificación', 'Estrellas', 'Stars') || '0');
-      return cb - ca;
+      const ca = parseFloat(getCampo(a, 'Calificación', 'Estrellas', 'Stars')) || 0;
+      const cb = parseFloat(getCampo(b, 'Calificación', 'Estrellas', 'Stars')) || 0;
+      return dir * (ca - cb);
+    });
+  } else if (criterio === 'publicacion') {
+    copia.sort((a, b) => {
+      const pa = parseInt(getCampo(a, 'Publicado', 'Publicación', 'Publicacion', 'Año', 'Ano', 'Year')) || 0;
+      const pb = parseInt(getCampo(b, 'Publicado', 'Publicación', 'Publicacion', 'Año', 'Ano', 'Year')) || 0;
+      return dir * (pa - pb);
     });
   }
   return copia;
@@ -112,7 +136,7 @@ function ordenarLibros(data, criterio) {
 
 function mostrarTabla(data) {
   ultimaData = data;
-  const ordenados = ordenarLibros(data, ordenSeleccionado);
+  const ordenados = ordenarLibros(data, ordenSeleccionado, ordenAscendente);
   mostrarTarjetasLista(ordenados);
   actualizarContador(data.length);
 }
@@ -129,16 +153,16 @@ function mostrarTarjetasLista(data, containerId) {
     const autor = libro['Autor'] || libro['Author'] || '';
     const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
     const calificacion = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
-    const numEstrellas = parseInt(calificacion, 10);
+    const { texto: textoEstrellas, valor: numEstrellas } = desglosarEstrellas(calificacion);
     const resena = libro['Reseña'] || libro['Resena'] || libro['Review'] || '';
     const flags = libro['Flags'] || '';
     const generoChips = genero
       ? genero.split(',').map(g => `<span class="genre-chip">${escapeHtml(g.trim())}</span>`).join(' ')
       : '';
-    const starsHtml = numEstrellas > 0
-      ? `<span class="lista-stars">${'★'.repeat(numEstrellas)}</span>`
+    const starsHtml = textoEstrellas
+      ? `<span class="lista-stars">${textoEstrellas}</span>`
       : '';
-    const esFavorita = numEstrellas === 5;
+    const esFavorita = numEstrellas >= 5;
     const div = document.createElement('div');
     div.className = 'lista-card' + (esFavorita ? ' top-pick' : '');
     div.innerHTML = `
@@ -166,11 +190,27 @@ function mostrarTarjetasLista(data, containerId) {
   });
 }
 
-// Selector de orden
+// Selector de orden (criterio) + botón de dirección
 const ordenSelectEl = document.getElementById('ordenSelect');
 if (ordenSelectEl) {
   ordenSelectEl.addEventListener('change', (e) => {
     ordenSeleccionado = e.target.value;
+    mostrarTabla(ultimaData);
+  });
+}
+
+const ordenDireccionEl = document.getElementById('ordenDireccion');
+function actualizarIconoOrdenDireccion() {
+  if (!ordenDireccionEl) return;
+  ordenDireccionEl.textContent = ordenAscendente ? '↑' : '↓';
+  ordenDireccionEl.setAttribute('aria-label', ordenAscendente ? 'Orden ascendente, tocar para invertir' : 'Orden descendente, tocar para invertir');
+  ordenDireccionEl.title = ordenAscendente ? 'Ascendente' : 'Descendente';
+}
+if (ordenDireccionEl) {
+  actualizarIconoOrdenDireccion();
+  ordenDireccionEl.addEventListener('click', () => {
+    ordenAscendente = !ordenAscendente;
+    actualizarIconoOrdenDireccion();
     mostrarTabla(ultimaData);
   });
 }
@@ -505,15 +545,16 @@ function construirFichaHTML(libro, extraHeroBtnHtml, idCerrar) {
   const tono = libro['Tono'] || libro['Tone'] || '';
   const ritmo = libro['Ritmo'] || '';
   const publico = libro['Público'] || libro['Publico'] || '';
+  const publicado = getCampo(libro, 'Publicado', 'Publicación', 'Publicacion', 'Año', 'Ano', 'Year');
   const etiquetas = libro['Etiquetas'] || libro['Tags'] || '';
   const resena = libro['Reseña'] || libro['Resena'] || libro['Review'] || '';
   const flags = libro['Flags'] || '';
-  const estrellasRaw = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
-  const numEstrellas = parseInt(estrellasRaw, 10);
-  const esFavorita = numEstrellas === 5;
+  const calificacion = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
+  const { texto: textoEstrellas, vacias: estrellasVacias, valor: numEstrellas } = desglosarEstrellas(calificacion);
+  const esFavorita = numEstrellas >= 5;
 
-  const estrellasHtml = numEstrellas > 0
-    ? `<span class="modal-hero-stars">${'★'.repeat(numEstrellas)}<span class="modal-hero-stars-off">${'★'.repeat(Math.max(0, 5 - numEstrellas))}</span></span>`
+  const estrellasHtml = textoEstrellas
+    ? `<span class="modal-hero-stars">${textoEstrellas}<span class="modal-hero-stars-off">${'★'.repeat(estrellasVacias)}</span></span>`
     : '';
 
   const subPartes = [];
@@ -527,6 +568,7 @@ function construirFichaHTML(libro, extraHeroBtnHtml, idCerrar) {
     : '';
 
   const factsPartes = [];
+  if (publicado) factsPartes.push(`Publicado: <b>${escapeHtml(publicado)}</b>`);
   if (tono) factsPartes.push(`Tono: <b>${escapeHtml(tono)}</b>`);
   if (ritmo) factsPartes.push(`Ritmo: <b>${escapeHtml(ritmo)}</b>`);
   if (publico) factsPartes.push(`Público: <b>${escapeHtml(publico)}</b>`);
@@ -774,7 +816,7 @@ function actualizarAntojosUI() {
     const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
     const autor  = libro['Autor'] || libro['Author'] || '';
     const estrellasRaw = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
-    const numEstrellas = parseInt(estrellasRaw, 10);
+    const { texto: textoEstrellas } = desglosarEstrellas(estrellasRaw);
 
     const li = document.createElement('li');
     li.className = 'antojos-item';
@@ -782,7 +824,7 @@ function actualizarAntojosUI() {
       <div class="antojos-item-info">
         <span class="antojos-item-titulo">${escapeHtml(titulo)}</span>
         <span class="antojos-item-autor">${escapeHtml(autor)}</span>
-        ${numEstrellas > 0 ? `<span class="antojos-item-stars">${'★'.repeat(numEstrellas)}</span>` : ''}
+        ${textoEstrellas ? `<span class="antojos-item-stars">${textoEstrellas}</span>` : ''}
       </div>
       <div class="antojos-item-actions">
         <button class="antojos-item-share" title="Compartir">↗</button>
@@ -837,15 +879,17 @@ function textoLibro(libro) {
   const tono      = libro['Tono'] || '';
   const ritmo     = libro['Ritmo'] || '';
   const publico   = libro['Público'] || libro['Publico'] || '';
+  const publicado = getCampo(libro, 'Publicado', 'Publicación', 'Publicacion', 'Año', 'Ano', 'Year');
   const resena    = libro['Reseña'] || libro['Resena'] || libro['Review'] || '';
   const flags     = libro['Flags'] || '';
   const estrellasRaw = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
-  const numEstrellas = parseInt(estrellasRaw, 10);
+  const { texto: textoEstrellas } = desglosarEstrellas(estrellasRaw);
 
   let t = `📚 *${titulo}*\n✍️ ${autor}\n`;
-  if (numEstrellas > 0) t += `${'★'.repeat(numEstrellas)}\n`;
+  if (textoEstrellas) t += `${textoEstrellas}\n`;
   t += `\n`;
-  if (genero)  t += `🎭 ${genero}\n`;
+  if (genero)    t += `🎭 ${genero}\n`;
+  if (publicado) t += `📅 Publicado: ${publicado}\n`;
   if (tono)    t += `🎨 Tono: ${tono}\n`;
   if (ritmo)   t += `⏱ Ritmo: ${ritmo}\n`;
   if (publico) t += `👤 Público: ${publico}\n`;
