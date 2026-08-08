@@ -22,7 +22,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BiblioFa</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.5.0" />
+  <link rel="stylesheet" href="style.css?v=1.6.0" />
 
   <!-- Favicon -->
 <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96">
@@ -35,33 +35,45 @@
 
 </head>
 <body>
-  <header class="site-header">
-  <nav class="navbar">
-    <div class="site-title-wrap">
+  <!-- Barra superior — solo visible en móvil/tablet -->
+  <div class="mobile-topbar">
+    <button id="menuToggle" class="menu-toggle" aria-label="Abrir menú" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <span class="mobile-topbar-title"><strong>Biblioteca</strong> Fátima</span>
+  </div>
+
+  <!-- Fondo oscuro al abrir el menú en móvil -->
+  <div id="sidebarOverlay" class="sidebar-overlay hidden"></div>
+
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <button id="sidebarClose" class="sidebar-close" aria-label="Cerrar menú">&times;</button>
       <h1 class="site-title editorial">
         <strong>Biblioteca</strong>
         <span>Fátima Ll</span>
       </h1>
       <p class="site-tagline">mis recomendaciones, sin filtro</p>
     </div>
-    <div class="header-pills">
-      <a class="header-pill" href="https://fatimallovet.github.io/videotecafatima/" target="_blank">
-        <span>🎬</span><span class="pill-text">Videoteca</span>
+
+    <div class="sidebar-nav">
+      <button class="sidebar-link active" data-tab="tabLibros"><span class="sidebar-link-icon">📚</span> Lista</button>
+      <button class="sidebar-link" data-tab="tabGeneros"><span class="sidebar-link-icon">🎭</span> Géneros</button>
+      <button class="sidebar-link" data-tab="tabSentimiento"><span class="sidebar-link-icon">👀</span> Mood</button>
+      <button class="sidebar-link" data-tab="tabAbout"><span class="sidebar-link-icon">ℹ️</span> Info</button>
+    </div>
+
+    <div class="sidebar-footer">
+      <a class="sidebar-link" href="https://fatimallovet.github.io/videotecafatima/" target="_blank">
+        <span class="sidebar-link-icon">🎬</span> Videoteca
       </a>
-      <a class="header-pill header-pill--gold" href="https://www.buymeacoffee.com/fatimallovet" target="_blank">
-        <span>👍</span><span class="pill-text">Apoyar</span>
+      <a class="sidebar-link sidebar-link-gold" href="https://www.buymeacoffee.com/fatimallovet" target="_blank">
+        <span class="sidebar-link-icon">👍</span> Apoyar
       </a>
     </div>
   </nav>
-  </header>
 
  <main>
-  <div class="tabs">
-    <button class="tab-btn active" data-tab="tabLibros">📚 Lista</button>
-    <button class="tab-btn" data-tab="tabGeneros">🎭 Géneros</button>
-    <button class="tab-btn" data-tab="tabSentimiento">👀 Mood</button>  
-    <button class="tab-btn" data-tab="tabAbout">ℹ️ Info</button>
-  </div>
 
   <!-- Pestaña principal -->
   <section id="tabLibros" class="tab active">
@@ -247,28 +259,8 @@
       </div>
     </div>
   </div>
-  <!-- Barra de navegación inferior (solo móvil) -->
-  <nav class="bottom-nav" id="bottomNav">
-    <button class="bn-item active" data-tab="tabLibros">
-      <span class="bn-icon">📚</span>
-      <span class="bn-label">Lista</span>
-    </button>
-    <button class="bn-item" data-tab="tabGeneros">
-      <span class="bn-icon">🎭</span>
-      <span class="bn-label">Géneros</span>
-    </button>
-    <button class="bn-item" data-tab="tabSentimiento">
-      <span class="bn-icon">👀</span>
-      <span class="bn-label">Mood</span>
-    </button>
-    <button class="bn-item" data-tab="tabAbout">
-      <span class="bn-icon">ℹ️</span>
-      <span class="bn-label">Info</span>
-    </button>
-  </nav>
-
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="script.js?v=1.5.0"></script>
+  <script src="script.js?v=1.6.0"></script>
 
   <!-- Cloudflare Web Analytics -->
   <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "85978fa0985645ffb561da2af953aad6"}'>

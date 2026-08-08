@@ -19,7 +19,11 @@
      auto-fill en vez de 4 columnas fijas (ahora son 10 categorías)
    · 2026-08-03 (v10): Mood rediseñado otra vez — tarjetas tipo "ficha de catálogo de biblioteca"
      (doblez de página en la esquina, número de catálogo, ícono, título serif y frase descriptiva).
-     Reglas de clasificación reescritas con criterio editorial más estricto por mood. */
+     Reglas de clasificación reescritas con criterio editorial más estricto por mood.
+   · 2026-08-03 (v11): "Lo mejor" centrado en la ficha; menú rediseñado por completo — sidebar fijo
+     a la izquierda en escritorio (reemplaza el header + tabs de arriba), en móvil se convierte en
+     un drawer oculto con botón de hamburguesa + overlay. Se eliminó la barra inferior móvil.
+     Botón Random reubicado para no quedar tapado por el sidebar en escritorio. */
 /* =====================================================
    BiblioFa — Azul Medianoche + Dorado
    ===================================================== */
@@ -61,144 +65,128 @@ body {
   min-height: 100vh;
 }
 
-/* ── Header ─────────────────────────────────────────── */
-.site-header {
-  background: var(--navy);
-  padding: 18px 32px;
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  box-shadow: 0 2px 12px rgba(26,39,68,0.25);
-}
+/* ── Sidebar (menú principal, escritorio y móvil) ────── */
+:root { --sidebar-w: 240px; }
 
-.navbar {
-  max-width: 980px;
-  margin: 0 auto;
+.mobile-topbar { display: none; }
+
+.sidebar-overlay {
+  position: fixed; inset: 0;
+  background: rgba(26,39,68,0.45);
+  z-index: 590;
+}
+.sidebar-overlay.hidden { display: none; }
+
+.sidebar {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  width: var(--sidebar-w);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  z-index: 595;
+  overflow-y: auto;
 }
 
-.header-pills {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
+.sidebar-close { display: none; }
 
-.header-pill {
-  font-family: 'DM Sans', system-ui, sans-serif;
-  font-size: 0.8rem;
-  font-weight: 500;
-  padding: 6px 14px;
-  border-radius: 100px;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  background: rgba(255,255,255,0.12);
-  color: rgba(255,255,255,0.75);
-  border: 1px solid rgba(255,255,255,0.18);
-  transition: all .18s;
-  white-space: nowrap;
+.sidebar-header {
+  padding: 30px 22px 22px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
 }
-.header-pill:hover {
-  background: rgba(255,255,255,0.2);
-  color: #fff;
-}
-.header-pill--gold {
-  background: rgba(240,192,64,0.2);
-  color: var(--gold);
-  border-color: rgba(240,192,64,0.35);
-}
-.header-pill--gold:hover {
-  background: rgba(240,192,64,0.32);
-  color: var(--gold);
-}
-
-/* En móvil: ocultar el texto de las pills, solo icono */
-@media (max-width: 480px) {
-  .header-pill .pill-text { display: none; }
-  .header-pill { padding: 6px 10px; border-radius: 50%; width: 34px; height: 34px; justify-content: center; }
-}
-
 
 .site-title-wrap { display: flex; flex-direction: column; gap: 2px; }
 
 .site-title.editorial {
   font-family: 'DM Sans', system-ui, sans-serif;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   letter-spacing: 0.01em;
   display: flex;
-  align-items: baseline;
-  gap: 7px;
+  flex-direction: column;
+  line-height: 1.15;
 }
 
 .site-title.editorial strong {
   font-family: var(--font-serif);
   font-weight: 400;
-  color: var(--gold);
+  font-style: italic;
+  font-size: 1.5rem;
+  color: var(--navy);
 }
 
 .site-title.editorial span {
-  font-weight: 300;
-  color: rgba(255,255,255,0.65);
-  font-size: 1.2rem;
+  font-weight: 400;
+  color: var(--muted);
+  font-size: 0.95rem;
 }
 
 .site-tagline {
   font-size: 0.72rem;
   font-weight: 500;
   letter-spacing: 0.03em;
-  color: rgba(240,192,64,0.55);
-  padding-left: 1px;
+  color: var(--gold-dk);
+  margin-top: 8px;
 }
 
-@media (max-width: 480px) {
-  .site-tagline { display: none; }
+.sidebar-nav {
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
 }
+
+.sidebar-footer {
+  padding: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar-link {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: none;
+  background: none;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background .15s, color .15s;
+}
+.sidebar-link-icon { font-size: 1.05rem; flex-shrink: 0; width: 20px; text-align: center; }
+
+.sidebar-link:hover { background: var(--accent-lt); color: var(--navy); }
+
+.sidebar-link.active {
+  background: var(--navy);
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.sidebar-link-gold { color: var(--gold-dk); }
+.sidebar-link-gold:hover { background: var(--gold-lt); color: var(--gold-dk); }
 
 /* ── Main ───────────────────────────────────────────── */
 main {
   max-width: 980px;
   margin: 0 auto;
-  padding: 24px 20px 56px;
+  margin-left: calc(var(--sidebar-w) + 40px);
+  padding: 32px 20px 56px;
 }
 
-/* ── Tabs ───────────────────────────────────────────── */
-.tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.tab-btn {
-  font-family: 'DM Sans', system-ui, sans-serif;
-  font-size: 0.85rem;
-  font-weight: 500;
-  padding: 8px 18px;
-  border-radius: 100px;
-  border: 1px solid var(--border-md);
-  background: var(--surface);
-  color: var(--muted);
-  cursor: pointer;
-  transition: all .18s;
-  white-space: nowrap;
-  box-shadow: var(--shadow-sm);
-}
-
-.tab-btn:hover {
-  border-color: var(--navy);
-  color: var(--navy);
-}
-
-.tab-btn.active {
-  background: var(--navy);
-  color: var(--gold);
-  border-color: var(--navy);
-  font-weight: 600;
+@media (min-width: 1220px) {
+  main { margin-left: auto; margin-right: auto; padding-left: calc(var(--sidebar-w) + 40px); }
 }
 
 .tab { display: none; }
@@ -799,6 +787,13 @@ h2 {
 
 /* Bloque de cierre / agradecimiento */
 .info-contact { text-align: center; }
+.info-contact a:not(.info-contact-btn) {
+  color: var(--gold-dk);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.info-contact a:not(.info-contact-btn):hover { color: var(--navy); }
 .info-contact-btn {
   display: inline-flex;
   align-items: center;
@@ -948,7 +943,8 @@ h2 {
 .modal-lomejor {
   background: var(--gold-lt);
   border-radius: var(--radius-md);
-  padding: 14px 18px;
+  padding: 16px 20px;
+  text-align: center;
 }
 .modal-lomejor-label {
   display: block;
@@ -957,7 +953,7 @@ h2 {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--gold-dk);
-  margin-bottom: 5px;
+  margin-bottom: 6px;
 }
 .modal-lomejor-texto {
   font-family: var(--font-serif);
@@ -965,7 +961,7 @@ h2 {
   font-size: 1.08rem;
   font-weight: 400;
   color: var(--navy);
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 /* ── Botones modal: píldoras, mismo lenguaje que el resto del sitio ─ */
@@ -1165,9 +1161,6 @@ footer {
 
 /* ── Mobile ─────────────────────────────────────────── */
 @media (max-width: 600px) {
-  .site-header { padding: 14px 16px; }
-  main { padding: 16px 12px 48px; }
-
 
 .lista-cards { grid-template-columns: 1fr; }
   .tarjetas { grid-template-columns: 1fr; gap: 10px; }
@@ -1206,7 +1199,7 @@ footer {
 .random-fab {
   position: fixed;
   bottom: 24px;
-  left: 24px;
+  left: calc(var(--sidebar-w) + 24px);
   width: 56px;
   height: 56px;
   border-radius: 50%;
@@ -1244,84 +1237,68 @@ footer {
 .rm-overlay.hidden { display: none; }
 
 /* =====================================================
-   BARRA INFERIOR — solo móvil (≤ 600px)
+   MENÚ EN MÓVIL/TABLET — drawer que se oculta y aparece
    ===================================================== */
-.bottom-nav {
-  display: none; /* oculta en desktop */
-}
-
-@media (max-width: 600px) {
-  /* Espacio para que el contenido no quede tapado por la barra */
-  body { padding-bottom: 76px; }
-
-  /* Ocultar tabs de escritorio — la barra inferior los reemplaza */
-  .tabs { display: none !important; }
-
-  /* Random y Wishlist: botones flotantes, arriba de la barra inferior */
-  .random-fab {
-    bottom: 84px;
-    left: 16px;
-    width: 52px;
-    height: 52px;
-    font-size: 1.3rem;
-  }
-  .antojos-fab {
-    bottom: 84px;
-    right: 16px;
-    width: 52px;
-    height: 52px;
-  }
-  .antojos-panel { bottom: 146px; }
-
-  /* La barra — solo 4 destinos, más espacio por botón */
-  .bottom-nav {
+@media (max-width: 900px) {
+  .mobile-topbar {
     display: flex;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 64px;
-    background: var(--surface, #fff);
-    border-top: 1px solid var(--border, rgba(26,39,68,0.1));
-    box-shadow: 0 -2px 12px rgba(26,39,68,0.08);
-    z-index: 500;          /* por encima de todo */
-    align-items: stretch;
-  }
-
-  .bn-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 4px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 8px 4px 6px;
-    position: relative;
-    color: var(--muted, #6b7a99);
-    transition: color .15s;
-    pointer-events: auto;   /* garantizar clicabilidad */
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .bn-item.active {
-    color: var(--navy, #1a2744);
-  }
-
-  /* Línea indicadora arriba del ítem activo */
-  .bn-item.active::before {
-    content: '';
-    position: absolute;
+    gap: 12px;
+    padding: 14px 18px;
+    position: sticky;
     top: 0;
-    left: 24%;
-    right: 24%;
-    height: 2px;
-    background: var(--gold, #f0c040);
-    border-radius: 0 0 2px 2px;
+    z-index: 80;
+    background: var(--navy);
+    box-shadow: 0 2px 12px rgba(26,39,68,0.25);
+  }
+  .menu-toggle {
+    width: 36px; height: 36px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 4px; flex-shrink: 0;
+    background: none; border: none; cursor: pointer; padding: 0;
+  }
+  .menu-toggle span {
+    display: block; width: 20px; height: 2px;
+    background: var(--gold); border-radius: 2px;
+  }
+  .mobile-topbar-title {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1.1rem;
+    color: #fff;
+  }
+  .mobile-topbar-title strong { font-weight: 400; color: var(--gold); }
+
+  /* El sidebar se convierte en drawer: oculto por defecto, se desliza al abrir */
+  .sidebar {
+    width: 78vw;
+    max-width: 300px;
+    transform: translateX(-100%);
+    transition: transform .28s ease;
+    box-shadow: var(--shadow-lg);
+  }
+  .sidebar.open { transform: translateX(0); }
+
+  .sidebar-close {
+    display: flex;
+    align-items: center; justify-content: center;
+    position: absolute; top: 14px; right: 14px;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    border: none;
+    background: var(--accent-lt);
+    color: var(--muted);
+    font-size: 20px;
+    cursor: pointer;
+  }
+  .sidebar-close:hover { background: var(--border-md); color: var(--navy); }
+
+  main {
+    margin-left: 0;
+    padding: 20px 16px 48px;
   }
 
-  .bn-icon { font-size: 1.5rem; line-height: 1; }
-  .bn-label { font-size: 0.68rem; font-weight: 500; letter-spacing: 0.01em; line-height: 1; }
+  .random-fab { left: 16px; bottom: 20px; width: 52px; height: 52px; font-size: 1.3rem; }
+  .antojos-fab { right: 16px; bottom: 20px; width: 52px; height: 52px; }
+  .antojos-panel { bottom: 82px; }
 }

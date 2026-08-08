@@ -36,6 +36,10 @@
 //   propia columna "Mood" en la hoja (separada por comas, con las claves feliz/drama/atrapar/
 //   aventura/pasado/reflexion/inspiracion/buenrato/clasico/escapar) y Fátima decide/ajusta a mano
 //   en la hoja de cálculo, sin tocar código. MOODS ahora solo guarda metadata (icono/título/frase).
+// - Menú rediseñado: header+tabs+barra inferior reemplazados por un sidebar único (.sidebar) que
+//   en escritorio va fijo a la izquierda, y en móvil se convierte en drawer (oculto por defecto,
+//   se abre con #menuToggle, se cierra con #sidebarClose/overlay/al navegar). _aplicarTabDOM ahora
+//   solo maneja un set de enlaces (.sidebar-link) en vez de duplicar lógica desktop/móvil.
 // Busca un campo en el objeto ignorando diferencias de acentos
 function getCampo(obj, ...nombres) {
   for (const nombre of nombres) {
@@ -640,23 +644,20 @@ function cerrarFlotantesUI() {
   document.getElementById('antojosPanel').classList.add('hidden');
   document.getElementById('detalleModal').classList.add('hidden');
   document.getElementById('shareModal').classList.add('hidden');
+  cerrarSidebar();
 }
 
 // Aplica visualmente un tab, sin tocar el historial (la usan activarTab() y el manejador de popstate)
 function _aplicarTabDOM(target) {
   cerrarFlotantesUI();
-  // Tabs desktop
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  const desktopBtn = document.querySelector(`.tab-btn[data-tab="${target}"]`);
-  if (desktopBtn) desktopBtn.classList.add('active');
+  // Enlaces del menú (el mismo sidebar sirve para escritorio y móvil)
+  document.querySelectorAll('.sidebar-link[data-tab]').forEach(b => b.classList.remove('active'));
+  const link = document.querySelector(`.sidebar-link[data-tab="${target}"]`);
+  if (link) link.classList.add('active');
   // Contenido
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   const section = document.getElementById(target);
   if (section) section.classList.add('active');
-  // Barra inferior
-  document.querySelectorAll('.bn-item[data-tab]').forEach(b => b.classList.remove('active'));
-  const bnBtn = document.querySelector(`.bn-item[data-tab="${target}"]`);
-  if (bnBtn) bnBtn.classList.add('active');
 
   _tabActual = target;
   if (target === 'tabAbout') cargarInfo();
@@ -672,10 +673,30 @@ function activarTab(target) {
 // Estado inicial del historial (así el primer "Atrás" tiene a dónde volver)
 history.replaceState({ tab: _tabActual }, '', location.pathname + '#' + _tabActual);
 
-// Tabs desktop
-document.querySelectorAll('.tab-btn').forEach(btn => {
+// Enlaces del menú (sidebar en escritorio, drawer en móvil)
+document.querySelectorAll('.sidebar-link[data-tab]').forEach(btn => {
   btn.addEventListener('click', () => activarTab(btn.dataset.tab));
 });
+
+// --- Drawer del menú (solo tiene efecto visual en móvil; en escritorio el sidebar va fijo) ---
+const sidebarEl = document.getElementById('sidebar');
+const sidebarOverlayEl = document.getElementById('sidebarOverlay');
+const menuToggleEl = document.getElementById('menuToggle');
+const sidebarCloseEl = document.getElementById('sidebarClose');
+
+function abrirSidebar() {
+  sidebarEl.classList.add('open');
+  sidebarOverlayEl.classList.remove('hidden');
+  if (menuToggleEl) menuToggleEl.setAttribute('aria-expanded', 'true');
+}
+function cerrarSidebar() {
+  sidebarEl.classList.remove('open');
+  sidebarOverlayEl.classList.add('hidden');
+  if (menuToggleEl) menuToggleEl.setAttribute('aria-expanded', 'false');
+}
+if (menuToggleEl) menuToggleEl.addEventListener('click', abrirSidebar);
+if (sidebarCloseEl) sidebarCloseEl.addEventListener('click', cerrarSidebar);
+if (sidebarOverlayEl) sidebarOverlayEl.addEventListener('click', cerrarSidebar);
 
 // Cargar contenido de info.html dinámicamente
 let _infoLoaded = false;
@@ -1012,17 +1033,6 @@ function mostrarToast(msg) {
 // Inicializar
 actualizarAntojosUI();
 
-// =====================================================
-// BARRA DE NAVEGACIÓN INFERIOR (solo móvil)
-// =====================================================
-
-// Tabs en barra inferior — reutiliza activarTab global
-document.querySelectorAll('.bn-item[data-tab]').forEach(btn => {
-  btn.addEventListener('click', () => activarTab(btn.dataset.tab));
-});
-
-// Random y Wishlist ahora son botones flotantes (randomFab/antojosBtn),
-// visibles también en móvil — ya tienen sus listeners más abajo, no hace falta duplicarlos.
 
 // =====================================================
 // NAVEGACIÓN CON EL BOTÓN ATRÁS / ADELANTE DEL NAVEGADOR
