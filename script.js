@@ -32,6 +32,10 @@
 //   a la vez). "emocion"->"drama" (dramas serios, no romance ligero), "reir" se fusionó dentro de
 //   "feliz"/"buenrato", "humanidad" reemplazado por "escapar" (fantasía/ciencia ficción/otros
 //   mundos). Cada mood ahora trae su propio título+frase+ícono+número, mostrados en la tarjeta.
+// - Mood v3: se abandonaron las reglas automáticas de género/tono/ritmo. Ahora cada libro trae su
+//   propia columna "Mood" en la hoja (separada por comas, con las claves feliz/drama/atrapar/
+//   aventura/pasado/reflexion/inspiracion/buenrato/clasico/escapar) y Fátima decide/ajusta a mano
+//   en la hoja de cálculo, sin tocar código. MOODS ahora solo guarda metadata (icono/título/frase).
 // Busca un campo en el objeto ignorando diferencias de acentos
 function getCampo(obj, ...nombres) {
   for (const nombre of nombres) {
@@ -695,93 +699,33 @@ function cargarInfo() {
 
 
 // --- Recomendador: ¿Cómo me siento? ---
-// Cada mood define su propia función de coincidencia porque las reglas no son
-// todas iguales: algunas son "género puro" (aventura, clásicos), otras combinan
-// tono/etiquetas con OR, y "atrapar" exige género Y ritmo rápido a la vez.
+// La clasificación YA NO se calcula con reglas de género/tono/ritmo: cada libro
+// trae su propia columna "Mood" en la hoja de Google Sheets (separada por comas,
+// usando estas mismas claves: feliz, drama, atrapar, aventura, pasado, reflexion,
+// inspiracion, buenrato, clasico, escapar). Así Fátima decide y ajusta a mano
+// dónde va cada libro, sin tener que tocar el código.
 const MOODS = {
-  feliz: {
-    icono: '😂', numero: '01',
-    titulo: 'Algo que me haga feliz',
-    frase: 'Comedias y finales que sacan una sonrisa',
-    match: (g, t, r, e) => hay(g, ['comedia', 'humor', 'comedia social', 'sátira'])
-                        || hay(t, ['humorístico', 'disparatado', 'ingenioso', 'absurdo'])
-  },
-  drama: {
-    icono: '💔', numero: '02',
-    titulo: 'Puro drama',
-    frase: 'Historias profundas, de las que remueven algo',
-    match: (g, t, r, e) => hay(g, ['drama', 'drama contemporáneo', 'drama familiar', 'drama social', 'novela psicológica'])
-                        || hay(t, ['desgarrador', 'dramático', 'trágico', 'intenso', 'melancólico', 'solemne'])
-  },
-  atrapar: {
-    icono: '🕵️', numero: '03',
-    titulo: 'No lo puedes soltar',
-    frase: 'Ritmo ágil, tensión, páginas que se devoran',
-    match: (g, t, r, e) => hay(r, ['rápido', 'ágil'])
-                        && hay(g, ['thriller', 'misterio', 'suspenso', 'aventura', 'policíaca', 'crimen', 'espionaje', 'novela negra', 'thriller psicológico', 'intriga'])
-  },
-  aventura: {
-    icono: '⚔️', numero: '04',
-    titulo: 'Vivir una aventura',
-    frase: 'Misión, riesgo y camino por recorrer',
-    match: (g, t, r, e) => hay(g, ['aventura'])
-  },
-  pasado: {
-    icono: '🏰', numero: '05',
-    titulo: 'Viajar al pasado',
-    frase: 'Otras épocas, reales o noveladas',
-    match: (g, t, r, e) => hay(g, ['histórico', 'novela histórica', 'ficción histórica', 'romance histórico', 'historia'])
-  },
-  reflexion: {
-    icono: '🌿', numero: '06',
-    titulo: 'Para reflexionar',
-    frase: 'Libros que te hacen pensar distinto',
-    match: (g, t, r, e) => hay(g, ['ensayo', 'desarrollo personal', 'no ficción', 'fábula filosófica'])
-                        || hay(t, ['reflexivo', 'contemplativo', 'introspectivo', 'profundo', 'poético'])
-  },
-  inspiracion: {
-    icono: '💪', numero: '07',
-    titulo: 'Necesito inspiración',
-    frase: 'Historias reales de superación',
-    match: (g, t, r, e) => hay(g, ['biografía', 'memorias', 'testimonial'])
-                        || hay(t, ['inspirador'])
-                        || hay(e, ['superación', 'superación personal', 'resiliencia'])
-  },
-  buenrato: {
-    icono: '☁️', numero: '08',
-    titulo: 'Para pasar un buen rato',
-    frase: 'Ligero, ameno, sin complicarse',
-    match: (g, t, r, e) => hay(t, ['ligero', 'ameno', 'optimista', 'cálido'])
-  },
-  clasico: {
-    icono: '👑', numero: '09',
-    titulo: 'Volver a los clásicos',
-    frase: 'Los que nunca pasan de moda',
-    match: (g, t, r, e) => hay(g, ['clásico'])
-  },
-  escapar: {
-    icono: '🌌', numero: '10',
-    titulo: 'Escapar de la realidad',
-    frase: 'Fantasía, ciencia ficción, otros mundos',
-    match: (g, t, r, e) => hay(g, ['fantasía', 'fantasía épica', 'fantasía gótica', 'ciencia ficción', 'distópico', 'realismo mágico'])
-  }
+  feliz:       { icono: '😂', numero: '01', titulo: 'Algo que me haga feliz',   frase: 'Comedias y finales que sacan una sonrisa' },
+  drama:       { icono: '💔', numero: '02', titulo: 'Puro drama',                frase: 'Historias profundas, de las que remueven algo' },
+  atrapar:     { icono: '🕵️', numero: '03', titulo: 'No lo puedes soltar',       frase: 'Ritmo ágil, tensión, páginas que se devoran' },
+  aventura:    { icono: '⚔️', numero: '04', titulo: 'Vivir una aventura',        frase: 'Misión, riesgo y camino por recorrer' },
+  pasado:      { icono: '🏰', numero: '05', titulo: 'Viajar al pasado',          frase: 'Otras épocas, reales o noveladas' },
+  reflexion:   { icono: '🌿', numero: '06', titulo: 'Para reflexionar',          frase: 'Libros que te hacen pensar distinto' },
+  inspiracion: { icono: '💪', numero: '07', titulo: 'Necesito inspiración',      frase: 'Historias reales de superación' },
+  buenrato:    { icono: '☁️', numero: '08', titulo: 'Para pasar un buen rato',   frase: 'Ligero, ameno, sin complicarse' },
+  clasico:     { icono: '👑', numero: '09', titulo: 'Volver a los clásicos',     frase: 'Los que nunca pasan de moda' },
+  escapar:     { icono: '🌌', numero: '10', titulo: 'Escapar de la realidad',    frase: 'Fantasía, ciencia ficción, otros mundos' }
 };
 
-// Devuelve true si alguna de las palabras clave aparece en el texto (ambos normalizados)
-function hay(textoNormalizado, palabras) {
-  return palabras.some(p => textoNormalizado.includes(normalizar(p)));
-}
-
-
-
+// Un libro puede estar en varios moods a la vez: basta con que su columna "Mood"
+// (separada por comas) contenga la clave del mood buscado.
 function librosParaMood(mood) {
-  const regla = MOODS[mood];
   return libros.filter(l => {
-    const g = normalizar(l['Género'] || l['Genero'] || '');
-    const t = normalizar(l['Tono'] || '');
-    const r = normalizar(l['Ritmo'] || '');
-    const e = normalizar(l['Etiquetas'] || l['Tags'] || '');
-    return regla.match(g, t, r, e);
+    const raw = getCampo(l, 'Mood', 'Moods', 'Estado de ánimo', 'Estados de ánimo');
+    if (!raw) return false;
+    return raw.split(',')
+      .map(v => normalizar(v.trim()))
+      .includes(mood);
   });
 }
 
