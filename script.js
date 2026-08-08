@@ -27,6 +27,11 @@
 //   reflexion, inspiracion, reir, clasico, humanidad). Reglas de género+tono+etiquetas ajustadas
 //   contra la BD real (Biblioteca_Fatima_BD_COMPLETA_revisado.xlsx). El match ahora es OR entre
 //   género/tono/etiquetas (antes era género Y tono, más restrictivo) y compara sin acentos.
+// - Mood v2 (rediseño de fondo, reglas + diseño): categorías reescritas con reglas editoriales
+//   específicas por mood (algunas con función match propia, "atrapar" exige género Y ritmo rápido
+//   a la vez). "emocion"->"drama" (dramas serios, no romance ligero), "reir" se fusionó dentro de
+//   "feliz"/"buenrato", "humanidad" reemplazado por "escapar" (fantasía/ciencia ficción/otros
+//   mundos). Cada mood ahora trae su propio título+frase+ícono+número, mostrados en la tarjeta.
 // Busca un campo en el objeto ignorando diferencias de acentos
 function getCampo(obj, ...nombres) {
   for (const nombre of nombres) {
@@ -690,72 +695,93 @@ function cargarInfo() {
 
 
 // --- Recomendador: ¿Cómo me siento? ---
+// Cada mood define su propia función de coincidencia porque las reglas no son
+// todas iguales: algunas son "género puro" (aventura, clásicos), otras combinan
+// tono/etiquetas con OR, y "atrapar" exige género Y ritmo rápido a la vez.
 const MOODS = {
   feliz: {
-    generos: ['comedia', 'humor', 'comedia social'],
-    tonos: ['ligero', 'cálido', 'tierno', 'optimista', 'esperanzador', 'ameno'],
-    etiquetas: ['alegría', 'felicidad', 'ternura', 'bondad', 'divertido', 'humor']
+    icono: '😂', numero: '01',
+    titulo: 'Algo que me haga feliz',
+    frase: 'Comedias y finales que sacan una sonrisa',
+    match: (g, t, r, e) => hay(g, ['comedia', 'humor', 'comedia social', 'sátira'])
+                        || hay(t, ['humorístico', 'disparatado', 'ingenioso', 'absurdo'])
   },
-  emocion: {
-    generos: ['romance', 'drama', 'drama familiar', 'novela psicológica', 'drama contemporáneo'],
-    tonos: ['conmovedor', 'emotivo', 'desgarrador', 'melancólico', 'dramático', 'nostálgico', 'trágico', 'tierno'],
-    etiquetas: ['amor', 'pérdida', 'duelo', 'redención', 'amor incondicional', 'ternura']
+  drama: {
+    icono: '💔', numero: '02',
+    titulo: 'Puro drama',
+    frase: 'Historias profundas, de las que remueven algo',
+    match: (g, t, r, e) => hay(g, ['drama', 'drama contemporáneo', 'drama familiar', 'drama social', 'novela psicológica'])
+                        || hay(t, ['desgarrador', 'dramático', 'trágico', 'intenso', 'melancólico', 'solemne'])
   },
   atrapar: {
-    generos: ['thriller', 'misterio', 'suspenso', 'intriga', 'crimen', 'policíaca', 'espionaje', 'thriller psicológico', 'novela negra'],
-    tonos: ['intrigante', 'tenso', 'audaz'],
-    etiquetas: ['giros narrativos', 'giros inesperados', 'conspiración', 'asesinatos', 'intriga']
+    icono: '🕵️', numero: '03',
+    titulo: 'No lo puedes soltar',
+    frase: 'Ritmo ágil, tensión, páginas que se devoran',
+    match: (g, t, r, e) => hay(r, ['rápido', 'ágil'])
+                        && hay(g, ['thriller', 'misterio', 'suspenso', 'aventura', 'policíaca', 'crimen', 'espionaje', 'novela negra', 'thriller psicológico', 'intriga'])
   },
   aventura: {
-    generos: ['aventura', 'fantasía', 'fantasía épica', 'ciencia ficción', 'guerra', 'espionaje', 'fantasía gótica'],
-    tonos: ['épico', 'heroico', 'audaz', 'imaginativo'],
-    etiquetas: ['aventura', 'riesgo', 'viaje', 'dragones', 'magia', 'exploración', 'batallas']
+    icono: '⚔️', numero: '04',
+    titulo: 'Vivir una aventura',
+    frase: 'Misión, riesgo y camino por recorrer',
+    match: (g, t, r, e) => hay(g, ['aventura'])
   },
   pasado: {
-    generos: ['histórico', 'novela histórica', 'ficción histórica', 'romance histórico', 'historia'],
-    tonos: [],
-    etiquetas: ['siglo', 'guerra mundial', 'imperio', 'medieval', 'victoriana', 'revolución', 'edad media', 'antigua grecia', 'roma antigua']
+    icono: '🏰', numero: '05',
+    titulo: 'Viajar al pasado',
+    frase: 'Otras épocas, reales o noveladas',
+    match: (g, t, r, e) => hay(g, ['histórico', 'novela histórica', 'ficción histórica', 'romance histórico', 'historia'])
   },
   reflexion: {
-    generos: ['ensayo', 'desarrollo personal', 'no ficción', 'fábula filosófica'],
-    tonos: ['reflexivo', 'contemplativo', 'introspectivo', 'profundo', 'poético', 'sobrio', 'solemne'],
-    etiquetas: ['filosofía', 'crisis existencial', 'autodescubrimiento', 'búsqueda interior', 'preguntas existenciales']
+    icono: '🌿', numero: '06',
+    titulo: 'Para reflexionar',
+    frase: 'Libros que te hacen pensar distinto',
+    match: (g, t, r, e) => hay(g, ['ensayo', 'desarrollo personal', 'no ficción', 'fábula filosófica'])
+                        || hay(t, ['reflexivo', 'contemplativo', 'introspectivo', 'profundo', 'poético'])
   },
   inspiracion: {
-    generos: ['desarrollo personal', 'biografía', 'memorias', 'testimonial', 'espiritualidad', 'cristianismo'],
-    tonos: ['inspirador', 'esperanzador', 'heroico'],
-    etiquetas: ['superación', 'superación personal', 'resiliencia', 'coraje', 'valentía', 'crecimiento personal', 'sacrificio', 'redención']
+    icono: '💪', numero: '07',
+    titulo: 'Necesito inspiración',
+    frase: 'Historias reales de superación',
+    match: (g, t, r, e) => hay(g, ['biografía', 'memorias', 'testimonial'])
+                        || hay(t, ['inspirador'])
+                        || hay(e, ['superación', 'superación personal', 'resiliencia'])
   },
-  reir: {
-    generos: ['comedia', 'humor', 'sátira', 'comedia social', 'comedia negra'],
-    tonos: ['humorístico', 'disparatado', 'ingenioso', 'irónico', 'absurdo', 'ligero'],
-    etiquetas: ['humor', 'situaciones absurdas', 'disparate']
+  buenrato: {
+    icono: '☁️', numero: '08',
+    titulo: 'Para pasar un buen rato',
+    frase: 'Ligero, ameno, sin complicarse',
+    match: (g, t, r, e) => hay(t, ['ligero', 'ameno', 'optimista', 'cálido'])
   },
   clasico: {
-    generos: ['clásico'],
-    tonos: [],
-    etiquetas: ['clásico', 'obra clásica española', 'grandes clásicos', 'clasicismo', 'shakespeare']
+    icono: '👑', numero: '09',
+    titulo: 'Volver a los clásicos',
+    frase: 'Los que nunca pasan de moda',
+    match: (g, t, r, e) => hay(g, ['clásico'])
   },
-  humanidad: {
-    generos: [],
-    tonos: ['esperanzador', 'conmovedor', 'cálido', 'tierno'],
-    etiquetas: ['bondad', 'compasión', 'solidaridad', 'generosidad', 'empatía', 'humanidad', 'esperanza', 'redención', 'resiliencia', 'dignidad humana', 'perdón']
+  escapar: {
+    icono: '🌌', numero: '10',
+    titulo: 'Escapar de la realidad',
+    frase: 'Fantasía, ciencia ficción, otros mundos',
+    match: (g, t, r, e) => hay(g, ['fantasía', 'fantasía épica', 'fantasía gótica', 'ciencia ficción', 'distópico', 'realismo mágico'])
   }
 };
 
+// Devuelve true si alguna de las palabras clave aparece en el texto (ambos normalizados)
+function hay(textoNormalizado, palabras) {
+  return palabras.some(p => textoNormalizado.includes(normalizar(p)));
+}
+
+
+
 function librosParaMood(mood) {
-  const { generos, tonos, etiquetas } = MOODS[mood];
+  const regla = MOODS[mood];
   return libros.filter(l => {
     const g = normalizar(l['Género'] || l['Genero'] || '');
     const t = normalizar(l['Tono'] || '');
+    const r = normalizar(l['Ritmo'] || '');
     const e = normalizar(l['Etiquetas'] || l['Tags'] || '');
-
-    const genOk = generos.length > 0 && generos.some(x => g.includes(normalizar(x)));
-    const tonOk = tonos.length > 0 && tonos.some(x => t.includes(normalizar(x)));
-    const etiOk = etiquetas.length > 0 && etiquetas.some(x => e.includes(normalizar(x)));
-
-    // Con cualquiera de las tres señales (género, tono o etiquetas) es suficiente
-    return genOk || tonOk || etiOk;
+    return regla.match(g, t, r, e);
   });
 }
 
@@ -799,12 +825,15 @@ function mostrarTarjetasMood(data) {
 // Muestra los resultados de un mood. push=false se usa al restaurar desde el historial.
 function mostrarResultadoMood(mood, push) {
   if (push === undefined) push = true;
+  const regla = MOODS[mood];
   const resultado = librosParaMood(mood);
   if (resultado.length === 0) {
     if (push) alert('No encontré libros para ese estado de ánimo 😔');
     return false;
   }
   mostrarTarjetasLista(resultado, 'sentimientoTarjetas');
+  document.getElementById('sentimientoTitulo').innerHTML =
+    `<span class="sentimiento-titulo-icono">${regla.icono}</span> ${escapeHtml(regla.titulo)}`;
   document.getElementById('sentimientoContador').textContent =
     `${resultado.length} libro${resultado.length !== 1 ? 's' : ''} para este momento`;
   document.getElementById('sentimientoGrid').style.display = 'none';
@@ -821,7 +850,7 @@ function mostrarGridMood(push) {
   if (push) history.pushState({ tab: 'tabSentimiento' }, '', '#tabSentimiento');
 }
 
-document.querySelectorAll('.sentimiento-btn').forEach(btn => {
+document.querySelectorAll('.mood-card').forEach(btn => {
   btn.addEventListener('click', () => mostrarResultadoMood(btn.dataset.mood));
 });
 
