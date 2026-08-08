@@ -22,7 +22,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BiblioFa</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.6.0" />
+  <link rel="stylesheet" href="style.css?v=1.7.0" />
 
   <!-- Favicon -->
 <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96">
@@ -61,6 +61,16 @@
       <button class="sidebar-link" data-tab="tabGeneros"><span class="sidebar-link-icon">🎭</span> Géneros</button>
       <button class="sidebar-link" data-tab="tabSentimiento"><span class="sidebar-link-icon">👀</span> Mood</button>
       <button class="sidebar-link" data-tab="tabAbout"><span class="sidebar-link-icon">ℹ️</span> Info</button>
+    </div>
+
+    <div class="sidebar-actions">
+      <button id="randomFab" class="sidebar-link" aria-label="Libro al azar">
+        <span class="sidebar-link-icon">🎲</span> Libro al azar
+      </button>
+      <button id="antojosBtn" class="sidebar-link" style="display:none" aria-label="Mis antojos">
+        <span class="sidebar-link-icon">🤤</span> Mis antojos
+        <span id="antojosCount" class="antojos-count">0</span>
+      </button>
     </div>
 
     <div class="sidebar-footer">
@@ -213,9 +223,6 @@
   </div>
 
 
-  <!-- FAB Random 🎲 -->
-  <button id="randomFab" class="random-fab" aria-label="Libro al azar">🎲</button>
-
   <!-- Modal Random -->
   <div id="randomModal" class="rm-overlay hidden">
     <div class="modal-content rm-content">
@@ -228,21 +235,18 @@
     </div>
   </div>
 
-  <!-- Panel de Antojos flotante -->
-  <button id="antojosBtn" class="antojos-fab" style="display:none" aria-label="Mis antojos">
-    <span>🤤</span>
-    <span id="antojosCount" class="antojos-count">0</span>
-  </button>
-
+  <!-- Panel de Antojos (overlay centrado, igual que los demás modales) -->
   <div id="antojosPanel" class="antojos-panel hidden">
-    <div class="antojos-panel-header">
-      <strong>Mis antojos</strong>
-      <button id="antojosCerrar" class="antojos-cerrar">✕</button>
-    </div>
-    <ul id="antojosLista" class="antojos-lista"></ul>
-    <div class="antojos-footer-actions">
-      <button id="btnCompartirTodos" class="btn-antojos-primary">↗ Compartir lista</button>
-      <button id="btnVaciarAntojos" class="btn-antojos-secondary">🗑️ Vaciar todo</button>
+    <div class="antojos-panel-box">
+      <div class="antojos-panel-header">
+        <strong>Mis antojos</strong>
+        <button id="antojosCerrar" class="antojos-cerrar">✕</button>
+      </div>
+      <ul id="antojosLista" class="antojos-lista"></ul>
+      <div class="antojos-footer-actions">
+        <button id="btnCompartirTodos" class="btn-antojos-primary">↗ Compartir lista</button>
+        <button id="btnVaciarAntojos" class="btn-antojos-secondary">🗑️ Vaciar todo</button>
+      </div>
     </div>
   </div>
 
@@ -260,7 +264,7 @@
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="script.js?v=1.6.0"></script>
+  <script src="script.js?v=1.7.0"></script>
 
   <!-- Cloudflare Web Analytics -->
   <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "85978fa0985645ffb561da2af953aad6"}'>

@@ -40,6 +40,9 @@
 //   en escritorio va fijo a la izquierda, y en móvil se convierte en drawer (oculto por defecto,
 //   se abre con #menuToggle, se cierra con #sidebarClose/overlay/al navegar). _aplicarTabDOM ahora
 //   solo maneja un set de enlaces (.sidebar-link) en vez de duplicar lógica desktop/móvil.
+// - Random y Antojos se movieron al sidebar (#randomFab y #antojosBtn ya no son FABs flotantes,
+//   mismos IDs así que el resto del JS no cambió). El panel de antojos ahora es un overlay
+//   centrado con fondo, se cierra igual que el modal random al hacer clic afuera.
 // Busca un campo en el objeto ignorando diferencias de acentos
 function getCampo(obj, ...nombres) {
   for (const nombre of nombres) {
@@ -908,6 +911,9 @@ function toggleAntojosPanel() {
 }
 
 document.getElementById('antojosBtn').addEventListener('click', toggleAntojosPanel);
+document.getElementById('antojosPanel').addEventListener('click', e => {
+  if (e.target === document.getElementById('antojosPanel')) cerrarAntojosPanel();
+});
 document.getElementById('antojosCerrar').addEventListener('click', cerrarAntojosPanel);
 document.getElementById('btnVaciarAntojos').addEventListener('click', () => {
   if (!confirm('¿Vaciar los antojos?')) return;
