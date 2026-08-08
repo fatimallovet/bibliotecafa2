@@ -43,6 +43,13 @@
 // - Random y Antojos se movieron al sidebar (#randomFab y #antojosBtn ya no son FABs flotantes,
 //   mismos IDs así que el resto del JS no cambió). El panel de antojos ahora es un overlay
 //   centrado con fondo, se cierra igual que el modal random al hacer clic afuera.
+// - Supabase conectado: nuevo backend compartido para el leaderboard de la futura trivia
+//   y el formulario de sugerencias/comentarios. Cliente inicializado con supabaseClient
+//   (ver bloque "SUPABASE" abajo). Tablas: puntajes (lectura+escritura pública, para el
+//   leaderboard) y sugerencias (solo escritura pública; Fátima las revisa desde el
+//   dashboard, nunca se leen desde el sitio). Funciones helper: guardarPuntaje(),
+//   obtenerLeaderboard(), enviarSugerencia(). Aún no hay UI que las use — se conectan
+//   cuando armemos la trivia y el formulario de sugerencias.
 // Busca un campo en el objeto ignorando diferencias de acentos
 function getCampo(obj, ...nombres) {
   for (const nombre of nombres) {
@@ -73,6 +80,60 @@ function desglosarEstrellas(valorCrudo) {
 }
 
 const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR_lN4MQGP2PigjKJFOV8ZK92MvfpQWj8aH7qqntBJHOKv6XsvLAxriHmjU3WcD7kafNvNbj3pTFqND/pub?gid=0&single=true&output=csv";
+
+// =====================================================
+// SUPABASE — backend compartido: leaderboard de trivia + sugerencias
+// =====================================================
+// La "anon key" está pensada para ser pública: la seguridad real la dan las
+// políticas de RLS configuradas en Supabase (ver bibliofa_supabase_schema.sql),
+// no el que esta key esté a la vista en el código.
+const SUPABASE_URL = "https://kvqekcywucmdulmyiluj.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt2cWVrY3l3dWNtZHVsbXlpbHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyMTA5MTAsImV4cCI6MjEwMTc4NjkxMH0.ydNPXP15O8KQktB25OHvMaKMofWBe_otHC6w9YIcYk8";
+
+const supabaseClient = window.supabase
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
+
+// Guarda el puntaje de una partida de trivia. Devuelve true/false según éxito.
+async function guardarPuntaje(apodo, puntaje, totalPreguntas) {
+  if (!supabaseClient) return false;
+  const { error } = await supabaseClient.from('puntajes').insert({
+    apodo: (apodo || 'Anónimo').slice(0, 30),
+    puntaje,
+    total_preguntas: totalPreguntas
+  });
+  if (error) { console.error('Error guardando puntaje:', error); return false; }
+  return true;
+}
+
+// Trae el top N del leaderboard (por defecto los 10 mejores puntajes).
+async function obtenerLeaderboard(limite = 10) {
+  if (!supabaseClient) return [];
+  const { data, error } = await supabaseClient
+    .from('puntajes')
+    .select('apodo, puntaje, total_preguntas, creado_en')
+    .order('puntaje', { ascending: false })
+    .order('creado_en', { ascending: true })
+    .limit(limite);
+  if (error) { console.error('Error obteniendo leaderboard:', error); return []; }
+  return data || [];
+}
+
+// Envía una sugerencia de libro o un comentario general. No se puede leer de
+// vuelta desde el sitio (a propósito, ver políticas de RLS) — solo Fátima las
+// revisa desde el dashboard de Supabase.
+async function enviarSugerencia({ tipo, mensaje, libroRelacionado = null, nombre = null }) {
+  if (!supabaseClient) return false;
+  const { error } = await supabaseClient.from('sugerencias').insert({
+    tipo,
+    mensaje: (mensaje || '').slice(0, 1000),
+    libro_relacionado: libroRelacionado,
+    nombre
+  });
+  if (error) { console.error('Error enviando sugerencia:', error); return false; }
+  return true;
+}
+
 let libros = [];
 let ordenActual = {col: null, asc: true};
 
