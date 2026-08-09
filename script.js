@@ -1122,16 +1122,38 @@ function _pintarBotonLike(btn, tituloLibro) {
   btn.innerHTML = `👍 <span class="like-count">${n == null ? '…' : n}</span>`;
 }
 
+// Registro de qué botones de like están montados en el DOM para cada título
+// (puede haber varios a la vez: la tarjeta en Lista, en Géneros, en Populares,
+// y/o la ficha abierta). Así, cuando cambia el like de UNO, se refrescan TODOS
+// sin necesidad de recargar la página.
+const _likeBotones = {}; // título -> Set<HTMLElement>
+
+function _registrarBotonLike(btn, tituloLibro) {
+  if (!_likeBotones[tituloLibro]) _likeBotones[tituloLibro] = new Set();
+  _likeBotones[tituloLibro].add(btn);
+}
+
+function _actualizarTodosLosBotonesLike(tituloLibro) {
+  const set = _likeBotones[tituloLibro];
+  if (!set) return;
+  set.forEach(btn => {
+    if (!btn.isConnected) { set.delete(btn); return; } // ya no existe en el DOM, se limpia
+    _pintarBotonLike(btn, tituloLibro);
+  });
+}
+
 // Prepara un botón de like (ficha, modal random, o tarjeta de lista): pinta
 // el estado inicial, refresca el conteo real de Supabase, y engancha el
-// click para dar/quitar el like (toggle).
+// click para dar/quitar el like (toggle). Se registra para poder actualizarse
+// en conjunto con cualquier otro botón del mismo libro montado en la página.
 function inicializarBotonLike(btn, tituloLibro) {
+  _registrarBotonLike(btn, tituloLibro);
   _pintarBotonLike(btn, tituloLibro);
 
   if (likesCache[tituloLibro] == null) {
     obtenerLikes(tituloLibro).then(n => {
       likesCache[tituloLibro] = n;
-      _pintarBotonLike(btn, tituloLibro);
+      _actualizarTodosLosBotonesLike(tituloLibro);
     });
   }
 
@@ -1154,7 +1176,7 @@ function inicializarBotonLike(btn, tituloLibro) {
         likesCache[tituloLibro] = (likesCache[tituloLibro] || 0) + 1;
       }
     }
-    _pintarBotonLike(btn, tituloLibro);
+    _actualizarTodosLosBotonesLike(tituloLibro);
     btn.disabled = false;
   };
 }
