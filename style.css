@@ -1034,6 +1034,35 @@ h2 {
 .lista-card .btn-antojo { align-self: center; }
 .card .btn-antojo { display: block; margin-top: 8px; }
 
+/* ── Columna de acciones en la tarjeta de lista: antojo + like ── */
+.lista-card-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  align-self: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.btn-like-card {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 4px;
+  border-radius: 100px;
+  transition: all .18s;
+  white-space: nowrap;
+}
+.btn-like-card:hover { color: var(--gold-dk); }
+.btn-like-card.dado { color: var(--gold-dk); background: var(--gold-lt); }
+.btn-like-card .like-count { font-variant-numeric: tabular-nums; }
+
 /* ── Botón de antojos dentro del sidebar ─────────────── */
 .antojos-count {
   margin-left: auto;

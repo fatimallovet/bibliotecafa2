@@ -135,10 +135,23 @@ async function enviarSugerencia({ tipo, mensaje, libroRelacionado = null, nombre
 }
 
 // Registra un like para un libro (identificado por título, igual que antojos).
+// Devuelve el id de la fila creada (lo necesitamos para poder quitarlo después).
 async function darLike(tituloLibro) {
-  if (!supabaseClient) return false;
-  const { error } = await supabaseClient.from('reacciones').insert({ libro_titulo: tituloLibro });
-  if (error) { console.error('Error dando like:', error); return false; }
+  if (!supabaseClient) return null;
+  const { data, error } = await supabaseClient
+    .from('reacciones')
+    .insert({ libro_titulo: tituloLibro })
+    .select('id')
+    .single();
+  if (error) { console.error('Error dando like:', error); return null; }
+  return data ? data.id : null;
+}
+
+// Quita un like ya dado, por id de la fila.
+async function quitarLike(idReaccion) {
+  if (!supabaseClient || !idReaccion) return false;
+  const { error } = await supabaseClient.from('reacciones').delete().eq('id', idReaccion);
+  if (error) { console.error('Error quitando like:', error); return false; }
   return true;
 }
 
@@ -151,6 +164,21 @@ async function obtenerLikes(tituloLibro) {
     .eq('libro_titulo', tituloLibro);
   if (error) { console.error('Error obteniendo likes:', error); return 0; }
   return count || 0;
+}
+
+// Trae de un jalón el conteo de likes de TODOS los libros (para pintar el
+// numerito en cada tarjeta sin hacer una llamada por libro, y para poder
+// ordenar por "Más populares").
+let likesCache = {}; // título -> conteo
+async function cargarLikesCache() {
+  if (!supabaseClient) return;
+  const { data, error } = await supabaseClient.from('reacciones').select('libro_titulo');
+  if (error) { console.error('Error cargando likes:', error); return; }
+  const conteo = {};
+  (data || []).forEach(row => {
+    conteo[row.libro_titulo] = (conteo[row.libro_titulo] || 0) + 1;
+  });
+  likesCache = conteo;
 }
 
 let libros = [];
@@ -188,6 +216,9 @@ Papa.parse(sheetUrl, {
 
     llenarSelectGeneros(libros);
     actualizarContador(libros.length);
+
+    // Trae los likes en paralelo y refresca la vista cuando lleguen
+    cargarLikesCache().then(() => mostrarTabla(ultimaData));
   },
   error: err => showError('Error leyendo CSV: ' + err)
 });
@@ -231,6 +262,14 @@ function ordenarLibros(data, criterio, ascendente) {
       const pa = parseInt(getCampo(a, 'Publicado', 'Publicación', 'Publicacion', 'Año', 'Ano', 'Year')) || 0;
       const pb = parseInt(getCampo(b, 'Publicado', 'Publicación', 'Publicacion', 'Año', 'Ano', 'Year')) || 0;
       return dir * (pa - pb);
+    });
+  } else if (criterio === 'populares') {
+    copia.sort((a, b) => {
+      const ta = a['Título'] || a['Titulo'] || a['Title'] || '';
+      const tb = b['Título'] || b['Titulo'] || b['Title'] || '';
+      const la = likesCache[ta] || 0;
+      const lb = likesCache[tb] || 0;
+      return dir * (la - lb);
     });
   }
   return copia;
@@ -280,13 +319,17 @@ function mostrarTarjetasLista(data, containerId) {
         </div>
         ${resena ? `<p class="card-resena">${escapeHtml(resena)}</p>` : ''}
       </div>
-      <button class="btn-antojo ${antojosContiene(libro) ? 'guardado' : ''}" title="Guardar en antojos">✓</button>
+      <div class="lista-card-side">
+        <button class="btn-antojo ${antojosContiene(libro) ? 'guardado' : ''}" title="Guardar en antojos">✓</button>
+        <button class="btn-like-card" title="Dar like">👍 <span class="like-count">…</span></button>
+      </div>
     `;
     div.querySelector('.btn-antojo').addEventListener('click', e => {
       e.stopPropagation();
       toggleAntojos(libro);
       div.querySelector('.btn-antojo').classList.toggle('guardado', antojosContiene(libro));
     });
+    inicializarBotonLike(div.querySelector('.btn-like-card'), titulo);
     div.addEventListener('click', () => showDetalle(libro));
     cont.appendChild(div);
   });
@@ -1023,52 +1066,78 @@ function toggleAntojos(libro) {
 }
 
 // =====================================================
-// LIKES — control local de "ya di like a este libro en este dispositivo"
-// (el conteo real vive en Supabase; esto solo evita que la misma persona
-// le dé like repetidamente al mismo libro desde el mismo navegador)
+// LIKES — control local de "qué likes diste, y con qué id"
+// (el conteo real vive en Supabase; localStorage guarda el id de cada
+// like que diste desde este navegador, para poder quitarlo si te equivocas)
 // =====================================================
 const LIKES_KEY = 'bibliof_likes_dados';
 
 function likesDadosCargar() {
-  try { return JSON.parse(localStorage.getItem(LIKES_KEY) || '[]'); }
-  catch { return []; }
+  try {
+    const raw = JSON.parse(localStorage.getItem(LIKES_KEY) || '{}');
+    return (raw && typeof raw === 'object' && !Array.isArray(raw)) ? raw : {};
+  } catch { return {}; }
 }
-function yaDioLike(tituloLibro) {
-  return likesDadosCargar().includes(tituloLibro);
+function likesDadosGuardar(mapa) {
+  localStorage.setItem(LIKES_KEY, JSON.stringify(mapa));
 }
-function marcarLikeDado(tituloLibro) {
-  const items = likesDadosCargar();
-  if (!items.includes(tituloLibro)) {
-    items.push(tituloLibro);
-    localStorage.setItem(LIKES_KEY, JSON.stringify(items));
-  }
+function idLikeLocal(tituloLibro) {
+  return likesDadosCargar()[tituloLibro] || null;
+}
+function guardarLikeLocal(tituloLibro, id) {
+  const mapa = likesDadosCargar();
+  mapa[tituloLibro] = id;
+  likesDadosGuardar(mapa);
+}
+function borrarLikeLocal(tituloLibro) {
+  const mapa = likesDadosCargar();
+  delete mapa[tituloLibro];
+  likesDadosGuardar(mapa);
 }
 
-// Prepara un botón de like (para ficha normal o modal random): pinta el
-// estado inicial, trae el conteo real de Supabase, y engancha el click.
+// Pinta el estado visual (dado/no dado + conteo) de un botón de like.
+function _pintarBotonLike(btn, tituloLibro) {
+  const dado = !!idLikeLocal(tituloLibro);
+  btn.classList.toggle('dado', dado);
+  btn.title = dado ? 'Quitar like' : 'Dar like';
+  const n = likesCache[tituloLibro];
+  btn.innerHTML = `👍 <span class="like-count">${n == null ? '…' : n}</span>`;
+}
+
+// Prepara un botón de like (ficha, modal random, o tarjeta de lista): pinta
+// el estado inicial, refresca el conteo real de Supabase, y engancha el
+// click para dar/quitar el like (toggle).
 function inicializarBotonLike(btn, tituloLibro) {
-  const yaLike = yaDioLike(tituloLibro);
-  btn.classList.toggle('dado', yaLike);
-  btn.disabled = yaLike;
-  btn.innerHTML = `👍 <span class="like-count">…</span>`;
+  _pintarBotonLike(btn, tituloLibro);
 
-  obtenerLikes(tituloLibro).then(n => {
-    const span = btn.querySelector('.like-count');
-    if (span) span.textContent = n;
-  });
+  if (likesCache[tituloLibro] == null) {
+    obtenerLikes(tituloLibro).then(n => {
+      likesCache[tituloLibro] = n;
+      _pintarBotonLike(btn, tituloLibro);
+    });
+  }
 
-  btn.onclick = async () => {
+  btn.onclick = async (e) => {
+    if (e) e.stopPropagation();
     if (btn.disabled) return;
     btn.disabled = true;
-    const ok = await darLike(tituloLibro);
-    const span = btn.querySelector('.like-count');
-    if (ok) {
-      marcarLikeDado(tituloLibro);
-      btn.classList.add('dado');
-      if (span) span.textContent = (parseInt(span.textContent, 10) || 0) + 1;
+
+    const idActual = idLikeLocal(tituloLibro);
+    if (idActual) {
+      const ok = await quitarLike(idActual);
+      if (ok) {
+        borrarLikeLocal(tituloLibro);
+        likesCache[tituloLibro] = Math.max(0, (likesCache[tituloLibro] || 1) - 1);
+      }
     } else {
-      btn.disabled = false;
+      const nuevoId = await darLike(tituloLibro);
+      if (nuevoId) {
+        guardarLikeLocal(tituloLibro, nuevoId);
+        likesCache[tituloLibro] = (likesCache[tituloLibro] || 0) + 1;
+      }
     }
+    _pintarBotonLike(btn, tituloLibro);
+    btn.disabled = false;
   };
 }
 
