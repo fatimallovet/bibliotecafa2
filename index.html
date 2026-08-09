@@ -22,7 +22,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BiblioFa</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.13.0" />
+  <link rel="stylesheet" href="style.css?v=1.14.0" />
 
   <!-- Supabase (leaderboard de trivia + sugerencias) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -138,11 +138,24 @@
 <section id="tabReto" class="tab">
   <div id="retoEntrada" class="reto-entrada">
     <h2>🧠 Reto Literario</h2>
-    <p class="reto-tagline">preguntas de literatura en general — autores, años, géneros... no de mi lista personal</p>
-    <label for="retoNombre">Tu nombre o apodo</label>
-    <input type="text" id="retoNombre" maxlength="30" placeholder="Escribe tu nombre o elige uno de abajo">
-    <div id="retoSugerencias" class="reto-sugerencias"></div>
-    <button id="retoEmpezar" class="reto-btn-empezar">Empezar</button>
+    <p class="reto-tagline">preguntas de literatura en general — autores, años, géneros, personajes... no de mi lista personal</p>
+
+    <div id="retoEntradaRecurrente" style="display:none">
+      <p class="reto-saludo">¡Hola de nuevo, <strong id="retoApodoGuardado"></strong>! 👋</p>
+      <button id="retoContinuar" class="reto-btn-empezar">Jugar</button>
+      <button id="retoCambiarNombre" type="button" class="reto-link-cambiar">No soy yo, usar otro nombre</button>
+    </div>
+
+    <div id="retoEntradaNueva">
+      <label for="retoNombre">Tu nombre o apodo</label>
+      <input type="text" id="retoNombre" maxlength="30" placeholder="Escribe tu nombre o elige uno de abajo">
+      <div id="retoSugerencias" class="reto-sugerencias"></div>
+      <button id="retoOtrasSugerencias" type="button" class="reto-link-cambiar">🔄 Otras opciones</button>
+      <button id="retoEmpezar" class="reto-btn-empezar">Empezar</button>
+    </div>
+
+    <button id="retoVerTabla" type="button" class="reto-link-tabla">🏅 Ver tabla de posiciones</button>
+    <div id="retoTablaEntrada" class="reto-tabla-entrada" style="display:none"></div>
   </div>
 
   <div id="retoJuego" class="reto-juego" style="display:none">
@@ -349,7 +362,7 @@
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="script.js?v=1.14.0"></script>
+  <script src="script.js?v=1.15.0"></script>
 
   <!-- Cloudflare Web Analytics -->
   <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "85978fa0985645ffb561da2af953aad6"}'>

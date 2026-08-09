@@ -480,6 +480,37 @@ main {
 }
 .reto-chip:hover { border-color: var(--navy); color: var(--navy); }
 
+.reto-saludo { font-size: 1.05rem; color: var(--text); margin-bottom: 20px; }
+.reto-link-cambiar {
+  display: block;
+  margin: 14px auto 0;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 0.8rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.reto-link-cambiar:hover { color: var(--navy); }
+.reto-entrada .reto-link-cambiar:first-of-type { margin-bottom: 4px; }
+
+.reto-link-tabla {
+  display: block;
+  margin: 24px auto 0;
+  background: none;
+  border: 1px solid var(--border-md);
+  color: var(--muted);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 0.82rem;
+  padding: 8px 18px;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: all .18s;
+}
+.reto-link-tabla:hover { border-color: var(--gold-dk); color: var(--gold-dk); }
+.reto-tabla-entrada { margin-top: 18px; text-align: left; }
+
 .reto-btn-empezar {
   padding: 12px 34px;
   border: none;

@@ -819,6 +819,7 @@ function _aplicarTabDOM(target) {
   _tabActual = target;
   if (target === 'tabAbout') cargarInfo();
   if (target === 'tabPopulares') mostrarPopulares();
+  if (target === 'tabReto') _rlPintarEntrada();
 }
 
 // Función central de navegación — usada por desktop y barra móvil.
@@ -942,7 +943,36 @@ function _rlPreguntaOrden() {
   };
 }
 
-const _RL_GENERADORES = [_rlPreguntaAutor, _rlPreguntaAnio, _rlPreguntaGenero, _rlPreguntaOrden];
+const _RL_GENERADORES = [_rlPreguntaAutor, _rlPreguntaAnio, _rlPreguntaGenero, _rlPreguntaOrden, _rlPreguntaDelBanco];
+
+// --- Banco de preguntas escritas a mano (tabla preguntas_trivia en Supabase) ---
+// Se mezclan con las generadas automáticamente del Sheet. Aquí sí puede haber
+// contenido de literatura en general que no dependa de tus libros catalogados.
+let _rlBancoPreguntas = [];
+async function _rlCargarBancoPreguntas() {
+  if (!supabaseClient) return;
+  const { data, error } = await supabaseClient
+    .from('preguntas_trivia')
+    .select('id, pregunta, opcion_a, opcion_b, opcion_c, opcion_d, correcta');
+  if (error) { console.error('Error cargando banco de preguntas:', error); return; }
+  const mapaLetra = { a: 'opcion_a', b: 'opcion_b', c: 'opcion_c', d: 'opcion_d' };
+  _rlBancoPreguntas = (data || []).map(row => {
+    const correctaTexto = row[mapaLetra[row.correcta]];
+    return {
+      id: `banco:${row.id}`,
+      pregunta: row.pregunta,
+      opciones: _rlMezclar([row.opcion_a, row.opcion_b, row.opcion_c, row.opcion_d]),
+      correcta: correctaTexto
+    };
+  });
+}
+
+function _rlPreguntaDelBanco() {
+  if (!_rlBancoPreguntas.length) return null;
+  const disponibles = _rlBancoPreguntas.filter(q => !_rlVistas.has(q.id));
+  if (!disponibles.length) return null;
+  return disponibles[Math.floor(Math.random() * disponibles.length)];
+}
 
 // --- Control de preguntas ya vistas (para no repetir al mismo visitante) ---
 const RETO_VISTAS_KEY = 'bibliof_reto_vistas';
@@ -973,26 +1003,37 @@ function _rlSiguientePregunta() {
 
 // --- Nombres sugeridos para quien no quiera pensar un apodo ---
 const RETO_NOMBRES_SUGERIDOS = [
-  'Gatsby', 'Elizabeth B.', 'Atticus', 'Hermione', 'Ishmael', 'Dorian G.',
-  'Holden C.', 'Jane E.', 'Sherlock', 'Alonso Quijano', 'Mr. Darcy',
-  'Winston S.', 'Santiago (Alquimista)', 'Offred', 'Meursault', 'Raskólnikov',
-  'Bilbo B.', 'Celia Cruz (no, esa no)', 'Aureliano', 'Lisbeth S.'
+  'Gatsby', 'Bennet', 'Finch', 'Granger', 'Ishmael', 'DorianGray',
+  'Caulfield', 'JaneEyre', 'Holmes', 'DonQuijote', 'Darcy', 'Winston',
+  'Santiago', 'Offred', 'Meursault', 'Raskolnikov', 'Bilbo', 'Aureliano',
+  'Salander', 'Huck', 'Scout', 'Karenina', 'Heathcliff', 'Valjean',
+  'Dulcinea', 'Dantes', 'Cathy', 'Frankenstein', 'Bovary', 'Nemo'
 ];
+function _rlSugerenciaConNumero(base) {
+  const numero = Math.floor(Math.random() * 90) + 10; // 10–99
+  return `${base}${numero}`;
+}
 function _rlPintarSugerenciasNombre() {
   const cont = document.getElementById('retoSugerencias');
   if (!cont) return;
   cont.innerHTML = '';
-  _rlMuestra(RETO_NOMBRES_SUGERIDOS, 3).forEach(nombre => {
+  _rlMuestra(RETO_NOMBRES_SUGERIDOS, 4).forEach(base => {
     const chip = document.createElement('button');
     chip.type = 'button';
     chip.className = 'reto-chip';
-    chip.textContent = nombre;
-    chip.addEventListener('click', () => { document.getElementById('retoNombre').value = nombre; });
+    const sugerido = _rlSugerenciaConNumero(base);
+    chip.textContent = sugerido;
+    chip.addEventListener('click', () => { document.getElementById('retoNombre').value = sugerido; });
     cont.appendChild(chip);
   });
 }
 
 // --- Estado y flujo del juego ---
+const RETO_APODO_KEY = 'bibliof_reto_apodo';
+function _rlApodoGuardado() { return localStorage.getItem(RETO_APODO_KEY) || ''; }
+function _rlGuardarApodo(nombre) { localStorage.setItem(RETO_APODO_KEY, nombre); }
+function _rlOlvidarApodo() { localStorage.removeItem(RETO_APODO_KEY); }
+
 let _rlApodo = '';
 let _rlAciertos = 0;
 let _rlTotal = 0;
@@ -1005,13 +1046,30 @@ function _rlMostrarPantalla(pantalla) {
   document.getElementById('retoFin').style.display = pantalla === 'fin' ? '' : 'none';
 }
 
+// Pinta la pantalla de entrada: si ya hay un apodo guardado en este
+// navegador, salta directo a "seguir jugando" en vez de pedirlo de nuevo.
+function _rlPintarEntrada() {
+  const guardado = _rlApodoGuardado();
+  const recurrente = document.getElementById('retoEntradaRecurrente');
+  const nueva = document.getElementById('retoEntradaNueva');
+  if (guardado) {
+    document.getElementById('retoApodoGuardado').textContent = guardado;
+    recurrente.style.display = '';
+    nueva.style.display = 'none';
+  } else {
+    recurrente.style.display = 'none';
+    nueva.style.display = '';
+    document.getElementById('retoNombre').value = '';
+    _rlPintarSugerenciasNombre();
+  }
+}
+
 function _rlActualizarMarcador() {
   document.getElementById('retoMarcador').textContent = `${_rlAciertos} / ${_rlTotal}`;
 }
 
-function _rlIniciar() {
-  const input = document.getElementById('retoNombre');
-  _rlApodo = (input.value || '').trim().slice(0, 30) || 'Anónimo';
+// Arranca la partida (ya con _rlApodo definido, venga de donde venga)
+function _rlIniciarPartida() {
   _rlAciertos = 0;
   _rlTotal = 0;
   document.getElementById('retoJugador').textContent = _rlApodo;
@@ -1079,6 +1137,34 @@ function _rlResponder(opcionElegida, btnElegido) {
   setTimeout(() => { _rlBloqueado = false; _rlSiguienteRonda(); }, 1400);
 }
 
+async function _rlRenderLeaderboard(contId) {
+  const cont = document.getElementById(contId);
+  if (!cont) return;
+  cont.innerHTML = '<p style="color:var(--muted)">Cargando...</p>';
+  const top = await obtenerLeaderboard(10);
+  if (top.length === 0) {
+    cont.innerHTML = '<p style="color:var(--muted)">Todavía no hay nadie en la tabla — ¡sé la primera persona! 🏅</p>';
+    return;
+  }
+  cont.innerHTML = '<h3 class="reto-leaderboard-titulo">🏅 Mejores puntajes</h3><ol class="reto-leaderboard-lista">' +
+    top.map(row => `<li><span>${escapeHtml(row.apodo)}</span><span>${row.puntaje}/${row.total_preguntas}</span></li>`).join('') +
+    '</ol>';
+}
+
+// Toggle para mostrar/ocultar la tabla de posiciones desde la pantalla de entrada
+function _rlMostrarTabla(contId) {
+  const cont = document.getElementById(contId);
+  if (!cont) return;
+  const yaVisible = cont.style.display !== 'none' && cont.innerHTML.trim() !== '';
+  if (yaVisible) {
+    cont.style.display = 'none';
+    cont.innerHTML = '';
+  } else {
+    cont.style.display = '';
+    _rlRenderLeaderboard(contId);
+  }
+}
+
 async function _rlTerminar() {
   document.getElementById('retoTerminar').disabled = true;
   await guardarPuntaje(_rlApodo, _rlAciertos, _rlTotal || 1);
@@ -1086,31 +1172,40 @@ async function _rlTerminar() {
   document.getElementById('retoResumen').textContent =
     `${_rlApodo}, respondiste ${_rlTotal} pregunta${_rlTotal !== 1 ? 's' : ''} y acertaste ${_rlAciertos}.`;
 
-  const top = await obtenerLeaderboard(10);
-  const cont = document.getElementById('retoLeaderboard');
-  if (top.length === 0) {
-    cont.innerHTML = '<p style="color:var(--muted)">Sé la primera persona en el marcador 🏅</p>';
-  } else {
-    cont.innerHTML = '<h3 class="reto-leaderboard-titulo">🏅 Mejores puntajes</h3><ol class="reto-leaderboard-lista">' +
-      top.map(row => `<li><span>${escapeHtml(row.apodo)}</span><span>${row.puntaje}/${row.total_preguntas}</span></li>`).join('') +
-      '</ol>';
-  }
+  await _rlRenderLeaderboard('retoLeaderboard');
+
   document.getElementById('retoTerminar').disabled = false;
   _rlMostrarPantalla('fin');
 }
 
-document.getElementById('retoEmpezar')?.addEventListener('click', _rlIniciar);
-document.getElementById('retoNombre')?.addEventListener('keydown', e => {
-  if (e.key === 'Enter') { e.preventDefault(); _rlIniciar(); }
+document.getElementById('retoEmpezar')?.addEventListener('click', () => {
+  const input = document.getElementById('retoNombre');
+  const nombre = (input.value || '').trim().slice(0, 30) || 'Anónimo';
+  _rlGuardarApodo(nombre);
+  _rlApodo = nombre;
+  _rlIniciarPartida();
 });
+document.getElementById('retoNombre')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); document.getElementById('retoEmpezar').click(); }
+});
+document.getElementById('retoOtrasSugerencias')?.addEventListener('click', _rlPintarSugerenciasNombre);
+document.getElementById('retoContinuar')?.addEventListener('click', () => {
+  _rlApodo = _rlApodoGuardado();
+  _rlIniciarPartida();
+});
+document.getElementById('retoCambiarNombre')?.addEventListener('click', () => {
+  _rlOlvidarApodo();
+  _rlPintarEntrada();
+});
+document.getElementById('retoVerTabla')?.addEventListener('click', () => _rlMostrarTabla('retoTablaEntrada'));
 document.getElementById('retoTerminar')?.addEventListener('click', _rlTerminar);
 document.getElementById('retoJugarOtra')?.addEventListener('click', () => {
-  document.getElementById('retoNombre').value = '';
-  _rlPintarSugerenciasNombre();
+  _rlPintarEntrada();
   _rlMostrarPantalla('entrada');
 });
 
-_rlPintarSugerenciasNombre();
+_rlPintarEntrada();
+_rlCargarBancoPreguntas();
 
 // --- Sección Sugerencias ---
 (function() {
