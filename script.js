@@ -863,18 +863,7 @@ function activarTab(target) {
   history.pushState({ tab: target }, '', '#' + target);
 }
 
-// Estado inicial del historial: si la URL ya trae un tab en el hash (por
-// ejemplo, tras un refresh estando en otra pestaña que no sea Lista), lo
-// restauramos en vez de caer siempre en Lista.
-(function _restaurarTabInicial() {
-  let hash = (location.hash || '').replace('#', '');
-  if (hash.startsWith('mood-')) hash = 'tabSentimiento'; // veníamos de un mood específico
-  const esTabValido = hash && document.getElementById(hash) && document.getElementById(hash).classList.contains('tab');
-  if (esTabValido) {
-    _tabActual = hash;
-    _aplicarTabDOM(hash);
-  }
-})();
+// Estado inicial del historial (así el primer "Atrás" tiene a dónde volver)
 history.replaceState({ tab: _tabActual }, '', location.pathname + '#' + _tabActual);
 
 // Enlaces del menú (sidebar en escritorio, drawer en móvil)
