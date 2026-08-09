@@ -22,7 +22,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BiblioFa</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.7.0" />
+  <link rel="stylesheet" href="style.css?v=1.9.0" />
 
   <!-- Supabase (leaderboard de trivia + sugerencias) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -64,6 +64,7 @@
       <button class="sidebar-link" data-tab="tabGeneros"><span class="sidebar-link-icon">🎭</span> Géneros</button>
       <button class="sidebar-link" data-tab="tabSentimiento"><span class="sidebar-link-icon">👀</span> Mood</button>
       <button class="sidebar-link" data-tab="tabAbout"><span class="sidebar-link-icon">ℹ️</span> Info</button>
+      <button class="sidebar-link" data-tab="tabSugerencias"><span class="sidebar-link-icon">💬</span> Sugerencias</button>
     </div>
 
     <div class="sidebar-actions">
@@ -122,6 +123,47 @@
 
 <section id="tabAbout" class="tab">
   <div id="infoContenido"><p style="color:var(--muted)">Cargando...</p></div>
+</section>
+
+
+<section id="tabSugerencias" class="tab">
+  <div class="info-page">
+    <header class="info-hero">
+      <h2>💬 Envía tu sugerencia</h2>
+      <p class="info-tagline">ideas, libros que faltan, o lo que quieras decirme</p>
+    </header>
+
+    <div class="info-block">
+      <div class="sugerencias-tipo-toggle">
+        <button type="button" class="sugerencias-tipo-btn active" data-tipo="sugerencia_libro">📚 Sugerir un libro</button>
+        <button type="button" class="sugerencias-tipo-btn" data-tipo="comentario_general">💭 Comentario general</button>
+      </div>
+
+      <form id="formSugerencias" class="sugerencias-form" novalidate>
+        <div id="campoLibroRelacionado" class="sugerencias-field">
+          <label for="sugLibro">¿Qué libro?</label>
+          <input type="text" id="sugLibro" maxlength="150" placeholder="Título del libro que me quieres sugerir">
+        </div>
+
+        <div class="sugerencias-field">
+          <label for="sugMensaje">Tu mensaje</label>
+          <textarea id="sugMensaje" maxlength="1000" rows="5" placeholder="Cuéntame por qué te gustó, o lo que quieras compartir..." required></textarea>
+        </div>
+
+        <div class="sugerencias-field">
+          <label for="sugNombre">Tu nombre <span class="sugerencias-opcional">(opcional)</span></label>
+          <input type="text" id="sugNombre" maxlength="30" placeholder="Para saber quién me escribe">
+        </div>
+
+        <button type="submit" id="btnEnviarSugerencia" class="sugerencias-submit">Enviar</button>
+        <p id="sugerenciasEstado" class="sugerencias-estado" aria-live="polite"></p>
+      </form>
+    </div>
+
+    <p class="info-note" style="text-align:center; margin-top:16px !important;">
+      Tu mensaje me llega directo a mí — no se publica en la página.
+    </p>
+  </div>
 </section>
 
 
@@ -267,7 +309,7 @@
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="script.js?v=1.8.0"></script>
+  <script src="script.js?v=1.9.0"></script>
 
   <!-- Cloudflare Web Analytics -->
   <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "85978fa0985645ffb561da2af953aad6"}'>

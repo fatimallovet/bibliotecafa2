@@ -742,6 +742,78 @@ document.querySelectorAll('.sidebar-link[data-tab]').forEach(btn => {
   btn.addEventListener('click', () => activarTab(btn.dataset.tab));
 });
 
+// --- Sección Sugerencias ---
+(function() {
+  const form = document.getElementById('formSugerencias');
+  if (!form) return;
+
+  const tipoBtns = document.querySelectorAll('.sugerencias-tipo-btn');
+  const campoLibro = document.getElementById('campoLibroRelacionado');
+  const inputLibro = document.getElementById('sugLibro');
+  const inputMensaje = document.getElementById('sugMensaje');
+  const inputNombre = document.getElementById('sugNombre');
+  const estadoEl = document.getElementById('sugerenciasEstado');
+  const btnEnviar = document.getElementById('btnEnviarSugerencia');
+  let tipoActual = 'sugerencia_libro';
+
+  const placeholdersPorTipo = {
+    sugerencia_libro: 'Cuéntame por qué te gustó, o lo que quieras compartir...',
+    comentario_general: '¿Qué quieres decirme? Ideas, sugerencias para la página, lo que sea...'
+  };
+
+  function actualizarVistaTipo() {
+    campoLibro.style.display = tipoActual === 'sugerencia_libro' ? '' : 'none';
+    inputMensaje.placeholder = placeholdersPorTipo[tipoActual];
+  }
+
+  tipoBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tipoBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      tipoActual = btn.dataset.tipo;
+      actualizarVistaTipo();
+    });
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const mensaje = inputMensaje.value.trim();
+    if (!mensaje) {
+      estadoEl.textContent = 'Escribe algo antes de enviar 🙂';
+      estadoEl.className = 'sugerencias-estado error';
+      return;
+    }
+
+    const libro = inputLibro.value.trim();
+    const nombre = inputNombre.value.trim();
+
+    btnEnviar.disabled = true;
+    btnEnviar.textContent = 'Enviando...';
+    estadoEl.textContent = '';
+    estadoEl.className = 'sugerencias-estado';
+
+    const ok = await enviarSugerencia({
+      tipo: tipoActual,
+      mensaje,
+      libroRelacionado: (tipoActual === 'sugerencia_libro' && libro) ? libro : null,
+      nombre: nombre || null
+    });
+
+    btnEnviar.disabled = false;
+    btnEnviar.textContent = 'Enviar';
+
+    if (ok) {
+      form.reset();
+      actualizarVistaTipo();
+      estadoEl.textContent = '¡Gracias! Ya me llegó tu mensaje 💌';
+      estadoEl.className = 'sugerencias-estado exito';
+    } else {
+      estadoEl.textContent = 'Ups, algo falló. ¿Puedes intentar de nuevo en un momento?';
+      estadoEl.className = 'sugerencias-estado error';
+    }
+  });
+})();
+
 // --- Drawer del menú (solo tiene efecto visual en móvil; en escritorio el sidebar va fijo) ---
 const sidebarEl = document.getElementById('sidebar');
 const sidebarOverlayEl = document.getElementById('sidebarOverlay');
