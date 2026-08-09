@@ -836,6 +836,282 @@ document.querySelectorAll('.sidebar-link[data-tab]').forEach(btn => {
   btn.addEventListener('click', () => activarTab(btn.dataset.tab));
 });
 
+// =====================================================
+// RETO LITERARIO — trivia de literatura en general (autor, año, género),
+// generada a partir de tu propio Sheet pero SOLO con campos objetivos.
+// Nunca usa Calificación, Mood, Tono, Ritmo, Público, Etiquetas ni Reseña.
+// =====================================================
+
+function _rlValorAnio(libro) {
+  const raw = getCampo(libro, 'Publicado', 'Publicación', 'Publicacion', 'Año', 'Ano', 'Year');
+  const n = parseInt(raw, 10);
+  return Number.isFinite(n) ? n : null;
+}
+function _rlValorAutor(libro) { return (getCampo(libro, 'Autor', 'Author') || '').trim(); }
+function _rlValorGenero(libro) { return (getCampo(libro, 'Género', 'Genero', 'Genre') || '').trim(); }
+function _rlValorTitulo(libro) { return (libro['Título'] || libro['Titulo'] || libro['Title'] || '').trim(); }
+
+function _rlMezclar(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function _rlMuestra(arr, n) {
+  const pool = arr.slice();
+  const out = [];
+  while (out.length < n && pool.length) {
+    out.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+  }
+  return out;
+}
+
+// --- Generadores de pregunta: cada uno devuelve {id, pregunta, opciones, correcta} o null ---
+
+function _rlPreguntaAutor() {
+  const candidatos = libros.filter(l => _rlValorAutor(l) && _rlValorTitulo(l));
+  const autoresUnicos = [...new Set(candidatos.map(_rlValorAutor))];
+  if (candidatos.length < 4 || autoresUnicos.length < 4) return null;
+  const libro = candidatos[Math.floor(Math.random() * candidatos.length)];
+  const correcta = _rlValorAutor(libro);
+  const distractores = _rlMuestra(autoresUnicos.filter(a => a !== correcta), 3);
+  if (distractores.length < 3) return null;
+  return {
+    id: `autor:${_rlValorTitulo(libro)}`,
+    pregunta: `¿Quién escribió «${_rlValorTitulo(libro)}»?`,
+    opciones: _rlMezclar([correcta, ...distractores]),
+    correcta
+  };
+}
+
+function _rlPreguntaAnio() {
+  const candidatos = libros.filter(l => _rlValorAnio(l) !== null && _rlValorTitulo(l));
+  if (candidatos.length < 4) return null;
+  const libro = candidatos[Math.floor(Math.random() * candidatos.length)];
+  const correctaNum = _rlValorAnio(libro);
+  const aniosOtros = [...new Set(candidatos.filter(l => l !== libro).map(_rlValorAnio))].filter(a => a !== correctaNum);
+  let distractores = _rlMuestra(aniosOtros, 3);
+  while (distractores.length < 3) {
+    const offset = (Math.floor(Math.random() * 15) + 3) * (Math.random() < 0.5 ? -1 : 1);
+    const candidato = correctaNum + offset;
+    if (candidato > 0 && candidato !== correctaNum && !distractores.includes(candidato)) distractores.push(candidato);
+  }
+  const correcta = String(correctaNum);
+  return {
+    id: `anio:${_rlValorTitulo(libro)}`,
+    pregunta: `¿En qué año se publicó «${_rlValorTitulo(libro)}»?`,
+    opciones: _rlMezclar([correcta, ...distractores.map(String)]),
+    correcta
+  };
+}
+
+function _rlPreguntaGenero() {
+  const candidatos = libros.filter(l => _rlValorGenero(l) && _rlValorTitulo(l));
+  const generosUnicos = [...new Set(candidatos.map(_rlValorGenero))];
+  if (candidatos.length < 4 || generosUnicos.length < 4) return null;
+  const libro = candidatos[Math.floor(Math.random() * candidatos.length)];
+  const correcta = _rlValorGenero(libro);
+  const distractores = _rlMuestra(generosUnicos.filter(g => g !== correcta), 3);
+  if (distractores.length < 3) return null;
+  return {
+    id: `genero:${_rlValorTitulo(libro)}`,
+    pregunta: `¿De qué género es «${_rlValorTitulo(libro)}»?`,
+    opciones: _rlMezclar([correcta, ...distractores]),
+    correcta
+  };
+}
+
+function _rlPreguntaOrden() {
+  const candidatos = libros.filter(l => _rlValorAnio(l) !== null && _rlValorTitulo(l));
+  if (candidatos.length < 4) return null;
+  const elegidos = _rlMuestra(candidatos, 4);
+  if (elegidos.length < 4) return null;
+  const anios = elegidos.map(_rlValorAnio);
+  if (new Set(anios).size < 4) return null; // evita empates de año entre las opciones
+  let idxMin = 0;
+  anios.forEach((a, i) => { if (a < anios[idxMin]) idxMin = i; });
+  const correcta = _rlValorTitulo(elegidos[idxMin]);
+  const titulos = elegidos.map(_rlValorTitulo);
+  return {
+    id: `orden:${titulos.slice().sort().join('|')}`,
+    pregunta: '¿Cuál de estos libros se publicó primero?',
+    opciones: _rlMezclar(titulos),
+    correcta
+  };
+}
+
+const _RL_GENERADORES = [_rlPreguntaAutor, _rlPreguntaAnio, _rlPreguntaGenero, _rlPreguntaOrden];
+
+// --- Control de preguntas ya vistas (para no repetir al mismo visitante) ---
+const RETO_VISTAS_KEY = 'bibliof_reto_vistas';
+function _rlVistasCargar() {
+  try { return new Set(JSON.parse(localStorage.getItem(RETO_VISTAS_KEY) || '[]')); }
+  catch { return new Set(); }
+}
+function _rlVistasGuardar(set) { localStorage.setItem(RETO_VISTAS_KEY, JSON.stringify([...set])); }
+let _rlVistas = _rlVistasCargar();
+
+function _rlSiguientePregunta() {
+  const intentos = 40;
+  for (let i = 0; i < intentos; i++) {
+    const gen = _RL_GENERADORES[Math.floor(Math.random() * _RL_GENERADORES.length)];
+    const q = gen();
+    if (q && !_rlVistas.has(q.id)) return q;
+  }
+  // Se agotó el pool razonable de preguntas nuevas: reinicia el registro y avisa
+  _rlVistas = new Set();
+  _rlVistasGuardar(_rlVistas);
+  for (let i = 0; i < intentos; i++) {
+    const gen = _RL_GENERADORES[Math.floor(Math.random() * _RL_GENERADORES.length)];
+    const q = gen();
+    if (q) { q._reinicio = true; return q; }
+  }
+  return null; // no hay suficientes datos en el Sheet todavía
+}
+
+// --- Nombres sugeridos para quien no quiera pensar un apodo ---
+const RETO_NOMBRES_SUGERIDOS = [
+  'Gatsby', 'Elizabeth B.', 'Atticus', 'Hermione', 'Ishmael', 'Dorian G.',
+  'Holden C.', 'Jane E.', 'Sherlock', 'Alonso Quijano', 'Mr. Darcy',
+  'Winston S.', 'Santiago (Alquimista)', 'Offred', 'Meursault', 'Raskólnikov',
+  'Bilbo B.', 'Celia Cruz (no, esa no)', 'Aureliano', 'Lisbeth S.'
+];
+function _rlPintarSugerenciasNombre() {
+  const cont = document.getElementById('retoSugerencias');
+  if (!cont) return;
+  cont.innerHTML = '';
+  _rlMuestra(RETO_NOMBRES_SUGERIDOS, 3).forEach(nombre => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'reto-chip';
+    chip.textContent = nombre;
+    chip.addEventListener('click', () => { document.getElementById('retoNombre').value = nombre; });
+    cont.appendChild(chip);
+  });
+}
+
+// --- Estado y flujo del juego ---
+let _rlApodo = '';
+let _rlAciertos = 0;
+let _rlTotal = 0;
+let _rlPreguntaActual = null;
+let _rlBloqueado = false;
+
+function _rlMostrarPantalla(pantalla) {
+  document.getElementById('retoEntrada').style.display = pantalla === 'entrada' ? '' : 'none';
+  document.getElementById('retoJuego').style.display = pantalla === 'juego' ? '' : 'none';
+  document.getElementById('retoFin').style.display = pantalla === 'fin' ? '' : 'none';
+}
+
+function _rlActualizarMarcador() {
+  document.getElementById('retoMarcador').textContent = `${_rlAciertos} / ${_rlTotal}`;
+}
+
+function _rlIniciar() {
+  const input = document.getElementById('retoNombre');
+  _rlApodo = (input.value || '').trim().slice(0, 30) || 'Anónimo';
+  _rlAciertos = 0;
+  _rlTotal = 0;
+  document.getElementById('retoJugador').textContent = _rlApodo;
+  _rlActualizarMarcador();
+  _rlMostrarPantalla('juego');
+  _rlSiguienteRonda();
+}
+
+function _rlSiguienteRonda() {
+  const feedback = document.getElementById('retoFeedback');
+  feedback.textContent = '';
+  feedback.className = 'reto-feedback';
+
+  const q = _rlSiguientePregunta();
+  const contOpciones = document.getElementById('retoOpciones');
+  const pPregunta = document.getElementById('retoPregunta');
+
+  if (!q) {
+    pPregunta.textContent = 'Todavía no hay suficientes libros con año, autor o género para armar preguntas nuevas. ¡Vuelve cuando la biblioteca crezca un poco más! 📚';
+    contOpciones.innerHTML = '';
+    return;
+  }
+
+  if (q._reinicio) {
+    feedback.textContent = '¡Ya viste todas las preguntas que hay por ahora! Reiniciamos 🔄';
+    feedback.className = 'reto-feedback exito';
+  }
+
+  _rlPreguntaActual = q;
+  pPregunta.textContent = q.pregunta;
+  contOpciones.innerHTML = '';
+  q.opciones.forEach(op => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'reto-opcion';
+    btn.textContent = op;
+    btn.addEventListener('click', () => _rlResponder(op, btn));
+    contOpciones.appendChild(btn);
+  });
+}
+
+function _rlResponder(opcionElegida, btnElegido) {
+  if (_rlBloqueado || !_rlPreguntaActual) return;
+  _rlBloqueado = true;
+
+  const q = _rlPreguntaActual;
+  _rlVistas.add(q.id);
+  _rlVistasGuardar(_rlVistas);
+
+  const correcta = opcionElegida === q.correcta;
+  _rlTotal++;
+  if (correcta) _rlAciertos++;
+  _rlActualizarMarcador();
+
+  document.querySelectorAll('#retoOpciones .reto-opcion').forEach(b => {
+    b.disabled = true;
+    if (b.textContent === q.correcta) b.classList.add('correcta');
+    else if (b === btnElegido) b.classList.add('incorrecta');
+  });
+
+  const feedback = document.getElementById('retoFeedback');
+  feedback.textContent = correcta ? '¡Correcto! 🎉' : `Casi — la respuesta correcta era "${q.correcta}"`;
+  feedback.className = 'reto-feedback ' + (correcta ? 'exito' : 'error');
+
+  setTimeout(() => { _rlBloqueado = false; _rlSiguienteRonda(); }, 1400);
+}
+
+async function _rlTerminar() {
+  document.getElementById('retoTerminar').disabled = true;
+  await guardarPuntaje(_rlApodo, _rlAciertos, _rlTotal || 1);
+
+  document.getElementById('retoResumen').textContent =
+    `${_rlApodo}, respondiste ${_rlTotal} pregunta${_rlTotal !== 1 ? 's' : ''} y acertaste ${_rlAciertos}.`;
+
+  const top = await obtenerLeaderboard(10);
+  const cont = document.getElementById('retoLeaderboard');
+  if (top.length === 0) {
+    cont.innerHTML = '<p style="color:var(--muted)">Sé la primera persona en el marcador 🏅</p>';
+  } else {
+    cont.innerHTML = '<h3 class="reto-leaderboard-titulo">🏅 Mejores puntajes</h3><ol class="reto-leaderboard-lista">' +
+      top.map(row => `<li><span>${escapeHtml(row.apodo)}</span><span>${row.puntaje}/${row.total_preguntas}</span></li>`).join('') +
+      '</ol>';
+  }
+  document.getElementById('retoTerminar').disabled = false;
+  _rlMostrarPantalla('fin');
+}
+
+document.getElementById('retoEmpezar')?.addEventListener('click', _rlIniciar);
+document.getElementById('retoNombre')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); _rlIniciar(); }
+});
+document.getElementById('retoTerminar')?.addEventListener('click', _rlTerminar);
+document.getElementById('retoJugarOtra')?.addEventListener('click', () => {
+  document.getElementById('retoNombre').value = '';
+  _rlPintarSugerenciasNombre();
+  _rlMostrarPantalla('entrada');
+});
+
+_rlPintarSugerenciasNombre();
+
 // --- Sección Sugerencias ---
 (function() {
   const form = document.getElementById('formSugerencias');

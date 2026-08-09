@@ -22,7 +22,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BiblioFa</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.12.0" />
+  <link rel="stylesheet" href="style.css?v=1.13.0" />
 
   <!-- Supabase (leaderboard de trivia + sugerencias) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -64,6 +64,7 @@
       <button class="sidebar-link" data-tab="tabGeneros"><span class="sidebar-link-icon">🎭</span> Géneros</button>
       <button class="sidebar-link" data-tab="tabSentimiento"><span class="sidebar-link-icon">👀</span> Mood</button>
       <button class="sidebar-link" data-tab="tabPopulares"><span class="sidebar-link-icon">🏆</span> Populares</button>
+      <button class="sidebar-link" data-tab="tabReto"><span class="sidebar-link-icon">🧠</span> Reto Literario</button>
       <button class="sidebar-link" data-tab="tabAbout"><span class="sidebar-link-icon">ℹ️</span> Info</button>
       <button class="sidebar-link" data-tab="tabSugerencias"><span class="sidebar-link-icon">💬</span> Sugerencias</button>
     </div>
@@ -131,6 +132,36 @@
   <h2>🏆 Los más populares</h2>
   <p class="populares-subtitulo">Los libros con más likes de la comunidad, de más a menos</p>
   <div id="popularesCards" class="lista-cards"></div>
+</section>
+
+
+<section id="tabReto" class="tab">
+  <div id="retoEntrada" class="reto-entrada">
+    <h2>🧠 Reto Literario</h2>
+    <p class="reto-tagline">preguntas de literatura en general — autores, años, géneros... no de mi lista personal</p>
+    <label for="retoNombre">Tu nombre o apodo</label>
+    <input type="text" id="retoNombre" maxlength="30" placeholder="Escribe tu nombre o elige uno de abajo">
+    <div id="retoSugerencias" class="reto-sugerencias"></div>
+    <button id="retoEmpezar" class="reto-btn-empezar">Empezar</button>
+  </div>
+
+  <div id="retoJuego" class="reto-juego" style="display:none">
+    <div class="reto-header">
+      <span id="retoJugador" class="reto-jugador"></span>
+      <span id="retoMarcador" class="reto-marcador">0 / 0</span>
+    </div>
+    <p id="retoPregunta" class="reto-pregunta"></p>
+    <div id="retoOpciones" class="reto-opciones"></div>
+    <p id="retoFeedback" class="reto-feedback" aria-live="polite"></p>
+    <button id="retoTerminar" class="reto-btn-terminar">Terminar y guardar puntaje</button>
+  </div>
+
+  <div id="retoFin" class="reto-fin" style="display:none">
+    <h2>🎉 ¡Buen reto!</h2>
+    <p id="retoResumen" class="reto-resumen"></p>
+    <div id="retoLeaderboard"></div>
+    <button id="retoJugarOtra" class="reto-btn-empezar">Jugar otra vez</button>
+  </div>
 </section>
 
 
@@ -318,7 +349,7 @@
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="script.js?v=1.13.0"></script>
+  <script src="script.js?v=1.14.0"></script>
 
   <!-- Cloudflare Web Analytics -->
   <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "85978fa0985645ffb561da2af953aad6"}'>
