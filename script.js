@@ -1085,7 +1085,11 @@ function _rlMostrarPantalla(pantalla) {
 
 // Pinta la pantalla de entrada: si ya hay un apodo guardado en este
 // navegador, salta directo a "seguir jugando" en vez de pedirlo de nuevo.
-function _rlPintarEntrada() {
+// Antes de pintar, sincroniza con la base de datos por si el apodo se
+// editó directamente ahí (para que Supabase sea la fuente de verdad real).
+async function _rlPintarEntrada() {
+  await _rlSincronizarApodoDesdeDB();
+
   const guardado = _rlApodoGuardado();
   const recurrente = document.getElementById('retoEntradaRecurrente');
   const nueva = document.getElementById('retoEntradaNueva');
@@ -1099,6 +1103,24 @@ function _rlPintarEntrada() {
     document.getElementById('retoNombre').value = '';
     _rlPintarSugerenciasNombre();
   }
+}
+
+// Si este navegador ya tiene una partida guardada en Supabase, trae el
+// apodo tal como está AHORA en la base de datos y actualiza localStorage
+// para que coincida — así, si lo editas manualmente en Supabase, la
+// próxima vez que entres a la pestaña se refleja en vez de seguir
+// mostrando (y luego sobrescribiendo) el nombre viejo del navegador.
+async function _rlSincronizarApodoDesdeDB() {
+  if (!supabaseClient) return;
+  const id = localStorage.getItem(RETO_JUGADOR_ID_KEY);
+  if (!id) return; // nunca ha jugado desde este navegador, nada que sincronizar
+  const { data, error } = await supabaseClient
+    .from('puntajes')
+    .select('apodo')
+    .eq('jugador_id', id)
+    .maybeSingle();
+  if (error) { console.error('Error sincronizando apodo:', error); return; }
+  if (data && data.apodo) _rlGuardarApodo(data.apodo);
 }
 
 function _rlActualizarMarcador() {
