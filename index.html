@@ -22,7 +22,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BiblioFa</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.16.0" />
+  <link rel="stylesheet" href="style.css?v=1.17.0" />
 
   <!-- Supabase (leaderboard de trivia + sugerencias) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -60,11 +60,16 @@
     </div>
 
     <div class="sidebar-nav">
+      <p class="sidebar-nav-label">Explora</p>
       <button class="sidebar-link active" data-tab="tabLibros"><span class="sidebar-link-icon">📚</span> Lista</button>
       <button class="sidebar-link" data-tab="tabGeneros"><span class="sidebar-link-icon">🎭</span> Géneros</button>
       <button class="sidebar-link" data-tab="tabSentimiento"><span class="sidebar-link-icon">👀</span> Mood</button>
+
+      <p class="sidebar-nav-label">Curiosidades</p>
       <button class="sidebar-link" data-tab="tabPopulares"><span class="sidebar-link-icon">🏆</span> Populares</button>
       <button class="sidebar-link" data-tab="tabReto"><span class="sidebar-link-icon">🦉</span> Reto Literario</button>
+
+      <p class="sidebar-nav-label">Sobre BiblioFa</p>
       <button class="sidebar-link" data-tab="tabAbout"><span class="sidebar-link-icon">ℹ️</span> Info</button>
       <button class="sidebar-link" data-tab="tabSugerencias"><span class="sidebar-link-icon">💬</span> Sugerencias</button>
     </div>
@@ -138,8 +143,7 @@
 <section id="tabReto" class="tab">
   <div id="retoEntrada" class="reto-entrada">
     <h2>🦉 Reto Literario</h2>
-    <p class="reto-tagline">A ver quién sabe más de libros — confiamos en que contestes solo con lo que ya sabes 😊</p>
-    <p class="reto-subtagline">Autores, personajes, años y más — literatura en general, no solo mi lista</p>
+    <p class="reto-tagline">Autores, personajes, años y más — literatura en general, no solo mi lista</p>
 
     <div id="retoEntradaRecurrente" style="display:none">
       <p class="reto-saludo">¡Hola de nuevo, <strong id="retoApodoGuardado"></strong>! 👋</p>
@@ -155,6 +159,7 @@
         <div id="retoSugerencias" class="reto-sugerencias"></div>
         <button id="retoOtrasSugerencias" type="button" class="reto-btn-refresh" title="Otras opciones" aria-label="Otras opciones">🔄</button>
       </div>
+      <p id="retoAvisoNombre" class="reto-aviso-nombre" style="display:none"></p>
       <button id="retoEmpezar" class="reto-btn-empezar">Empezar</button>
     </div>
 
@@ -367,7 +372,7 @@
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="script.js?v=1.17.0"></script>
+  <script src="script.js?v=1.18.0"></script>
 
   <!-- Cloudflare Web Analytics -->
   <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "85978fa0985645ffb561da2af953aad6"}'>

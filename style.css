@@ -144,6 +144,17 @@ body {
   flex: 1;
 }
 
+.sidebar-nav-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: 0.75;
+  margin: 16px 10px 6px;
+}
+.sidebar-nav-label:first-child { margin-top: 2px; }
+
 .sidebar-actions {
   padding: 10px 12px;
   border-top: 1px solid var(--border);
@@ -445,8 +456,7 @@ main {
   text-align: center;
 }
 .reto-entrada h2, .reto-fin h2 { margin-bottom: 4px; }
-.reto-tagline { color: var(--text); font-size: 1.02rem; font-weight: 600; margin: 0 0 6px; }
-.reto-subtagline { color: var(--muted); font-size: 0.85rem; margin: 0 0 26px; }
+.reto-tagline { color: var(--muted); font-size: 0.9rem; margin: 0 0 26px; }
 .reto-entrada label {
   display: block;
   font-size: 0.85rem;
@@ -511,6 +521,13 @@ main {
   transition: all .2s;
 }
 .reto-btn-refresh:hover { border-color: var(--navy); color: var(--navy); transform: rotate(90deg); }
+
+.reto-aviso-nombre {
+  color: #c0392b;
+  font-size: 0.82rem;
+  text-align: left;
+  margin: -12px 0 16px;
+}
 
 .reto-saludo { font-size: 1.05rem; color: var(--text); margin-bottom: 20px; }
 .reto-link-cambiar {

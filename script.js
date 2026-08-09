@@ -863,7 +863,18 @@ function activarTab(target) {
   history.pushState({ tab: target }, '', '#' + target);
 }
 
-// Estado inicial del historial (así el primer "Atrás" tiene a dónde volver)
+// Estado inicial del historial: si la URL ya trae un tab en el hash (por
+// ejemplo, tras un refresh estando en otra pestaña que no sea Lista), lo
+// restauramos en vez de caer siempre en Lista.
+(function _restaurarTabInicial() {
+  let hash = (location.hash || '').replace('#', '');
+  if (hash.startsWith('mood-')) hash = 'tabSentimiento'; // veníamos de un mood específico
+  const esTabValido = hash && document.getElementById(hash) && document.getElementById(hash).classList.contains('tab');
+  if (esTabValido) {
+    _tabActual = hash;
+    _aplicarTabDOM(hash);
+  }
+})();
 history.replaceState({ tab: _tabActual }, '', location.pathname + '#' + _tabActual);
 
 // Enlaces del menú (sidebar en escritorio, drawer en móvil)
@@ -1237,9 +1248,40 @@ async function _rlTerminar() {
   _rlMostrarPantalla('fin');
 }
 
-document.getElementById('retoEmpezar')?.addEventListener('click', () => {
+// Comprueba si un apodo ya lo está usando OTRO jugador (otro id de navegador).
+// Si Supabase no está disponible, dejamos pasar (no podemos validar, pero
+// tampoco queremos bloquear el juego por eso).
+async function _rlApodoDisponible(nombre) {
+  if (!supabaseClient) return true;
+  const { data, error } = await supabaseClient
+    .from('puntajes')
+    .select('jugador_id')
+    .eq('apodo', nombre);
+  if (error) { console.error('Error validando apodo:', error); return true; }
+  if (!data || data.length === 0) return true;
+  const idPropio = localStorage.getItem(RETO_JUGADOR_ID_KEY);
+  return data.every(row => row.jugador_id === idPropio);
+}
+
+document.getElementById('retoEmpezar')?.addEventListener('click', async () => {
   const input = document.getElementById('retoNombre');
   const nombre = (input.value || '').trim().slice(0, 30) || 'Anónimo';
+  const btnEmpezar = document.getElementById('retoEmpezar');
+  const aviso = document.getElementById('retoAvisoNombre');
+  aviso.style.display = 'none';
+
+  btnEmpezar.disabled = true;
+  btnEmpezar.textContent = 'Comprobando...';
+  const disponible = await _rlApodoDisponible(nombre);
+  btnEmpezar.disabled = false;
+  btnEmpezar.textContent = 'Empezar';
+
+  if (!disponible) {
+    aviso.textContent = `"${nombre}" ya lo está usando alguien más — prueba otro nombre o agrégale un número.`;
+    aviso.style.display = '';
+    return;
+  }
+
   _rlGuardarApodo(nombre);
   _rlApodo = nombre;
   _rlIniciarPartida();
