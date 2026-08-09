@@ -181,6 +181,30 @@ async function cargarLikesCache() {
   likesCache = conteo;
 }
 
+// Arma el ranking de "Populares": solo libros con al menos un like, de más a menos.
+function mostrarPopulares() {
+  const cont = document.getElementById('popularesCards');
+  if (!cont) return;
+
+  const conLikes = libros.filter(l => {
+    const t = l['Título'] || l['Titulo'] || l['Title'] || '';
+    return (likesCache[t] || 0) > 0;
+  });
+
+  conLikes.sort((a, b) => {
+    const ta = a['Título'] || a['Titulo'] || a['Title'] || '';
+    const tb = b['Título'] || b['Titulo'] || b['Title'] || '';
+    return (likesCache[tb] || 0) - (likesCache[ta] || 0);
+  });
+
+  if (conLikes.length === 0) {
+    cont.innerHTML = '<p style="color:var(--muted)">Todavía no hay likes — ¡sé la primera persona en darle uno a un libro! 👍</p>';
+    return;
+  }
+
+  mostrarTarjetasLista(conLikes, 'popularesCards');
+}
+
 let libros = [];
 let ordenActual = {col: null, asc: true};
 
@@ -218,7 +242,10 @@ Papa.parse(sheetUrl, {
     actualizarContador(libros.length);
 
     // Trae los likes en paralelo y refresca la vista cuando lleguen
-    cargarLikesCache().then(() => mostrarTabla(ultimaData));
+    cargarLikesCache().then(() => {
+      mostrarTabla(ultimaData);
+      if (_tabActual === 'tabPopulares') mostrarPopulares();
+    });
   },
   error: err => showError('Error leyendo CSV: ' + err)
 });
@@ -262,14 +289,6 @@ function ordenarLibros(data, criterio, ascendente) {
       const pa = parseInt(getCampo(a, 'Publicado', 'Publicación', 'Publicacion', 'Año', 'Ano', 'Year')) || 0;
       const pb = parseInt(getCampo(b, 'Publicado', 'Publicación', 'Publicacion', 'Año', 'Ano', 'Year')) || 0;
       return dir * (pa - pb);
-    });
-  } else if (criterio === 'populares') {
-    copia.sort((a, b) => {
-      const ta = a['Título'] || a['Titulo'] || a['Title'] || '';
-      const tb = b['Título'] || b['Titulo'] || b['Title'] || '';
-      const la = likesCache[ta] || 0;
-      const lb = likesCache[tb] || 0;
-      return dir * (la - lb);
     });
   }
   return copia;
@@ -319,10 +338,8 @@ function mostrarTarjetasLista(data, containerId) {
         </div>
         ${resena ? `<p class="card-resena">${escapeHtml(resena)}</p>` : ''}
       </div>
-      <div class="lista-card-side">
-        <button class="btn-antojo ${antojosContiene(libro) ? 'guardado' : ''}" title="Guardar en antojos">✓</button>
-        <button class="btn-like-card" title="Dar like">👍 <span class="like-count">…</span></button>
-      </div>
+      <button class="btn-antojo ${antojosContiene(libro) ? 'guardado' : ''}" title="Guardar en antojos">✓</button>
+      <button class="btn-like-card" title="Dar like">👍 <span class="like-count">…</span></button>
     `;
     div.querySelector('.btn-antojo').addEventListener('click', e => {
       e.stopPropagation();
@@ -683,8 +700,8 @@ function renderDetalleModal(libro){
   inicializarBotonLike(btnLike, tituloParaLike);
 
   modalActions.appendChild(btnAntojo);
-  modalActions.appendChild(btnLike);
   modalActions.appendChild(btnCompartir);
+  modalActions.appendChild(btnLike);
   detalleContenido.appendChild(modalActions);
 }
 
@@ -801,6 +818,7 @@ function _aplicarTabDOM(target) {
 
   _tabActual = target;
   if (target === 'tabAbout') cargarInfo();
+  if (target === 'tabPopulares') mostrarPopulares();
 }
 
 // Función central de navegación — usada por desktop y barra móvil.

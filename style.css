@@ -311,7 +311,8 @@ main {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 16px 18px;
+  padding: 16px 18px 40px;
+  position: relative;
   display: flex;
   align-items: flex-start;
   gap: 14px;
@@ -429,6 +430,12 @@ main {
   font-size: 0.82rem;
   color: var(--muted);
   margin-top: 12px;
+}
+
+.populares-subtitulo {
+  color: var(--muted);
+  font-size: 0.88rem;
+  margin: -6px 0 16px;
 }
 
 /* ── Sección Géneros ────────────────────────────────── */
@@ -1009,6 +1016,7 @@ h2 {
   background: transparent;
   color: var(--gold-dk);
   display: inline-flex; align-items: center; gap: 6px;
+  margin-left: auto;
 }
 .btn-modal-like:hover { background: var(--gold-lt); }
 .btn-modal-like.dado { background: var(--gold-dk); border-color: var(--gold-dk); color: white; }
@@ -1034,16 +1042,11 @@ h2 {
 .lista-card .btn-antojo { align-self: center; }
 .card .btn-antojo { display: block; margin-top: 8px; }
 
-/* ── Columna de acciones en la tarjeta de lista: antojo + like ── */
-.lista-card-side {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  align-self: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
+/* ── Botón de like en la tarjeta: flotando abajo a la derecha ── */
 .btn-like-card {
+  position: absolute;
+  bottom: 12px;
+  right: 14px;
   background: none;
   border: none;
   color: var(--muted);
@@ -1054,12 +1057,12 @@ h2 {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  padding: 2px 4px;
+  padding: 3px 8px;
   border-radius: 100px;
   transition: all .18s;
   white-space: nowrap;
 }
-.btn-like-card:hover { color: var(--gold-dk); }
+.btn-like-card:hover { color: var(--gold-dk); background: var(--gold-lt); }
 .btn-like-card.dado { color: var(--gold-dk); background: var(--gold-lt); }
 .btn-like-card .like-count { font-variant-numeric: tabular-nums; }
 
