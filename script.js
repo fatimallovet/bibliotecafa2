@@ -134,6 +134,25 @@ async function enviarSugerencia({ tipo, mensaje, libroRelacionado = null, nombre
   return true;
 }
 
+// Registra un like para un libro (identificado por título, igual que antojos).
+async function darLike(tituloLibro) {
+  if (!supabaseClient) return false;
+  const { error } = await supabaseClient.from('reacciones').insert({ libro_titulo: tituloLibro });
+  if (error) { console.error('Error dando like:', error); return false; }
+  return true;
+}
+
+// Trae el total de likes de un libro específico.
+async function obtenerLikes(tituloLibro) {
+  if (!supabaseClient) return 0;
+  const { count, error } = await supabaseClient
+    .from('reacciones')
+    .select('*', { count: 'exact', head: true })
+    .eq('libro_titulo', tituloLibro);
+  if (error) { console.error('Error obteniendo likes:', error); return 0; }
+  return count || 0;
+}
+
 let libros = [];
 let ordenActual = {col: null, asc: true};
 
@@ -482,6 +501,10 @@ function renderRandomModal(r) {
 
   // Botón compartir
   document.getElementById('randomModalBtnCompartir').onclick = () => compartirLibro(r);
+
+  // Botón like
+  const tituloRandom = r['Título'] || r['Titulo'] || r['Title'] || '';
+  inicializarBotonLike(document.getElementById('randomModalBtnLike'), tituloRandom);
 }
 
 document.getElementById('randomFab').addEventListener('click', mostrarLibroRandomEnModal);
@@ -611,7 +634,13 @@ function renderDetalleModal(libro){
   btnCompartir.innerHTML = '↗ Compartir';
   btnCompartir.addEventListener('click', () => compartirLibro(libro));
 
+  const btnLike = document.createElement('button');
+  btnLike.className = 'btn-modal-like';
+  const tituloParaLike = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+  inicializarBotonLike(btnLike, tituloParaLike);
+
   modalActions.appendChild(btnAntojo);
+  modalActions.appendChild(btnLike);
   modalActions.appendChild(btnCompartir);
   detalleContenido.appendChild(modalActions);
 }
@@ -722,6 +751,10 @@ function _aplicarTabDOM(target) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   const section = document.getElementById(target);
   if (section) section.classList.add('active');
+
+  // Limpia el mensaje de estado del form de sugerencias al cambiar de pestaña
+  const estadoSug = document.getElementById('sugerenciasEstado');
+  if (estadoSug) { estadoSug.textContent = ''; estadoSug.className = 'sugerencias-estado'; }
 
   _tabActual = target;
   if (target === 'tabAbout') cargarInfo();
@@ -987,6 +1020,56 @@ function toggleAntojos(libro) {
   if (idx >= 0) items.splice(idx, 1); else items.push(libro);
   antojosGuardar(items);
   actualizarAntojosUI();
+}
+
+// =====================================================
+// LIKES — control local de "ya di like a este libro en este dispositivo"
+// (el conteo real vive en Supabase; esto solo evita que la misma persona
+// le dé like repetidamente al mismo libro desde el mismo navegador)
+// =====================================================
+const LIKES_KEY = 'bibliof_likes_dados';
+
+function likesDadosCargar() {
+  try { return JSON.parse(localStorage.getItem(LIKES_KEY) || '[]'); }
+  catch { return []; }
+}
+function yaDioLike(tituloLibro) {
+  return likesDadosCargar().includes(tituloLibro);
+}
+function marcarLikeDado(tituloLibro) {
+  const items = likesDadosCargar();
+  if (!items.includes(tituloLibro)) {
+    items.push(tituloLibro);
+    localStorage.setItem(LIKES_KEY, JSON.stringify(items));
+  }
+}
+
+// Prepara un botón de like (para ficha normal o modal random): pinta el
+// estado inicial, trae el conteo real de Supabase, y engancha el click.
+function inicializarBotonLike(btn, tituloLibro) {
+  const yaLike = yaDioLike(tituloLibro);
+  btn.classList.toggle('dado', yaLike);
+  btn.disabled = yaLike;
+  btn.innerHTML = `👍 <span class="like-count">…</span>`;
+
+  obtenerLikes(tituloLibro).then(n => {
+    const span = btn.querySelector('.like-count');
+    if (span) span.textContent = n;
+  });
+
+  btn.onclick = async () => {
+    if (btn.disabled) return;
+    btn.disabled = true;
+    const ok = await darLike(tituloLibro);
+    const span = btn.querySelector('.like-count');
+    if (ok) {
+      marcarLikeDado(tituloLibro);
+      btn.classList.add('dado');
+      if (span) span.textContent = (parseInt(span.textContent, 10) || 0) + 1;
+    } else {
+      btn.disabled = false;
+    }
+  };
 }
 
 function actualizarAntojosUI() {

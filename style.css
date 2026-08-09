@@ -984,7 +984,8 @@ h2 {
   border-top: 1px solid var(--border);
 }
 .btn-modal-antojo,
-.btn-modal-compartir {
+.btn-modal-compartir,
+.btn-modal-like {
   font-family: 'DM Sans', system-ui, sans-serif;
   font-size: 0.85rem; font-weight: 600;
   padding: 10px 20px; border-radius: 100px;
@@ -1003,6 +1004,16 @@ h2 {
   color: var(--muted);
 }
 .btn-modal-compartir:hover { border-color: var(--navy); color: var(--navy); }
+.btn-modal-like {
+  border: 1.5px solid var(--gold-dk);
+  background: transparent;
+  color: var(--gold-dk);
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-modal-like:hover { background: var(--gold-lt); }
+.btn-modal-like.dado { background: var(--gold-dk); border-color: var(--gold-dk); color: white; }
+.btn-modal-like:disabled { cursor: default; }
+.btn-modal-like .like-count { font-variant-numeric: tabular-nums; }
 
 /* Random: reutiliza exactamente el mismo modal-content que la ficha completa */
 .rm-content { animation: slideUp .22s ease; }
