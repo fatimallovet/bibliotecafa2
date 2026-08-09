@@ -95,13 +95,47 @@ const supabaseClient = window.supabase
   : null;
 
 // Guarda el puntaje de una partida de trivia. Devuelve true/false según éxito.
-async function guardarPuntaje(apodo, puntaje, totalPreguntas) {
+// Identidad estable por navegador (NO es una cuenta de usuario, solo un id
+// al azar guardado en localStorage) para poder acumular el puntaje de un
+// mismo jugador entre partidas, sin depender de que el apodo sea único
+// (dos personas distintas podrían elegir el mismo nombre).
+const RETO_JUGADOR_ID_KEY = 'bibliof_reto_jugador_id';
+function _rlJugadorId() {
+  let id = localStorage.getItem(RETO_JUGADOR_ID_KEY);
+  if (!id) {
+    id = (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    localStorage.setItem(RETO_JUGADOR_ID_KEY, id);
+  }
+  return id;
+}
+
+// Guarda el puntaje de una partida SUMÁNDOLO al acumulado del jugador
+// (identificado por el navegador), en vez de crear una fila nueva cada vez.
+async function guardarPuntaje(apodo, aciertosSesion, totalSesion) {
   if (!supabaseClient) return false;
-  const { error } = await supabaseClient.from('puntajes').insert({
-    apodo: (apodo || 'Anónimo').slice(0, 30),
-    puntaje,
-    total_preguntas: totalPreguntas
-  });
+  const jugadorId = _rlJugadorId();
+
+  const { data: existente, error: errSel } = await supabaseClient
+    .from('puntajes')
+    .select('puntaje, total_preguntas')
+    .eq('jugador_id', jugadorId)
+    .maybeSingle();
+  if (errSel) console.error('Error consultando puntaje previo:', errSel);
+
+  const puntajeNuevo = (existente?.puntaje || 0) + aciertosSesion;
+  const totalNuevo = (existente?.total_preguntas || 0) + totalSesion;
+
+  const { error } = await supabaseClient
+    .from('puntajes')
+    .upsert(
+      {
+        jugador_id: jugadorId,
+        apodo: (apodo || 'Anónimo').slice(0, 30),
+        puntaje: puntajeNuevo,
+        total_preguntas: totalNuevo
+      },
+      { onConflict: 'jugador_id' }
+    );
   if (error) { console.error('Error guardando puntaje:', error); return false; }
   return true;
 }
@@ -1032,7 +1066,10 @@ function _rlPintarSugerenciasNombre() {
 const RETO_APODO_KEY = 'bibliof_reto_apodo';
 function _rlApodoGuardado() { return localStorage.getItem(RETO_APODO_KEY) || ''; }
 function _rlGuardarApodo(nombre) { localStorage.setItem(RETO_APODO_KEY, nombre); }
-function _rlOlvidarApodo() { localStorage.removeItem(RETO_APODO_KEY); }
+function _rlOlvidarApodo() {
+  localStorage.removeItem(RETO_APODO_KEY);
+  localStorage.removeItem(RETO_JUGADOR_ID_KEY); // nueva persona en este navegador = identidad nueva también
+}
 
 let _rlApodo = '';
 let _rlAciertos = 0;

@@ -22,7 +22,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BiblioFa</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.15.0" />
+  <link rel="stylesheet" href="style.css?v=1.16.0" />
 
   <!-- Supabase (leaderboard de trivia + sugerencias) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -138,7 +138,7 @@
 <section id="tabReto" class="tab">
   <div id="retoEntrada" class="reto-entrada">
     <h2>🦉 Reto Literario</h2>
-    <p class="reto-tagline">A ver quién sabe más de libros — nada de Google, va con honor 😏</p>
+    <p class="reto-tagline">A ver quién sabe más de libros — confiamos en que contestes solo con lo que ya sabes 😊</p>
     <p class="reto-subtagline">Autores, personajes, años y más — literatura en general, no solo mi lista</p>
 
     <div id="retoEntradaRecurrente" style="display:none">
@@ -176,6 +176,7 @@
   <div id="retoFin" class="reto-fin" style="display:none">
     <h2>🎉 ¡Buen reto!</h2>
     <p id="retoResumen" class="reto-resumen"></p>
+    <p class="reto-nota-acumulado">Tu puntaje en la tabla se va sumando cada vez que juegas 📈</p>
     <div id="retoLeaderboard"></div>
     <button id="retoJugarOtra" class="reto-btn-empezar">Jugar otra vez</button>
   </div>
@@ -366,7 +367,7 @@
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="script.js?v=1.15.0"></script>
+  <script src="script.js?v=1.16.0"></script>
 
   <!-- Cloudflare Web Analytics -->
   <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "85978fa0985645ffb561da2af953aad6"}'>

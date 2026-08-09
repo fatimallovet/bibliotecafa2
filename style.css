@@ -622,7 +622,8 @@ main {
 .reto-btn-terminar:hover { border-color: #c0392b; color: #c0392b; }
 .reto-btn-terminar:disabled { opacity: 0.6; cursor: default; }
 
-.reto-resumen { color: var(--text); font-size: 1rem; margin-bottom: 20px; }
+.reto-resumen { color: var(--text); font-size: 1rem; margin-bottom: 6px; }
+.reto-nota-acumulado { color: var(--muted); font-size: 0.8rem; margin: 0 0 20px; }
 .reto-leaderboard-titulo { font-size: 1rem; color: var(--navy); margin: 0 0 8px; }
 .reto-leaderboard-lista {
   list-style: none;
