@@ -29,7 +29,12 @@
      botón. Contenido (main) ya no tiene ancho fijo: usa el espacio disponible junto al sidebar
      (hasta 1600px). Tarjetas de Lista/Géneros/Mood más angostas (240px min) para que quepan más
      por fila; se quitó el override que las hacía más anchas en pantallas grandes. En "Lo mejor"
-     solo la frase queda centrada, la etiqueta sigue a la izquierda. */
+     solo la frase queda centrada, la etiqueta sigue a la izquierda.
+   · v1.18.0: sidebar más compacto (menos padding vertical en header/nav/acciones/footer);
+     tarjetas de Lista/Géneros/Mood ahora caben máximo 3 por fila (antes 4) con más separación
+     entre ellas (minmax 340px, gap 20px); rediseño completo del tab Reto Literario — tarjeta
+     con borde y franja superior navy→dorado, opciones con badge de letra (A/B/C/D), marcador
+     tipo píldora navy, tabla de posiciones con medallas 🥇🥈🥉. */
 /* =====================================================
    BiblioFa — Azul Medianoche + Dorado
    ===================================================== */
@@ -98,7 +103,7 @@ body {
 .sidebar-close { display: none; }
 
 .sidebar-header {
-  padding: 30px 22px 22px;
+  padding: 22px 22px 16px;
   border-bottom: 1px solid var(--border);
   position: relative;
 }
@@ -133,14 +138,14 @@ body {
   font-weight: 500;
   letter-spacing: 0.03em;
   color: var(--gold-dk);
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
 .sidebar-nav {
-  padding: 16px 12px;
+  padding: 10px 12px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   flex: 1;
 }
 
@@ -151,24 +156,24 @@ body {
   text-transform: uppercase;
   color: var(--muted);
   opacity: 0.75;
-  margin: 16px 10px 6px;
+  margin: 10px 10px 4px;
 }
 .sidebar-nav-label:first-child { margin-top: 2px; }
 
 .sidebar-actions {
-  padding: 10px 12px;
+  padding: 8px 12px;
   border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
 }
 
 .sidebar-footer {
-  padding: 12px;
+  padding: 8px 12px;
   border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
 }
 
 .sidebar-link {
@@ -177,7 +182,7 @@ body {
   align-items: center;
   gap: 12px;
   width: 100%;
-  padding: 11px 14px;
+  padding: 8px 14px;
   border-radius: 10px;
   border: none;
   background: none;
@@ -314,8 +319,8 @@ main {
 /* ── Tarjetas lista principal ───────────────────────── */
 .lista-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
 }
 
 .lista-card {
@@ -454,9 +459,23 @@ main {
   max-width: 560px;
   margin: 0 auto;
   text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 40px 36px 34px;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
 }
-.reto-entrada h2, .reto-fin h2 { margin-bottom: 4px; }
-.reto-tagline { color: var(--muted); font-size: 0.9rem; margin: 0 0 26px; }
+.reto-entrada::before, .reto-juego::before, .reto-fin::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 5px;
+  background: linear-gradient(90deg, var(--navy), var(--gold-dk) 50%, var(--gold));
+}
+.reto-entrada h2, .reto-fin h2 { margin-bottom: 4px; font-size: 1.5rem; }
+.reto-tagline { color: var(--muted); font-size: 0.9rem; margin: 0 0 28px; }
 .reto-entrada label {
   display: block;
   font-size: 0.85rem;
@@ -470,31 +489,32 @@ main {
   padding: 12px 16px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-md);
-  background: var(--surface);
+  background: var(--bg);
   font-family: inherit;
   font-size: 1rem;
   color: var(--text);
+  transition: border-color .18s, box-shadow .18s;
 }
-#retoNombre:focus { outline: none; border-color: var(--navy); box-shadow: var(--shadow-sm); }
+#retoNombre:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(26,39,68,0.1); }
 
 .reto-sugerencias-label {
   text-align: left;
   color: var(--muted);
   font-size: 0.78rem;
-  margin: 14px 0 8px;
+  margin: 16px 0 8px;
 }
 .reto-sugerencias-row {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 26px;
+  margin-bottom: 28px;
 }
 .reto-sugerencias { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
 .reto-chip {
   padding: 8px 16px;
   border-radius: 100px;
   border: 1px solid var(--border-md);
-  background: var(--surface);
+  background: var(--bg);
   color: var(--navy);
   font-family: 'DM Sans', system-ui, sans-serif;
   font-size: 0.83rem;
@@ -511,7 +531,7 @@ main {
   height: 38px;
   border-radius: 50%;
   border: 1px solid var(--border-md);
-  background: var(--surface);
+  background: var(--bg);
   color: var(--muted);
   font-size: 1rem;
   cursor: pointer;
@@ -526,10 +546,11 @@ main {
   color: #c0392b;
   font-size: 0.82rem;
   text-align: left;
-  margin: -12px 0 16px;
+  margin: -14px 0 16px;
 }
 
-.reto-saludo { font-size: 1.05rem; color: var(--text); margin-bottom: 20px; }
+.reto-saludo { font-size: 1.1rem; color: var(--text); margin-bottom: 22px; }
+.reto-saludo strong { color: var(--navy); font-family: var(--font-serif); font-style: italic; font-weight: 400; font-size: 1.15em; }
 .reto-link-cambiar {
   display: block;
   margin: 14px auto 0;
@@ -545,23 +566,26 @@ main {
 .reto-entrada .reto-link-cambiar:first-of-type { margin-bottom: 4px; }
 
 .reto-link-tabla {
-  display: block;
-  margin: 24px auto 0;
-  background: none;
-  border: 1px solid var(--border-md);
-  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 26px auto 0;
+  background: var(--gold-lt);
+  border: 1px solid transparent;
+  color: var(--gold-dk);
   font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 600;
   font-size: 0.82rem;
-  padding: 8px 18px;
+  padding: 9px 20px;
   border-radius: 100px;
   cursor: pointer;
   transition: all .18s;
 }
-.reto-link-tabla:hover { border-color: var(--gold-dk); color: var(--gold-dk); }
-.reto-tabla-entrada { margin-top: 18px; text-align: left; }
+.reto-link-tabla:hover { border-color: var(--gold-dk); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.reto-tabla-entrada { margin-top: 20px; text-align: left; }
 
 .reto-btn-empezar {
-  padding: 12px 34px;
+  padding: 13px 36px;
   border: none;
   border-radius: 100px;
   background: var(--navy);
@@ -570,58 +594,87 @@ main {
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
+  box-shadow: var(--shadow-md);
   transition: all .2s;
 }
-.reto-btn-empezar:hover { background: var(--navy-lt); transform: translateY(-2px); }
+.reto-btn-empezar:hover { background: var(--navy-lt); transform: translateY(-2px); box-shadow: var(--shadow-lg); }
 
 .reto-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 22px;
+  margin-bottom: 26px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
   font-size: 0.85rem;
 }
 .reto-jugador { font-weight: 600; color: var(--navy); }
+.reto-jugador::before { content: "🦉 "; }
 .reto-marcador {
   font-variant-numeric: tabular-nums;
-  background: var(--gold-lt);
-  color: var(--gold-dk);
-  padding: 4px 12px;
+  background: var(--navy);
+  color: var(--gold);
+  padding: 5px 14px;
   border-radius: 100px;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  box-shadow: var(--shadow-sm);
 }
 
 .reto-pregunta {
   font-family: var(--font-serif);
-  font-size: 1.3rem;
+  font-size: 1.35rem;
   color: var(--text);
-  margin: 0 0 22px;
+  margin: 0 0 24px;
   line-height: 1.4;
 }
 
 .reto-opciones {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 16px;
+  gap: 12px;
+  margin-bottom: 18px;
+  counter-reset: retoopt;
 }
 .reto-opcion {
-  padding: 12px 14px;
+  position: relative;
+  padding: 13px 14px 13px 46px;
   border-radius: var(--radius-md);
   border: 1.5px solid var(--border-md);
-  background: var(--surface);
+  background: var(--bg);
   color: var(--text);
   font-family: 'DM Sans', system-ui, sans-serif;
   font-size: 0.9rem;
+  text-align: left;
   cursor: pointer;
   transition: all .15s;
 }
-.reto-opcion:hover:not(:disabled) { border-color: var(--navy); }
+.reto-opcion::before {
+  counter-increment: retoopt;
+  content: counter(retoopt, upper-alpha);
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--accent-lt);
+  color: var(--navy);
+  font-size: 0.68rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .15s;
+}
+.reto-opcion:hover:not(:disabled) { border-color: var(--navy); background: var(--surface); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
 .reto-opcion:disabled { cursor: default; }
 .reto-opcion.correcta { background: #e5f5e8; border-color: #2e8b4f; color: #1f5f36; }
+.reto-opcion.correcta::before { background: #2e8b4f; color: #fff; }
 .reto-opcion.incorrecta { background: #fdeaea; border-color: #c0392b; color: #8f291c; }
+.reto-opcion.incorrecta::before { background: #c0392b; color: #fff; }
 
-.reto-feedback { min-height: 1.3em; font-weight: 600; font-size: 0.9rem; margin: 0 0 18px; }
+.reto-feedback { min-height: 1.3em; font-weight: 600; font-size: 0.9rem; margin: 0 0 20px; }
 .reto-feedback.exito { color: #2e8b4f; }
 .reto-feedback.error { color: #c0392b; }
 
@@ -630,39 +683,64 @@ main {
   border: 1px solid var(--border-md);
   color: var(--muted);
   font-family: 'DM Sans', system-ui, sans-serif;
-  padding: 8px 20px;
+  padding: 9px 22px;
   border-radius: 100px;
   font-size: 0.82rem;
   cursor: pointer;
   transition: all .18s;
 }
-.reto-btn-terminar:hover { border-color: #c0392b; color: #c0392b; }
+.reto-btn-terminar:hover { border-color: #c0392b; color: #c0392b; background: #fdeaea; }
 .reto-btn-terminar:disabled { opacity: 0.6; cursor: default; }
 
-.reto-resumen { color: var(--text); font-size: 1rem; margin-bottom: 6px; }
-.reto-nota-acumulado { color: var(--muted); font-size: 0.8rem; margin: 0 0 20px; }
+.reto-resumen { color: var(--text); font-size: 1.1rem; margin-bottom: 6px; font-family: var(--font-serif); }
+.reto-nota-acumulado { color: var(--muted); font-size: 0.8rem; margin: 0 0 22px; }
 .reto-nota-acumulado.reto-nota-error { color: #c0392b; font-weight: 600; }
-.reto-leaderboard-titulo { font-size: 1rem; color: var(--navy); margin: 0 0 8px; }
+.reto-leaderboard-titulo { font-size: 1rem; color: var(--navy); margin: 0 0 10px; font-family: var(--font-serif); font-style: italic; font-weight: 400; }
 .reto-leaderboard-lista {
   list-style: none;
+  counter-reset: retorank;
   padding: 0;
   margin: 0 0 26px;
   text-align: left;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   overflow: hidden;
+  box-shadow: var(--shadow-sm);
 }
 .reto-leaderboard-lista li {
   display: flex;
-  justify-content: space-between;
-  padding: 9px 16px;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
   border-bottom: 1px solid var(--border);
   font-size: 0.88rem;
+  background: var(--surface);
 }
+.reto-leaderboard-lista li::before {
+  counter-increment: retorank;
+  content: counter(retorank);
+  flex-shrink: 0;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--accent-lt);
+  color: var(--navy);
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.reto-leaderboard-lista li span:first-of-type { flex: 1; font-weight: 600; }
+.reto-leaderboard-lista li span:last-of-type { font-variant-numeric: tabular-nums; color: var(--muted); font-weight: 600; }
 .reto-leaderboard-lista li:last-child { border-bottom: none; }
-.reto-leaderboard-lista li:first-child { font-weight: 700; color: var(--gold-dk); background: var(--gold-lt); }
+.reto-leaderboard-lista li:nth-child(1) { background: var(--gold-lt); }
+.reto-leaderboard-lista li:nth-child(1)::before { content: "🥇"; background: none; font-size: 1rem; }
+.reto-leaderboard-lista li:nth-child(1) span:last-of-type { color: var(--gold-dk); }
+.reto-leaderboard-lista li:nth-child(2)::before { content: "🥈"; background: none; font-size: 1rem; }
+.reto-leaderboard-lista li:nth-child(3)::before { content: "🥉"; background: none; font-size: 1rem; }
 
 @media (max-width: 600px) {
+  .reto-entrada, .reto-juego, .reto-fin { padding: 28px 20px 24px; }
   .reto-opciones { grid-template-columns: 1fr; }
 }
 
@@ -709,8 +787,8 @@ h2 {
 /* ── Tarjetas (géneros + mood) — mismo grid que Lista ── */
 .tarjetas {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
   margin-top: 12px;
 }
 

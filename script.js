@@ -43,6 +43,9 @@
 // - Random y Antojos se movieron al sidebar (#randomFab y #antojosBtn ya no son FABs flotantes,
 //   mismos IDs así que el resto del JS no cambió). El panel de antojos ahora es un overlay
 //   centrado con fondo, se cierra igual que el modal random al hacer clic afuera.
+// - v1.20.0: banco de apodos sugeridos para el Reto Literario ampliado (de 30 a ~60 nombres,
+//   con más variedad: literatura en español/Latinoamérica, fantasía/sci-fi y mitología) para
+//   que las 4 sugerencias mostradas se sientan menos repetidas.
 // - Supabase conectado: nuevo backend compartido para el leaderboard de la futura trivia
 //   y el formulario de sugerencias/comentarios. Cliente inicializado con supabaseClient
 //   (ver bloque "SUPABASE" abajo). Tablas: puntajes (lectura+escritura pública, para el
@@ -1036,12 +1039,27 @@ function _rlSiguientePregunta() {
 }
 
 // --- Nombres sugeridos para quien no quiera pensar un apodo ---
+// Banco grande y variado (clásicos anglo, literatura en español, fantasía,
+// mitología, etc.) para que las 4 sugerencias no se sientan repetidas.
 const RETO_NOMBRES_SUGERIDOS = [
+  // Clásicos anglosajones
   'Gatsby', 'Bennet', 'Finch', 'Granger', 'Ishmael', 'DorianGray',
-  'Caulfield', 'JaneEyre', 'Holmes', 'DonQuijote', 'Darcy', 'Winston',
-  'Santiago', 'Offred', 'Meursault', 'Raskolnikov', 'Bilbo', 'Aureliano',
+  'Caulfield', 'JaneEyre', 'Holmes', 'Darcy', 'Winston', 'Offred',
   'Salander', 'Huck', 'Scout', 'Karenina', 'Heathcliff', 'Valjean',
-  'Dulcinea', 'Dantes', 'Cathy', 'Frankenstein', 'Bovary', 'Nemo'
+  'Dantes', 'Cathy', 'Frankenstein', 'Bovary', 'Nemo', 'Ripley',
+  'Elizabeth', 'Rochester', 'Fagin', 'Copperfield', 'Havisham', 'Dorothea',
+  // Literatura en español / Latinoamérica
+  'DonQuijote', 'Dulcinea', 'Aureliano', 'Ursula', 'Melquiades', 'RemediosBella',
+  'PedroParamo', 'Artemio', 'Oliveira', 'LaMaga', 'Rayuela', 'Eréndira',
+  'Florentino', 'FermIna', 'Santiago', 'Meursault', 'Raskolnikov', 'Cortazar',
+  'DonaBarbara', 'Zorro', 'Facundo', 'Martin Fierro', 'Sandokan', 'Platero',
+  // Fantasía y ciencia ficción
+  'Bilbo', 'Frodo', 'Arwen', 'Hermione', 'Atreyu', 'Bastian',
+  'Ged', 'Lyra', 'Paul Atreides', 'Chani', 'Ripley', 'Murderbot',
+  'Katniss', 'Alina', 'Kvothe', 'Vin', 'Yennefer', 'Geralt',
+  // Mitología y clásicos antiguos
+  'Ulises', 'Penelope', 'Antígona', 'Medea', 'Ariadna', 'Ícaro',
+  'Sherezada', 'Aladino', 'Simbad', 'Circe', 'Perséfone', 'Orfeo'
 ];
 function _rlSugerenciaConNumero(base) {
   const numero = Math.floor(Math.random() * 90) + 10; // 10–99
