@@ -1226,10 +1226,19 @@ function _rlMostrarTabla(contId) {
 
 async function _rlTerminar() {
   document.getElementById('retoTerminar').disabled = true;
-  await guardarPuntaje(_rlApodo, _rlAciertos, _rlTotal || 1);
+  const guardado = await guardarPuntaje(_rlApodo, _rlAciertos, _rlTotal || 1);
 
   document.getElementById('retoResumen').textContent =
     `${_rlApodo}, respondiste ${_rlTotal} pregunta${_rlTotal !== 1 ? 's' : ''} y acertaste ${_rlAciertos}.`;
+
+  const notaAcumulado = document.getElementById('retoNotaAcumulado');
+  if (!guardado) {
+    notaAcumulado.textContent = '⚠️ No se pudo guardar tu puntaje esta vez (revisa tu conexión e inténtalo de nuevo más tarde).';
+    notaAcumulado.classList.add('reto-nota-error');
+  } else {
+    notaAcumulado.textContent = 'Tu puntaje en la tabla se va sumando cada vez que juegas 📈';
+    notaAcumulado.classList.remove('reto-nota-error');
+  }
 
   await _rlRenderLeaderboard('retoLeaderboard');
 
@@ -1274,6 +1283,9 @@ document.getElementById('retoEmpezar')?.addEventListener('click', async () => {
   _rlGuardarApodo(nombre);
   _rlApodo = nombre;
   _rlIniciarPartida();
+});
+document.getElementById('retoNombre')?.addEventListener('input', () => {
+  document.getElementById('retoAvisoNombre').style.display = 'none';
 });
 document.getElementById('retoNombre')?.addEventListener('keydown', e => {
   if (e.key === 'Enter') { e.preventDefault(); document.getElementById('retoEmpezar').click(); }
