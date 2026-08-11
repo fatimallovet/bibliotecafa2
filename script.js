@@ -43,6 +43,12 @@
 // - Random y Antojos se movieron al sidebar (#randomFab y #antojosBtn ya no son FABs flotantes,
 //   mismos IDs así que el resto del JS no cambió). El panel de antojos ahora es un overlay
 //   centrado con fondo, se cierra igual que el modal random al hacer clic afuera.
+// - v1.21.0: se quitó la pregunta de género del Reto Literario (podía tener más de una
+//   respuesta válida). Las preguntas de año y de orden de publicación ahora incluyen el
+//   autor junto al título, para que se puedan responder aunque no conozcas el libro por
+//   nombre. "Cambiar de nombre" ya no crea un jugador nuevo (duplicaba filas en la tabla
+//   de posiciones): ahora renombra el mismo registro (mismo jugador_id) y sincroniza el
+//   apodo directo en Supabase.
 // - v1.20.0: banco de apodos sugeridos para el Reto Literario ampliado (de 30 a ~60 nombres,
 //   con más variedad: literatura en español/Latinoamérica, fantasía/sci-fi y mitología) para
 //   que las 4 sugerencias mostradas se sientan menos repetidas.
@@ -929,6 +935,7 @@ function _rlPreguntaAnio() {
   if (candidatos.length < 4) return null;
   const libro = candidatos[Math.floor(Math.random() * candidatos.length)];
   const correctaNum = _rlValorAnio(libro);
+  const autor = _rlValorAutor(libro);
   const aniosOtros = [...new Set(candidatos.filter(l => l !== libro).map(_rlValorAnio))].filter(a => a !== correctaNum);
   let distractores = _rlMuestra(aniosOtros, 3);
   while (distractores.length < 3) {
@@ -937,26 +944,11 @@ function _rlPreguntaAnio() {
     if (candidato > 0 && candidato !== correctaNum && !distractores.includes(candidato)) distractores.push(candidato);
   }
   const correcta = String(correctaNum);
+  const referencia = autor ? `«${_rlValorTitulo(libro)}», de ${autor}` : `«${_rlValorTitulo(libro)}»`;
   return {
     id: `anio:${_rlValorTitulo(libro)}`,
-    pregunta: `¿En qué año se publicó «${_rlValorTitulo(libro)}»?`,
+    pregunta: `¿En qué año se publicó ${referencia}?`,
     opciones: _rlMezclar([correcta, ...distractores.map(String)]),
-    correcta
-  };
-}
-
-function _rlPreguntaGenero() {
-  const candidatos = libros.filter(l => _rlValorGenero(l) && _rlValorTitulo(l));
-  const generosUnicos = [...new Set(candidatos.map(_rlValorGenero))];
-  if (candidatos.length < 4 || generosUnicos.length < 4) return null;
-  const libro = candidatos[Math.floor(Math.random() * candidatos.length)];
-  const correcta = _rlValorGenero(libro);
-  const distractores = _rlMuestra(generosUnicos.filter(g => g !== correcta), 3);
-  if (distractores.length < 3) return null;
-  return {
-    id: `genero:${_rlValorTitulo(libro)}`,
-    pregunta: `¿De qué género es «${_rlValorTitulo(libro)}»?`,
-    opciones: _rlMezclar([correcta, ...distractores]),
     correcta
   };
 }
@@ -970,17 +962,21 @@ function _rlPreguntaOrden() {
   if (new Set(anios).size < 4) return null; // evita empates de año entre las opciones
   let idxMin = 0;
   anios.forEach((a, i) => { if (a < anios[idxMin]) idxMin = i; });
-  const correcta = _rlValorTitulo(elegidos[idxMin]);
-  const titulos = elegidos.map(_rlValorTitulo);
+  const etiqueta = (l) => {
+    const autor = _rlValorAutor(l);
+    return autor ? `${_rlValorTitulo(l)} (${autor})` : _rlValorTitulo(l);
+  };
+  const correcta = etiqueta(elegidos[idxMin]);
+  const opciones = elegidos.map(etiqueta);
   return {
-    id: `orden:${titulos.slice().sort().join('|')}`,
+    id: `orden:${elegidos.map(_rlValorTitulo).slice().sort().join('|')}`,
     pregunta: '¿Cuál de estos libros se publicó primero?',
-    opciones: _rlMezclar(titulos),
+    opciones: _rlMezclar(opciones),
     correcta
   };
 }
 
-const _RL_GENERADORES = [_rlPreguntaAutor, _rlPreguntaAnio, _rlPreguntaGenero, _rlPreguntaOrden, _rlPreguntaDelBanco];
+const _RL_GENERADORES = [_rlPreguntaAutor, _rlPreguntaAnio, _rlPreguntaOrden, _rlPreguntaDelBanco];
 
 // --- Banco de preguntas escritas a mano (tabla preguntas_trivia en Supabase) ---
 // Se mezclan con las generadas automáticamente del Sheet. Aquí sí puede haber
@@ -1084,12 +1080,26 @@ function _rlPintarSugerenciasNombre() {
 const RETO_APODO_KEY = 'bibliof_reto_apodo';
 function _rlApodoGuardado() { return localStorage.getItem(RETO_APODO_KEY) || ''; }
 function _rlGuardarApodo(nombre) { localStorage.setItem(RETO_APODO_KEY, nombre); }
-function _rlOlvidarApodo() {
-  localStorage.removeItem(RETO_APODO_KEY);
-  localStorage.removeItem(RETO_JUGADOR_ID_KEY); // nueva persona en este navegador = identidad nueva también
+
+// Actualiza el apodo del jugador ya existente en Supabase (mismo jugador_id,
+// mismo puntaje acumulado — solo cambia cómo se muestra en la tabla). Si
+// todavía no tiene fila en la tabla (nunca ha terminado una partida), no hay
+// nada que actualizar ahí: el nombre nuevo se usará la próxima vez que se
+// guarde un puntaje.
+async function _rlActualizarApodoEnDB(nuevoApodo) {
+  if (!supabaseClient) return true;
+  const id = localStorage.getItem(RETO_JUGADOR_ID_KEY);
+  if (!id) return true;
+  const { error } = await supabaseClient
+    .from('puntajes')
+    .update({ apodo: nuevoApodo })
+    .eq('jugador_id', id);
+  if (error) { console.error('Error actualizando apodo en DB:', error); return false; }
+  return true;
 }
 
 let _rlApodo = '';
+let _rlRenombrando = false;
 let _rlAciertos = 0;
 let _rlTotal = 0;
 let _rlPreguntaActual = null;
@@ -1108,6 +1118,10 @@ function _rlMostrarPantalla(pantalla) {
 async function _rlPintarEntrada() {
   await _rlSincronizarApodoDesdeDB();
 
+  _rlRenombrando = false;
+  document.getElementById('retoCancelarRenombrar').style.display = 'none';
+  document.getElementById('retoEmpezar').textContent = 'Empezar';
+
   const guardado = _rlApodoGuardado();
   const recurrente = document.getElementById('retoEntradaRecurrente');
   const nueva = document.getElementById('retoEntradaNueva');
@@ -1121,6 +1135,24 @@ async function _rlPintarEntrada() {
     document.getElementById('retoNombre').value = '';
     _rlPintarSugerenciasNombre();
   }
+}
+
+// Pantalla para cambiar el apodo sin perder el puntaje acumulado: reutiliza
+// el mismo formulario de "nombre nuevo", pero al guardar actualiza el
+// registro existente (mismo jugador_id) en vez de crear uno distinto.
+function _rlIniciarRenombrar() {
+  _rlRenombrando = true;
+  document.getElementById('retoEntradaRecurrente').style.display = 'none';
+  const nueva = document.getElementById('retoEntradaNueva');
+  nueva.style.display = '';
+  const input = document.getElementById('retoNombre');
+  input.value = _rlApodoGuardado();
+  document.getElementById('retoAvisoNombre').style.display = 'none';
+  document.getElementById('retoEmpezar').textContent = 'Guardar nombre';
+  document.getElementById('retoCancelarRenombrar').style.display = '';
+  _rlPintarSugerenciasNombre();
+  input.focus();
+  input.select();
 }
 
 // Si este navegador ya tiene una partida guardada en Supabase, trae el
@@ -1286,15 +1318,26 @@ document.getElementById('retoEmpezar')?.addEventListener('click', async () => {
   const aviso = document.getElementById('retoAvisoNombre');
   aviso.style.display = 'none';
 
+  const textoOriginal = _rlRenombrando ? 'Guardar nombre' : 'Empezar';
   btnEmpezar.disabled = true;
   btnEmpezar.textContent = 'Comprobando...';
   const disponible = await _rlApodoDisponible(nombre);
   btnEmpezar.disabled = false;
-  btnEmpezar.textContent = 'Empezar';
+  btnEmpezar.textContent = textoOriginal;
 
   if (!disponible) {
     aviso.textContent = `"${nombre}" ya lo está usando alguien más — prueba otro nombre o agrégale un número.`;
     aviso.style.display = '';
+    return;
+  }
+
+  if (_rlRenombrando) {
+    btnEmpezar.disabled = true;
+    btnEmpezar.textContent = 'Guardando...';
+    await _rlActualizarApodoEnDB(nombre);
+    _rlGuardarApodo(nombre);
+    btnEmpezar.disabled = false;
+    await _rlPintarEntrada();
     return;
   }
 
@@ -1314,7 +1357,9 @@ document.getElementById('retoContinuar')?.addEventListener('click', () => {
   _rlIniciarPartida();
 });
 document.getElementById('retoCambiarNombre')?.addEventListener('click', () => {
-  _rlOlvidarApodo();
+  _rlIniciarRenombrar();
+});
+document.getElementById('retoCancelarRenombrar')?.addEventListener('click', () => {
   _rlPintarEntrada();
 });
 document.getElementById('retoVerTabla')?.addEventListener('click', () => _rlMostrarTabla('retoTablaEntrada'));
