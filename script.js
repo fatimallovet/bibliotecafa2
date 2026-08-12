@@ -49,6 +49,13 @@
 //   nombre. "Cambiar de nombre" ya no crea un jugador nuevo (duplicaba filas en la tabla
 //   de posiciones): ahora renombra el mismo registro (mismo jugador_id) y sincroniza el
 //   apodo directo en Supabase.
+// - v1.22.0: nueva pestaña "¿Qué tipo de lector eres?" — quiz de 7 preguntas que arma un
+//   arquetipo de lector (Explorador de Mundos, Detective de Sofá, Alma Sensible, Buscador de
+//   Raíces, Espíritu Ligero, Buscador de Sentido) y recomienda libros REALES filtrando la
+//   misma columna Mood que usa la sección Mood (librosParaMoods(), OR entre 1-2 claves por
+//   arquetipo). Reutiliza mostrarTarjetasLista() para las tarjetas de resultado, así que
+//   likes/antojos/click-a-detalle funcionan igual que en el resto del sitio. El quiz se
+//   reinicia solo cada vez que se entra a la pestaña (ver _aplicarTabDOM).
 // - v1.20.0: banco de apodos sugeridos para el Reto Literario ampliado (de 30 a ~60 nombres,
 //   con más variedad: literatura en español/Latinoamérica, fantasía/sci-fi y mitología) para
 //   que las 4 sugerencias mostradas se sientan menos repetidas.
@@ -863,6 +870,7 @@ function _aplicarTabDOM(target) {
   if (target === 'tabAbout') cargarInfo();
   if (target === 'tabPopulares') mostrarPopulares();
   if (target === 'tabReto') _rlPintarEntrada();
+  if (target === 'tabQuiz') iniciarQuiz();
 }
 
 // Función central de navegación — usada por desktop y barra móvil.
@@ -1593,6 +1601,237 @@ document.getElementById('btnVolver').addEventListener('click', () => {
     mostrarGridMood(false);
   }
 });
+
+// =====================================================
+// QUIZ: ¿QUÉ TIPO DE LECTOR ERES?
+// 7 preguntas rápidas → arquetipo de lector → recomendaciones reales,
+// filtradas contra la misma columna "Mood" que usa la sección Mood (arriba).
+// Ningún libro se inventa: cada arquetipo apunta a una o dos claves de MOODS
+// y se filtra en vivo con librosParaMood().
+// =====================================================
+
+const QUIZ_ARQUETIPOS = {
+  explorador: {
+    emoji: '🌌',
+    titulo: 'Explorador de Mundos',
+    tagline: 'Buscas historias que te saquen de la realidad, pero necesitas personajes a los que valga la pena acompañar.',
+    moods: ['escapar', 'aventura']
+  },
+  detective: {
+    emoji: '🕵️',
+    titulo: 'Detective de Sofá',
+    tagline: 'Te enganchan los misterios, los giros inesperados y esa sensación de no poder soltar el libro hasta descubrir la verdad.',
+    moods: ['atrapar']
+  },
+  alma: {
+    emoji: '❤️',
+    titulo: 'Alma Sensible',
+    tagline: 'Lees para sentir. Te importan más las personas y sus emociones que cualquier trama grandiosa.',
+    moods: ['drama', 'reflexion']
+  },
+  raices: {
+    emoji: '🏛️',
+    titulo: 'Buscador de Raíces',
+    tagline: 'Te atrae lo que ya pasó: otras épocas, otras vidas, historias que resistieron el paso del tiempo.',
+    moods: ['pasado', 'clasico']
+  },
+  ligero: {
+    emoji: '🎈',
+    titulo: 'Espíritu Ligero',
+    tagline: 'Lees para disfrutar, reír y pasar un buen rato. La vida ya es bastante intensa como para que tus libros también lo sean.',
+    moods: ['feliz', 'buenrato']
+  },
+  sentido: {
+    emoji: '🕯️',
+    titulo: 'Buscador de Sentido',
+    tagline: 'No solo quieres una historia: quieres que te deje pensando, que te acompañe incluso después de cerrar el libro.',
+    moods: ['inspiracion', 'reflexion']
+  }
+};
+
+const QUIZ_PREGUNTAS = [
+  {
+    texto: 'Estás entrando a una librería. ¿Qué te atrae primero?',
+    opciones: [
+      { emoji: '🏰', texto: 'Una historia ambientada hace 300 años', puntos: { raices: 2 } },
+      { emoji: '🌌', texto: 'Un mundo que no existe', puntos: { explorador: 2 } },
+      { emoji: '🕵️', texto: 'Algo con un misterio', puntos: { detective: 2 } },
+      { emoji: '❤️', texto: 'Una gran historia humana', puntos: { alma: 2 } }
+    ]
+  },
+  {
+    texto: '¿Qué ritmo de lectura prefieres?',
+    opciones: [
+      { emoji: '⚡', texto: 'Rápido, que no me deje respirar', puntos: { detective: 1, explorador: 1 } },
+      { emoji: '🌊', texto: 'Medio, que fluya con calma', puntos: { alma: 1, ligero: 1 } },
+      { emoji: '🐢', texto: 'Lento, para saborear cada página', puntos: { raices: 1, sentido: 1 } },
+      { emoji: '🎢', texto: 'Ágil, con altibajos constantes', puntos: { detective: 1, explorador: 1 } }
+    ]
+  },
+  {
+    texto: '¿Cómo te gustan los finales?',
+    opciones: [
+      { emoji: '😊', texto: 'Felices y reconfortantes', puntos: { ligero: 2 } },
+      { emoji: '😢', texto: 'Agridulces, pero honestos', puntos: { alma: 2 } },
+      { emoji: '🤯', texto: 'Con un giro que no vi venir', puntos: { detective: 2 } },
+      { emoji: '💭', texto: 'Abiertos, que me dejen pensando', puntos: { sentido: 2 } }
+    ]
+  },
+  {
+    texto: '¿Qué tipo de personajes te enamoran?',
+    opciones: [
+      { emoji: '⚔️', texto: 'Héroes dispuestos a todo por una causa', puntos: { explorador: 2 } },
+      { emoji: '🧠', texto: 'Mentes brillantes resolviendo algo', puntos: { detective: 2 } },
+      { emoji: '💔', texto: 'Personas imperfectas y muy humanas', puntos: { alma: 2 } },
+      { emoji: '📜', texto: 'Voces que parecen venir de otro tiempo', puntos: { raices: 2 } }
+    ]
+  },
+  {
+    texto: '¿Para qué lees, principalmente?',
+    opciones: [
+      { emoji: '🚪', texto: 'Para escapar de todo', puntos: { explorador: 2 } },
+      { emoji: '🪞', texto: 'Para entenderme mejor a mí o al mundo', puntos: { sentido: 2 } },
+      { emoji: '😭', texto: 'Para emocionarme hasta las lágrimas', puntos: { alma: 2 } },
+      { emoji: '🎉', texto: 'Para pasar un buen rato sin complicarme', puntos: { ligero: 2 } }
+    ]
+  },
+  {
+    texto: 'Elige una ambientación',
+    opciones: [
+      { emoji: '🐉', texto: 'Un reino inventado, con su propia magia', puntos: { explorador: 2 } },
+      { emoji: '🏰', texto: 'Una época histórica real', puntos: { raices: 2 } },
+      { emoji: '🌆', texto: 'El presente, con algo oscuro debajo', puntos: { detective: 2 } },
+      { emoji: '🏠', texto: 'No importa dónde, importa quién', puntos: { alma: 2 } }
+    ]
+  },
+  {
+    texto: '¿Qué tan intensa quieres que sea la historia?',
+    opciones: [
+      { emoji: '🍭', texto: 'Ligera y divertida', puntos: { ligero: 2 } },
+      { emoji: '🔥', texto: 'Intensa, que no me suelte', puntos: { detective: 1, explorador: 1 } },
+      { emoji: '💧', texto: 'Profundamente conmovedora', puntos: { alma: 2 } },
+      { emoji: '🌱', texto: 'Que me deje reflexionando días después', puntos: { sentido: 2 } }
+    ]
+  }
+];
+
+let _quizIndice = 0;
+let _quizPuntajes = {};
+
+function iniciarQuiz() {
+  _quizIndice = 0;
+  _quizPuntajes = {};
+  Object.keys(QUIZ_ARQUETIPOS).forEach(k => _quizPuntajes[k] = 0);
+  _renderQuizPregunta();
+}
+
+function _renderQuizPregunta() {
+  const cont = document.getElementById('quizContainer');
+  if (!cont) return;
+
+  const pregunta = QUIZ_PREGUNTAS[_quizIndice];
+  const total = QUIZ_PREGUNTAS.length;
+  const pct = Math.round((_quizIndice / total) * 100);
+
+  cont.innerHTML = `
+    <div class="quiz-progreso">
+      <div class="quiz-progreso-track"><div class="quiz-progreso-fill" style="width:${pct}%"></div></div>
+      <span class="quiz-progreso-label">${_quizIndice + 1} / ${total}</span>
+    </div>
+    <div class="quiz-card">
+      <p class="quiz-pregunta">${escapeHtml(pregunta.texto)}</p>
+      <div class="quiz-opciones"></div>
+    </div>
+  `;
+
+  const wrap = cont.querySelector('.quiz-opciones');
+  pregunta.opciones.forEach(op => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-opcion';
+    btn.innerHTML = `<span class="quiz-opcion-emoji">${op.emoji}</span><span>${escapeHtml(op.texto)}</span>`;
+    btn.addEventListener('click', () => _responderQuiz(op.puntos));
+    wrap.appendChild(btn);
+  });
+}
+
+function _responderQuiz(puntos) {
+  Object.keys(puntos).forEach(k => { _quizPuntajes[k] = (_quizPuntajes[k] || 0) + puntos[k]; });
+  _quizIndice++;
+  if (_quizIndice < QUIZ_PREGUNTAS.length) _renderQuizPregunta();
+  else _mostrarResultadoQuiz();
+}
+
+function _quizRankingArquetipos() {
+  return Object.keys(_quizPuntajes).sort((a, b) => _quizPuntajes[b] - _quizPuntajes[a]);
+}
+
+// Filtra libros cuya columna Mood contenga alguna de las claves dadas (OR).
+// Reutiliza el mismo campo que librosParaMood(), solo que contra varias claves a la vez.
+function librosParaMoods(moods) {
+  return libros.filter(l => {
+    const raw = getCampo(l, 'Mood', 'Moods', 'Estado de ánimo', 'Estados de ánimo');
+    if (!raw) return false;
+    const moodsLibro = raw.split(',').map(v => normalizar(v.trim()));
+    return moods.some(m => moodsLibro.includes(m));
+  });
+}
+
+function _quizElegirRecomendaciones(arquetipoId) {
+  let candidatos = librosParaMoods(QUIZ_ARQUETIPOS[arquetipoId].moods);
+
+  // Si hay pocos resultados, amplía con el segundo arquetipo mejor puntuado
+  if (candidatos.length < 4) {
+    const segundo = _quizRankingArquetipos().find(id => id !== arquetipoId);
+    if (segundo) {
+      const idsExistentes = new Set(candidatos.map(l => l['No.'] || l['No']));
+      librosParaMoods(QUIZ_ARQUETIPOS[segundo].moods).forEach(l => {
+        if (!idsExistentes.has(l['No.'] || l['No'])) candidatos.push(l);
+      });
+    }
+  }
+
+  // Mejor calificados primero, con un poco de mezcla para variar entre partidas
+  candidatos.sort((a, b) => {
+    const califA = parseFloat(getCampo(a, 'Calificación', 'Estrellas', 'Stars')) || 0;
+    const califB = parseFloat(getCampo(b, 'Calificación', 'Estrellas', 'Stars')) || 0;
+    return califB - califA;
+  });
+  const top = candidatos.slice(0, 12);
+  for (let i = top.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [top[i], top[j]] = [top[j], top[i]];
+  }
+  return top.slice(0, 6);
+}
+
+function _mostrarResultadoQuiz() {
+  const cont = document.getElementById('quizContainer');
+  if (!cont) return;
+
+  const ganador = _quizRankingArquetipos()[0];
+  const arquetipo = QUIZ_ARQUETIPOS[ganador];
+  const recomendados = _quizElegirRecomendaciones(ganador);
+
+  cont.innerHTML = `
+    <div class="quiz-resultado-header">
+      <span class="quiz-resultado-emoji">${arquetipo.emoji}</span>
+      <h3>Eres un ${escapeHtml(arquetipo.titulo)}</h3>
+      <p class="quiz-tagline">${escapeHtml(arquetipo.tagline)}</p>
+    </div>
+    <p class="quiz-resultado-libros-titulo">De mi biblioteca te recomendaría</p>
+    <div id="quizResultCards" class="lista-cards"></div>
+    <button id="btnQuizReiniciar" class="quiz-btn-reiniciar">🔄 Volver a hacer el quiz</button>
+  `;
+
+  if (recomendados.length === 0) {
+    document.getElementById('quizResultCards').innerHTML =
+      '<p style="color:var(--muted)">Todavía no tengo suficientes libros clasificados para este perfil, ¡pero pronto los tendré!</p>';
+  } else {
+    mostrarTarjetasLista(recomendados, 'quizResultCards');
+  }
+
+  document.getElementById('btnQuizReiniciar').addEventListener('click', iniciarQuiz);
+}
 
 // =====================================================
 // ANTOJOS
