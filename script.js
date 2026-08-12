@@ -49,6 +49,11 @@
 //   nombre. "Cambiar de nombre" ya no crea un jugador nuevo (duplicaba filas en la tabla
 //   de posiciones): ahora renombra el mismo registro (mismo jugador_id) y sincroniza el
 //   apodo directo en Supabase.
+// - v1.23.1: nivel 1 de recomendaciones del quiz afloja de "Mood Y Género" a "Mood Y (Género
+//   O Tono)" — se agregó _quizLibroTieneTono(), coincidencia por subcadena normalizada contra
+//   la columna Tono (mismo patrón que agruparGenero, tolerante a variaciones de redacción)
+//   para cada uno de los 6 arquetipos. Pensado sobre todo para Alma Sensible, que con solo
+//   Género "Drama" como condición se quedaba corta seguido.
 // - v1.23.0: quiz "¿Qué tipo de lector eres?" rediseñado de nuevo — se vuelve a los 6
 //   arquetipos (Explorador de Mundos, Detective de Sofá, Alma Sensible, Buscador de Raíces,
 //   Espíritu Ligero, Buscador de Sentido) en vez de puntuar directo contra los 10 Moods
@@ -1620,11 +1625,13 @@ document.getElementById('btnVolver').addEventListener('click', () => {
 // oportunidades de ganar a lo largo del quiz.
 //
 // Las recomendaciones NO son solo un filtro de Mood (para no repetir la
-// pestaña Mood): cada arquetipo cruza Mood + Género (reutilizando
-// GRUPOS_GENERO/libroTieneGrupo, las mismas reglas de agrupación que ya usa
-// la pestaña Géneros). Ej: Detective de Sofá = Mood "atrapar" Y Género
-// Misterio/Thriller. Si ese cruce da muy pocos libros, se afloja en 2
-// niveles: primero solo Mood, y si aun así faltan, se suma el segundo
+// pestaña Mood): cada arquetipo cruza Mood + (Género O Tono), reutilizando
+// GRUPOS_GENERO/libroTieneGrupo (mismas reglas que la pestaña Géneros) y
+// coincidencia por subcadena normalizada contra la columna Tono (mismo
+// patrón que agruparGenero, tolerante a variaciones de redacción). Ej:
+// Detective de Sofá = Mood "atrapar" Y (Género Misterio/Thriller O Tono
+// intrigante/tenso/vertiginoso). Si ese cruce da muy pocos libros, se afloja
+// en 2 niveles: primero solo Mood, y si aun así faltan, se suma el segundo
 // arquetipo mejor puntuado — nunca se inventa nada.
 // =====================================================
 
@@ -1634,42 +1641,48 @@ const QUIZ_ARQUETIPOS = {
     titulo: 'Explorador de Mundos',
     tagline: 'Buscas historias que te saquen de la realidad, pero necesitas personajes a los que valga la pena acompañar.',
     moods: ['escapar', 'aventura'],
-    generos: ['Fantasía', 'Ciencia ficción']
+    generos: ['Fantasía', 'Ciencia ficción'],
+    tonos: ['epic', 'imaginativ', 'magic', 'fascinant', 'aventurer']
   },
   detective: {
     emoji: '🕵️',
     titulo: 'Detective de Sofá',
     tagline: 'Te enganchan los misterios, los giros inesperados y esa sensación de no poder soltar el libro hasta descubrir la verdad.',
     moods: ['atrapar'],
-    generos: ['Misterio', 'Thriller']
+    generos: ['Misterio', 'Thriller'],
+    tonos: ['intrigant', 'tens', 'vertigin', 'inquietant', 'oscur']
   },
   alma: {
     emoji: '❤️',
     titulo: 'Alma Sensible',
     tagline: 'Lees para sentir. Te importan más las personas y sus emociones que cualquier trama grandiosa.',
     moods: ['drama'],
-    generos: ['Drama']
+    generos: ['Drama'],
+    tonos: ['emotiv', 'conmov', 'desgarr', 'melancol', 'tiern']
   },
   raices: {
     emoji: '🏛️',
     titulo: 'Buscador de Raíces',
     tagline: 'Te atrae lo que ya pasó: otras épocas, otras vidas, historias que resistieron el paso del tiempo.',
     moods: ['pasado', 'clasico'],
-    generos: ['Histórico', 'Clásicos']
+    generos: ['Histórico', 'Clásicos'],
+    tonos: ['nostalg', 'solemn', 'evocador']
   },
   ligero: {
     emoji: '🎈',
     titulo: 'Espíritu Ligero',
     tagline: 'Lees para disfrutar, reír y pasar un buen rato. La vida ya es bastante intensa como para que tus libros también lo sean.',
     moods: ['feliz', 'buenrato'],
-    generos: ['Comedia']
+    generos: ['Comedia'],
+    tonos: ['humor', 'ligero', 'disparat', 'divertid']
   },
   sentido: {
     emoji: '🕯️',
     titulo: 'Buscador de Sentido',
     tagline: 'No solo quieres una historia: quieres que te deje pensando, que te acompañe incluso después de cerrar el libro.',
     moods: ['inspiracion', 'reflexion'],
-    generos: ['No ficción']
+    generos: ['No ficción'],
+    tonos: ['reflexiv', 'profund', 'esperanzador', 'introspectiv']
   }
 };
 
@@ -1812,11 +1825,23 @@ function _quizLibroTieneGenero(libro, grupos) {
   return grupos.some(g => libroTieneGrupo(libro, g));
 }
 
+// ¿El Tono del libro contiene alguna de estas raíces de palabra? Coincidencia
+// por subcadena normalizada (sin acentos), igual que agruparGenero() — así no
+// depende de que el valor exacto en la hoja coincida palabra por palabra.
+function _quizLibroTieneTono(libro, raices) {
+  const tono = normalizar(getCampo(libro, 'Tono', 'Tone') || '');
+  if (!tono) return false;
+  return raices.some(r => tono.includes(r));
+}
+
 function _quizElegirRecomendaciones(arquetipoId) {
   const arq = QUIZ_ARQUETIPOS[arquetipoId];
 
-  // Nivel 1 (el más específico): Mood Y Género a la vez
-  let candidatos = libros.filter(l => _quizLibroTieneMood(l, arq.moods) && _quizLibroTieneGenero(l, arq.generos));
+  // Nivel 1 (el más específico): Mood Y (Género O Tono)
+  let candidatos = libros.filter(l =>
+    _quizLibroTieneMood(l, arq.moods) &&
+    (_quizLibroTieneGenero(l, arq.generos) || _quizLibroTieneTono(l, arq.tonos))
+  );
 
   // Nivel 2: si el cruce fue muy angosto, se afloja a solo Mood
   if (candidatos.length < 4) {
