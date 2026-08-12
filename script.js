@@ -49,6 +49,13 @@
 //   nombre. "Cambiar de nombre" ya no crea un jugador nuevo (duplicaba filas en la tabla
 //   de posiciones): ahora renombra el mismo registro (mismo jugador_id) y sincroniza el
 //   apodo directo en Supabase.
+// - v1.23.2: raíces de Tono del quiz validadas contra tu CSV real (BD_pa_gina_Biblioteca_-_esp.csv,
+//   172 libros) — se quitaron las que no matcheaban nada (magic, fascinant, aventurer, vertigin,
+//   inquietant, oscur, evocador, divertid) y se agregaron las que sí existen en tu columna Tono
+//   (heroico, audaz, poético, sobrio, ameno, absurdo, contemplativo, inspirador, optimista). Con
+//   datos reales, los 6 arquetipos quedan MUY por encima del mínimo de 4 libros en nivel 1
+//   (Mood+Género/Tono): raíces 77, alma 49, sentido 27, explorador 27, detective 23, ligero 17 —
+//   el fallback casi nunca se activa.
 // - v1.23.1: nivel 1 de recomendaciones del quiz afloja de "Mood Y Género" a "Mood Y (Género
 //   O Tono)" — se agregó _quizLibroTieneTono(), coincidencia por subcadena normalizada contra
 //   la columna Tono (mismo patrón que agruparGenero, tolerante a variaciones de redacción)
@@ -1642,7 +1649,7 @@ const QUIZ_ARQUETIPOS = {
     tagline: 'Buscas historias que te saquen de la realidad, pero necesitas personajes a los que valga la pena acompañar.',
     moods: ['escapar', 'aventura'],
     generos: ['Fantasía', 'Ciencia ficción'],
-    tonos: ['epic', 'imaginativ', 'magic', 'fascinant', 'aventurer']
+    tonos: ['epic', 'imaginativ', 'heroic', 'audaz']
   },
   detective: {
     emoji: '🕵️',
@@ -1650,7 +1657,7 @@ const QUIZ_ARQUETIPOS = {
     tagline: 'Te enganchan los misterios, los giros inesperados y esa sensación de no poder soltar el libro hasta descubrir la verdad.',
     moods: ['atrapar'],
     generos: ['Misterio', 'Thriller'],
-    tonos: ['intrigant', 'tens', 'vertigin', 'inquietant', 'oscur']
+    tonos: ['intrigant', 'tens']
   },
   alma: {
     emoji: '❤️',
@@ -1666,7 +1673,7 @@ const QUIZ_ARQUETIPOS = {
     tagline: 'Te atrae lo que ya pasó: otras épocas, otras vidas, historias que resistieron el paso del tiempo.',
     moods: ['pasado', 'clasico'],
     generos: ['Histórico', 'Clásicos'],
-    tonos: ['nostalg', 'solemn', 'evocador']
+    tonos: ['nostalg', 'solemn', 'poetic', 'sobri']
   },
   ligero: {
     emoji: '🎈',
@@ -1674,7 +1681,7 @@ const QUIZ_ARQUETIPOS = {
     tagline: 'Lees para disfrutar, reír y pasar un buen rato. La vida ya es bastante intensa como para que tus libros también lo sean.',
     moods: ['feliz', 'buenrato'],
     generos: ['Comedia'],
-    tonos: ['humor', 'ligero', 'disparat', 'divertid']
+    tonos: ['humor', 'ligero', 'disparat', 'amen', 'absurd']
   },
   sentido: {
     emoji: '🕯️',
@@ -1682,7 +1689,7 @@ const QUIZ_ARQUETIPOS = {
     tagline: 'No solo quieres una historia: quieres que te deje pensando, que te acompañe incluso después de cerrar el libro.',
     moods: ['inspiracion', 'reflexion'],
     generos: ['No ficción'],
-    tonos: ['reflexiv', 'profund', 'esperanzador', 'introspectiv']
+    tonos: ['reflexiv', 'profund', 'esperanzador', 'introspectiv', 'contemplativ', 'inspirador', 'optimist']
   }
 };
 
