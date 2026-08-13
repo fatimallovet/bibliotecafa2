@@ -49,6 +49,15 @@
 //   nombre. "Cambiar de nombre" ya no crea un jugador nuevo (duplicaba filas en la tabla
 //   de posiciones): ahora renombra el mismo registro (mismo jugador_id) y sincroniza el
 //   apodo directo en Supabase.
+// - v1.26.0: se quitó el desempate manual de v1.25.0 — no tenía sentido pedirle al visitante
+//   que elija entre arquetipos empatados sin conocer sus condiciones internas. En su lugar se
+//   agregó una 8va pregunta del mismo estilo que las otras 7 ("¿Qué tipo de portada te llama
+//   más en un estante?"), diseñada para que los 4 arquetipos que se quedaban en 3 apariciones
+//   (Explorador Intrépido, Espíritu Ligero, Buscador de Raíces, Guardián de los Clásicos)
+//   lleguen a 4 — dejando los 8 arquetipos perfectamente parejos (32 opciones ÷ 8 = 4 c/u,
+//   antes 28÷8 con 4 en algunos y 3 en otros). Si aun así hay empate, se resuelve al azar
+//   (_quizRankingArquetipos), como antes de v1.25.0 — con 8 preguntas balanceadas es bastante
+//   menos frecuente.
 // - v1.25.0: 3 ajustes al quiz. (1) Desempate: si al terminar las 7 preguntas hay empate en
 //   el primer lugar, ya no se resuelve al azar — se lanza una pregunta extra mostrando solo a
 //   los arquetipos empatados (_quizArquetiposEmpatados/_renderQuizDesempate), y elegir ahí
@@ -1644,12 +1653,16 @@ document.getElementById('btnVolver').addEventListener('click', () => {
 
 // =====================================================
 // QUIZ: BRÚJULA LECTORA
-// 7 preguntas rápidas (en orden aleatorio cada vez) → 8 arquetipos de
+// 8 preguntas rápidas (en orden aleatorio cada vez) → 8 arquetipos de
 // lector → recomendaciones reales + desglose por porcentajes.
 // Cada opción de cada pregunta suma 1 punto a UN solo arquetipo (nunca a dos
-// combinados, para que la señal de cada respuesta sea limpia). Las 28
-// opciones están repartidas para que los 8 arquetipos tengan entre 3 y 4
-// oportunidades de ganar a lo largo del quiz.
+// combinados, para que la señal de cada respuesta sea limpia). Las 32
+// opciones están repartidas EXACTO parejo: cada uno de los 8 arquetipos
+// aparece 4 veces. Si al final hay empate en el primer lugar, se resuelve
+// al azar entre los empatados (ver _quizRankingArquetipos) — se descartó
+// mostrarle al visitante los arquetipos empatados para que elija, porque no
+// tiene forma de conocer los intríngulis de cada uno para decidir con
+// criterio; con 8 preguntas balanceadas los empates ya son poco frecuentes.
 //
 // Las recomendaciones NO son solo un filtro de Mood (para no repetir la
 // pestaña Mood): cada arquetipo cruza Mood + (Género O Tono), reutilizando
@@ -1729,9 +1742,8 @@ const QUIZ_ARQUETIPOS = {
   }
 };
 
-// Cada opción apunta a UN solo arquetipo. Distribución balanceada sobre 28
-// opciones (7 preguntas × 4): explorador, detective, alma y sentido aparecen
-// 4 veces cada uno; intrepido, raices, clasicos y ligero aparecen 3 veces
+// Cada opción apunta a UN solo arquetipo. Distribución perfectamente pareja
+// sobre 32 opciones (8 preguntas × 4): los 8 arquetipos aparecen 4 veces
 // cada uno. El orden de las preguntas se mezcla al azar en cada partida
 // (ver iniciarQuiz), así que esta lista es solo el banco de preguntas.
 const QUIZ_PREGUNTAS = [
@@ -1797,6 +1809,15 @@ const QUIZ_PREGUNTAS = [
       { emoji: '💭', texto: 'Ganas de pensar en ella días después', arquetipo: 'sentido' },
       { emoji: '📖', texto: 'La sensación de haber leído algo de otro tiempo', arquetipo: 'raices' }
     ]
+  },
+  {
+    texto: '¿Qué tipo de portada te llama más en un estante?',
+    opciones: [
+      { emoji: '🗺️', texto: 'Una con un mapa o algo por descubrir', arquetipo: 'intrepido' },
+      { emoji: '🎨', texto: 'Una colorida y divertida', arquetipo: 'ligero' },
+      { emoji: '🕰️', texto: 'Una con estética de época', arquetipo: 'raices' },
+      { emoji: '🖋️', texto: 'Una elegante, de esas que nunca pasan de moda', arquetipo: 'clasicos' }
+    ]
   }
 ];
 
@@ -1857,57 +1878,7 @@ function _responderQuiz(arquetipo) {
   _quizPuntajes[arquetipo] = (_quizPuntajes[arquetipo] || 0) + 1;
   _quizIndice++;
   if (_quizIndice < _quizOrdenPreguntas.length) _renderQuizPregunta();
-  else _quizIrAResultadoODesempate();
-}
-
-// Si al terminar las 7 preguntas hay un empate en el primer lugar, en vez de
-// desempatar al azar se lanza UNA pregunta extra mostrando solo a los
-// arquetipos empatados (máximo 4, por el layout de la grilla). Elegir ahí
-// suma el punto decisivo y ya no puede volver a haber empate, porque ese
-// arquetipo queda estrictamente arriba de todos los demás.
-function _quizArquetiposEmpatados() {
-  const max = Math.max(...Object.values(_quizPuntajes));
-  if (max === 0) return [];
-  const empatados = Object.keys(_quizPuntajes).filter(k => _quizPuntajes[k] === max);
-  return empatados.length > 1 ? empatados : [];
-}
-
-function _quizIrAResultadoODesempate() {
-  const empatados = _quizArquetiposEmpatados();
-  if (empatados.length > 1) {
-    _renderQuizDesempate(_quizMezclar(empatados).slice(0, 4));
-  } else {
-    _mostrarResultadoQuiz();
-  }
-}
-
-function _renderQuizDesempate(empatadosIds) {
-  const cont = document.getElementById('quizContainer');
-  if (!cont) return;
-
-  cont.innerHTML = `
-    <div class="quiz-progreso">
-      <div class="quiz-progreso-track"><div class="quiz-progreso-fill" style="width:100%"></div></div>
-      <span class="quiz-progreso-label">Desempate</span>
-    </div>
-    <div class="quiz-card">
-      <p class="quiz-pregunta">¡Casi! Tienes un empate. ¿Cuál de estos te representa mejor ahora mismo?</p>
-      <div class="quiz-opciones"></div>
-    </div>
-  `;
-
-  const wrap = cont.querySelector('.quiz-opciones');
-  empatadosIds.forEach(id => {
-    const arq = QUIZ_ARQUETIPOS[id];
-    const btn = document.createElement('button');
-    btn.className = 'quiz-opcion';
-    btn.innerHTML = `<span class="quiz-opcion-emoji">${arq.emoji}</span><span>${escapeHtml(arq.titulo)}</span>`;
-    btn.addEventListener('click', () => {
-      _quizPuntajes[id] = (_quizPuntajes[id] || 0) + 1;
-      _mostrarResultadoQuiz();
-    });
-    wrap.appendChild(btn);
-  });
+  else _mostrarResultadoQuiz();
 }
 
 // Ranking de arquetipos por puntaje. En empate, se mezcla al azar entre los
