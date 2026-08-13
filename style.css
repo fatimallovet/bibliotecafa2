@@ -497,6 +497,19 @@ main {
 }
 #retoNombre:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(26,39,68,0.1); }
 
+#duNombre {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-md);
+  background: var(--bg);
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--text);
+  transition: border-color .18s, box-shadow .18s;
+}
+#duNombre:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(26,39,68,0.1); }
+
 .reto-sugerencias-label {
   text-align: left;
   color: var(--muted);
@@ -742,6 +755,123 @@ main {
 @media (max-width: 600px) {
   .reto-entrada, .reto-juego, .reto-fin { padding: 28px 20px 24px; }
   .reto-opciones { grid-template-columns: 1fr; }
+}
+
+/* ── Duelo de Personajes ───────────────────────────────── */
+.du-categoria-label {
+  text-align: left;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--navy);
+  margin: 4px 0 10px;
+}
+.du-categoria-btns { justify-content: flex-start; margin-bottom: 22px; }
+
+.du-link-cambiar {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0;
+}
+.du-link-cambiar:hover { color: var(--navy); text-decoration: underline; }
+.du-categoria-actual { font-weight: 600; color: var(--navy); }
+
+.du-vs-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+.du-personaje {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 26px 16px;
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--border-md);
+  background: var(--bg);
+  cursor: pointer;
+  transition: all .15s;
+  min-height: 120px;
+  justify-content: center;
+}
+.du-personaje:hover:not(:disabled) { border-color: var(--navy); background: var(--surface); box-shadow: var(--shadow-sm); transform: translateY(-2px); }
+.du-personaje:disabled { cursor: default; }
+.du-personaje-nombre {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--text);
+  line-height: 1.3;
+}
+.du-personaje-obra { font-size: 0.76rem; color: var(--muted); }
+
+.du-vs {
+  flex-shrink: 0;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 1rem;
+  color: var(--gold-dk);
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: var(--gold-lt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.du-resultado { margin-bottom: 18px; }
+.du-resultado-fila { margin-bottom: 12px; text-align: left; }
+.du-resultado-nombre {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 5px;
+}
+.du-resultado-check { font-size: 0.72rem; font-weight: 600; color: var(--gold-dk); }
+.du-barra-row { display: flex; align-items: center; gap: 10px; }
+.du-barra {
+  flex: 1;
+  height: 10px;
+  border-radius: 100px;
+  background: var(--accent-lt);
+  overflow: hidden;
+}
+.du-barra-fill {
+  height: 100%;
+  border-radius: 100px;
+  background: linear-gradient(90deg, var(--gold-dk), var(--gold));
+  transition: width .5s ease;
+}
+.du-resultado-fila.du-mi-voto .du-barra-fill { background: linear-gradient(90deg, var(--navy), var(--navy-lt)); }
+.du-resultado-pct {
+  flex-shrink: 0;
+  width: 44px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--navy);
+}
+.du-resultado-total { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+.du-acciones { margin: 4px 0 22px; }
+
+.du-ranking-item-extra { font-size: 0.72rem; color: var(--muted); font-weight: 500; }
+
+@media (max-width: 600px) {
+  .du-vs-card { gap: 8px; }
+  .du-personaje { padding: 18px 10px; min-height: 100px; }
+  .du-personaje-nombre { font-size: 0.95rem; }
 }
 
 /* ── Quiz: ¿Qué tipo de lector eres? ──────────────────── */

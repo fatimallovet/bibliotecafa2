@@ -1,4 +1,13 @@
-// BiblioFa script.js · Actualizado: 2026-08-03
+// BiblioFa script.js · Actualizado: 2026-08-13
+// - v1.29.0: nueva pestaña "Duelo de Personajes" (Curiosidades) — votación de "quién
+//   ganaría" entre dos personajes de libros, por categoría (Magia, Intelectual, Capa
+//   y Espada, Liderazgo, Ingenio, Villanos, Resiliencia). Sin respuesta correcta: los
+//   votos de todos se acumulan y arman un ranking por personaje (win rate) dentro de
+//   cada categoría, más un leaderboard de duelistas más activos. Reutiliza la misma
+//   identidad de jugador (jugador_id + apodo) del Reto Literario — mismo nombre en
+//   todo el sitio, puntaje de duelos aparte. Backend: tablas duelo_personajes/duelos/
+//   duelo_votos + vistas duelo_resultados/personaje_ranking/duelista_ranking en
+//   Supabase (ver duelo_personajes_migracion.sql).
 // - Barra inferior móvil: solo 4 tabs; Random/Wishlist son botones flotantes también en móvil
 // - Acento dorado "favorita" para libros de 5 estrellas
 // - Botón Atrás del navegador: navega entre tabs, resultados de Mood y cierra modales/paneles (historial)
@@ -946,6 +955,7 @@ function _aplicarTabDOM(target) {
   if (target === 'tabAbout') cargarInfo();
   if (target === 'tabPopulares') mostrarPopulares();
   if (target === 'tabReto') _rlPintarEntrada();
+  if (target === 'tabDuelo') _duPintarEntrada();
   if (target === 'tabQuiz') iniciarQuiz();
 }
 
@@ -1455,6 +1465,347 @@ document.getElementById('retoJugarOtra')?.addEventListener('click', () => {
 
 _rlPintarEntrada();
 _rlCargarBancoPreguntas();
+
+// =====================================================
+// DUELO DE PERSONAJES — votación de "quién ganaría" entre dos
+// personajes de libros, por categoría. Reutiliza la misma identidad
+// de jugador (jugador_id + apodo) que el Reto Literario, así que el
+// nombre es uno solo en todo el sitio, pero el puntaje se lleva aparte.
+// Tablas en Supabase: duelo_personajes, duelos, duelo_votos.
+// Vistas: duelo_resultados, personaje_ranking, duelista_ranking.
+// =====================================================
+
+// Los valores de "id" deben coincidir EXACTO con lo que se escriba en la
+// columna categoria de duelo_personajes/duelos (mayúsculas y acentos
+// incluidos), o el filtro no encuentra los duelos de esa categoría.
+const DUELO_CATEGORIAS = [
+  { id: 'Magia',         icon: '🔮', label: 'Magia y Poderes' },
+  { id: 'Intelectual',   icon: '🧠', label: 'Intelectual y Estrategia' },
+  { id: 'Capa y Espada', icon: '⚔️', label: 'Capa y Espada' },
+  { id: 'Liderazgo',     icon: '👑', label: 'Liderazgo y Carisma' },
+  { id: 'Ingenio',       icon: '🦊', label: 'Ingenio y Astucia' },
+  { id: 'Villanos',      icon: '🐍', label: 'Villanos' },
+  { id: 'Resiliencia',   icon: '🔥', label: 'Resiliencia y Supervivencia' }
+];
+
+// --- Duelos ya votados en este navegador (para no repetirlos) ---
+const DUELO_VISTOS_KEY = 'bibliof_duelo_vistos';
+function _duVistosCargar() {
+  try { return new Set(JSON.parse(localStorage.getItem(DUELO_VISTOS_KEY) || '[]')); }
+  catch { return new Set(); }
+}
+function _duVistosGuardar(set) { localStorage.setItem(DUELO_VISTOS_KEY, JSON.stringify([...set])); }
+let _duVistos = _duVistosCargar();
+
+let _duCategoriaActual = null;
+let _duDuelosCategoria = [];
+let _duDueloActual = null;
+let _duBloqueado = false;
+
+// Pantalla de entrada: pide apodo si este navegador todavía no tiene uno
+// (comparte identidad con el Reto Literario), luego muestra categorías.
+async function _duPintarEntrada() {
+  document.getElementById('duJuego').style.display = 'none';
+  document.getElementById('duEntrada').style.display = '';
+
+  await _rlSincronizarApodoDesdeDB();
+  const apodo = _rlApodoGuardado();
+
+  const bloqueApodo = document.getElementById('duEntradaApodo');
+  const bloqueCategorias = document.getElementById('duEntradaCategorias');
+
+  if (!apodo) {
+    bloqueApodo.style.display = '';
+    bloqueCategorias.style.display = 'none';
+    document.getElementById('duNombre').value = '';
+    document.getElementById('duAvisoNombre').style.display = 'none';
+    _duPintarSugerenciasNombre();
+    return;
+  }
+
+  bloqueApodo.style.display = 'none';
+  bloqueCategorias.style.display = '';
+  await _duPintarCategorias();
+}
+
+function _duPintarSugerenciasNombre() {
+  const cont = document.getElementById('duSugerencias');
+  if (!cont) return;
+  cont.innerHTML = '';
+  _rlMuestra(RETO_NOMBRES_SUGERIDOS, 4).forEach(base => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'reto-chip';
+    const sugerido = _rlSugerenciaConNumero(base);
+    chip.textContent = sugerido;
+    chip.addEventListener('click', () => { document.getElementById('duNombre').value = sugerido; });
+    cont.appendChild(chip);
+  });
+}
+
+// Categorías que tienen al menos un duelo activo cargado en Supabase
+async function _duCategoriasConDuelos() {
+  if (!supabaseClient) return new Set();
+  const { data, error } = await supabaseClient
+    .from('duelos')
+    .select('categoria')
+    .eq('activo', true);
+  if (error) { console.error('Error cargando categorías de duelo:', error); return new Set(); }
+  return new Set((data || []).map(r => r.categoria));
+}
+
+async function _duPintarCategorias() {
+  const cont = document.getElementById('duCategoriaBtns');
+  const sinCategorias = document.getElementById('duSinCategorias');
+  cont.innerHTML = '<p style="color:var(--muted); font-size:0.85rem;">Cargando...</p>';
+
+  const disponibles = await _duCategoriasConDuelos();
+  cont.innerHTML = '';
+
+  const categoriasAMostrar = DUELO_CATEGORIAS.filter(c => disponibles.has(c.id));
+  if (categoriasAMostrar.length === 0) {
+    sinCategorias.style.display = '';
+    return;
+  }
+  sinCategorias.style.display = 'none';
+
+  categoriasAMostrar.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'genero-btn';
+    btn.textContent = `${cat.icon} ${cat.label}`;
+    btn.addEventListener('click', () => _duElegirCategoria(cat));
+    cont.appendChild(btn);
+  });
+}
+
+// Elige categoría y trae sus duelos activos (con datos de ambos personajes ya incluidos)
+async function _duElegirCategoria(cat) {
+  _duCategoriaActual = cat;
+  document.getElementById('duEntrada').style.display = 'none';
+  document.getElementById('duJuego').style.display = '';
+  document.getElementById('duCategoriaActual').textContent = `${cat.icon} ${cat.label}`;
+  document.getElementById('duRankingCategoria').style.display = 'none';
+  document.getElementById('duRankingCategoria').innerHTML = '';
+  document.getElementById('duVsCard').innerHTML = '<p style="color:var(--muted)">Cargando duelo...</p>';
+  document.getElementById('duResultado').style.display = 'none';
+  document.getElementById('duOtroDuelo').style.display = 'none';
+
+  if (!supabaseClient) return;
+  const { data, error } = await supabaseClient
+    .from('duelos')
+    .select(`
+      id, categoria,
+      personaje_a:personaje_a_id ( id, nombre, obra ),
+      personaje_b:personaje_b_id ( id, nombre, obra )
+    `)
+    .eq('categoria', cat.id)
+    .eq('activo', true);
+  if (error) { console.error('Error cargando duelos:', error); return; }
+  _duDuelosCategoria = data || [];
+  _duSiguienteDuelo();
+}
+
+function _duSiguienteDuelo() {
+  let disponibles = _duDuelosCategoria.filter(d => !_duVistos.has(d.id));
+  let reinicio = false;
+  if (disponibles.length === 0 && _duDuelosCategoria.length > 0) {
+    _duDuelosCategoria.forEach(d => _duVistos.delete(d.id));
+    _duVistosGuardar(_duVistos);
+    disponibles = _duDuelosCategoria;
+    reinicio = true;
+  }
+  if (disponibles.length === 0) {
+    document.getElementById('duVsCard').innerHTML = '<p style="color:var(--muted)">Todavía no hay duelos en esta categoría — ¡vuelve pronto! 📚</p>';
+    return;
+  }
+  const duelo = disponibles[Math.floor(Math.random() * disponibles.length)];
+  _duMostrarDuelo(duelo, reinicio);
+}
+
+function _duMostrarDuelo(duelo, reinicio) {
+  _duDueloActual = duelo;
+  _duBloqueado = false;
+  document.getElementById('duResultado').style.display = 'none';
+  document.getElementById('duOtroDuelo').style.display = 'none';
+
+  const cont = document.getElementById('duVsCard');
+  cont.innerHTML = '';
+  if (reinicio) {
+    const aviso = document.createElement('p');
+    aviso.className = 'reto-feedback exito';
+    aviso.textContent = '¡Ya votaste todos los duelos de esta categoría! Reiniciamos 🔄';
+    cont.appendChild(aviso);
+  }
+
+  const fila = document.createElement('div');
+  fila.className = 'du-vs-card';
+
+  const btnA = document.createElement('button');
+  btnA.type = 'button';
+  btnA.className = 'du-personaje';
+  btnA.innerHTML = `<span class="du-personaje-nombre">${escapeHtml(duelo.personaje_a.nombre)}</span><span class="du-personaje-obra">${escapeHtml(duelo.personaje_a.obra)}</span>`;
+  btnA.addEventListener('click', () => _duVotar(duelo, duelo.personaje_a.id));
+
+  const vs = document.createElement('span');
+  vs.className = 'du-vs';
+  vs.textContent = 'VS';
+
+  const btnB = document.createElement('button');
+  btnB.type = 'button';
+  btnB.className = 'du-personaje';
+  btnB.innerHTML = `<span class="du-personaje-nombre">${escapeHtml(duelo.personaje_b.nombre)}</span><span class="du-personaje-obra">${escapeHtml(duelo.personaje_b.obra)}</span>`;
+  btnB.addEventListener('click', () => _duVotar(duelo, duelo.personaje_b.id));
+
+  fila.appendChild(btnA);
+  fila.appendChild(vs);
+  fila.appendChild(btnB);
+  cont.appendChild(fila);
+}
+
+async function _duVotar(duelo, personajeElegidoId) {
+  if (_duBloqueado) return;
+  _duBloqueado = true;
+  document.querySelectorAll('.du-personaje').forEach(b => b.disabled = true);
+
+  if (supabaseClient) {
+    const { error } = await supabaseClient.from('duelo_votos').insert({
+      duelo_id: duelo.id,
+      jugador_id: _rlJugadorId(),
+      personaje_elegido_id: personajeElegidoId
+    });
+    // Si ya existía un voto de este jugador en este duelo (restricción única),
+    // lo ignoramos — igual mostramos el resultado acumulado.
+    if (error && error.code !== '23505') console.error('Error guardando voto:', error);
+  }
+
+  _duVistos.add(duelo.id);
+  _duVistosGuardar(_duVistos);
+
+  await _duMostrarResultado(duelo, personajeElegidoId);
+  document.getElementById('duOtroDuelo').style.display = '';
+}
+
+async function _duMostrarResultado(duelo, personajeElegidoId) {
+  const cont = document.getElementById('duResultado');
+  cont.style.display = '';
+  cont.innerHTML = '<p style="color:var(--muted)">Cargando resultado...</p>';
+
+  if (!supabaseClient) { cont.innerHTML = ''; return; }
+  const { data, error } = await supabaseClient
+    .from('duelo_resultados')
+    .select('votos_a, votos_b, votos_totales')
+    .eq('duelo_id', duelo.id)
+    .maybeSingle();
+  if (error || !data) { console.error('Error cargando resultado:', error); cont.innerHTML = ''; return; }
+
+  const total = data.votos_totales || 0;
+  const pctA = total > 0 ? Math.round((data.votos_a / total) * 100) : 0;
+  const pctB = total > 0 ? Math.round((data.votos_b / total) * 100) : 0;
+
+  const fila = (nombre, pct, esMiVoto) => `
+    <div class="du-resultado-fila ${esMiVoto ? 'du-mi-voto' : ''}">
+      <div class="du-resultado-nombre">
+        <span>${escapeHtml(nombre)}</span>
+        ${esMiVoto ? '<span class="du-resultado-check">✓ tu voto</span>' : ''}
+      </div>
+      <div class="du-barra-row">
+        <div class="du-barra"><div class="du-barra-fill" style="width:${pct}%"></div></div>
+        <span class="du-resultado-pct">${pct}%</span>
+      </div>
+    </div>`;
+
+  cont.innerHTML =
+    fila(duelo.personaje_a.nombre, pctA, personajeElegidoId === duelo.personaje_a.id) +
+    fila(duelo.personaje_b.nombre, pctB, personajeElegidoId === duelo.personaje_b.id) +
+    `<p class="du-resultado-total">${total} voto${total !== 1 ? 's' : ''} en este duelo</p>`;
+}
+
+// Ranking acumulado de personajes dentro de la categoría elegida (win rate)
+async function _duMostrarRankingCategoria() {
+  const cont = document.getElementById('duRankingCategoria');
+  const yaVisible = cont.style.display !== 'none' && cont.innerHTML.trim() !== '';
+  if (yaVisible) { cont.style.display = 'none'; cont.innerHTML = ''; return; }
+
+  cont.style.display = '';
+  cont.innerHTML = '<p style="color:var(--muted)">Cargando...</p>';
+  if (!supabaseClient || !_duCategoriaActual) return;
+
+  const { data, error } = await supabaseClient
+    .from('personaje_ranking')
+    .select('nombre, duelos_peleados, porcentaje_acumulado')
+    .eq('categoria', _duCategoriaActual.id)
+    .order('porcentaje_acumulado', { ascending: false });
+  if (error) { console.error('Error cargando ranking:', error); cont.innerHTML = ''; return; }
+  if (!data || data.length === 0) {
+    cont.innerHTML = '<p style="color:var(--muted)">Todavía no hay votos en esta categoría.</p>';
+    return;
+  }
+
+  cont.innerHTML = `<h3 class="reto-leaderboard-titulo">📊 Ranking de ${escapeHtml(_duCategoriaActual.label)}</h3><ol class="reto-leaderboard-lista">` +
+    data.map(row => `<li><span>${escapeHtml(row.nombre)} <span class="du-ranking-item-extra">(${row.duelos_peleados} duelo${row.duelos_peleados !== 1 ? 's' : ''})</span></span><span>${row.porcentaje_acumulado ?? 0}%</span></li>`).join('') +
+    '</ol>';
+}
+
+// Leaderboard de duelistas más activos (participación, no acierto)
+async function _duMostrarDuelistas() {
+  const cont = document.getElementById('duDuelistasEntrada');
+  const yaVisible = cont.style.display !== 'none' && cont.innerHTML.trim() !== '';
+  if (yaVisible) { cont.style.display = 'none'; cont.innerHTML = ''; return; }
+
+  cont.style.display = '';
+  cont.innerHTML = '<p style="color:var(--muted)">Cargando...</p>';
+  if (!supabaseClient) return;
+
+  const { data, error } = await supabaseClient
+    .from('duelista_ranking')
+    .select('apodo, puntaje_duelos')
+    .order('puntaje_duelos', { ascending: false })
+    .limit(10);
+  if (error) { console.error('Error cargando duelistas:', error); cont.innerHTML = ''; return; }
+  if (!data || data.length === 0) {
+    cont.innerHTML = '<p style="color:var(--muted)">Todavía no hay nadie en la tabla — ¡sé la primera persona! ⚔️</p>';
+    return;
+  }
+
+  cont.innerHTML = '<h3 class="reto-leaderboard-titulo">🏅 Duelistas más activos</h3><ol class="reto-leaderboard-lista">' +
+    data.map(row => `<li><span>${escapeHtml(row.apodo || 'Anónimo')}</span><span>${row.puntaje_duelos}</span></li>`).join('') +
+    '</ol>';
+}
+
+document.getElementById('duGuardarNombre')?.addEventListener('click', async () => {
+  const input = document.getElementById('duNombre');
+  const nombre = (input.value || '').trim().slice(0, 30) || 'Anónimo';
+  const btn = document.getElementById('duGuardarNombre');
+  const aviso = document.getElementById('duAvisoNombre');
+  aviso.style.display = 'none';
+
+  btn.disabled = true;
+  btn.textContent = 'Comprobando...';
+  const disponible = await _rlApodoDisponible(nombre);
+  btn.disabled = false;
+  btn.textContent = 'Continuar';
+
+  if (!disponible) {
+    aviso.textContent = `"${nombre}" ya lo está usando alguien más — prueba otro nombre o agrégale un número.`;
+    aviso.style.display = '';
+    return;
+  }
+
+  _rlGuardarApodo(nombre);
+  await _duPintarEntrada();
+});
+document.getElementById('duNombre')?.addEventListener('input', () => {
+  document.getElementById('duAvisoNombre').style.display = 'none';
+});
+document.getElementById('duNombre')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); document.getElementById('duGuardarNombre').click(); }
+});
+document.getElementById('duOtrasSugerencias')?.addEventListener('click', _duPintarSugerenciasNombre);
+document.getElementById('duVerDuelistas')?.addEventListener('click', _duMostrarDuelistas);
+document.getElementById('duCambiarCategoria')?.addEventListener('click', _duPintarEntrada);
+document.getElementById('duOtroDuelo')?.addEventListener('click', _duSiguienteDuelo);
+document.getElementById('duVerRanking')?.addEventListener('click', _duMostrarRankingCategoria);
 
 // --- Sección Sugerencias ---
 (function() {

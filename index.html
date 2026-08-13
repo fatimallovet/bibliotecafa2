@@ -22,7 +22,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BiblioFa</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.22.0" />
+  <link rel="stylesheet" href="style.css?v=1.23.0" />
 
   <!-- Supabase (leaderboard de trivia + sugerencias) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -68,6 +68,7 @@
       <p class="sidebar-nav-label">Curiosidades</p>
       <button class="sidebar-link" data-tab="tabPopulares"><span class="sidebar-link-icon">🏆</span> Populares</button>
       <button class="sidebar-link" data-tab="tabReto"><span class="sidebar-link-icon">🦉</span> Reto Literario</button>
+      <button class="sidebar-link" data-tab="tabDuelo"><span class="sidebar-link-icon">⚔️</span> Duelo de Personajes</button>
       <button class="sidebar-link" data-tab="tabQuiz"><span class="sidebar-link-icon">🧭</span> Brújula Lectora</button>
 
       <p class="sidebar-nav-label">Sobre BiblioFa</p>
@@ -186,6 +187,51 @@
     <p id="retoNotaAcumulado" class="reto-nota-acumulado">Tu puntaje en la tabla se va sumando cada vez que juegas 📈</p>
     <div id="retoLeaderboard"></div>
     <button id="retoJugarOtra" class="reto-btn-empezar">Jugar otra vez</button>
+  </div>
+</section>
+
+
+<section id="tabDuelo" class="tab">
+  <div id="duEntrada" class="reto-entrada">
+    <h2>⚔️ Duelo de Personajes</h2>
+    <p class="reto-tagline">Elige quién ganaría — los votos de todos arman el ranking</p>
+
+    <div id="duEntradaApodo" style="display:none">
+      <label for="duNombre">Tu nombre o apodo</label>
+      <input type="text" id="duNombre" maxlength="30" placeholder="Escribe tu nombre o elige uno de abajo">
+      <p class="reto-sugerencias-label">¿No se te ocurre nada?</p>
+      <div class="reto-sugerencias-row">
+        <div id="duSugerencias" class="reto-sugerencias"></div>
+        <button id="duOtrasSugerencias" type="button" class="reto-btn-refresh" title="Otras opciones" aria-label="Otras opciones">🔄</button>
+      </div>
+      <p id="duAvisoNombre" class="reto-aviso-nombre" style="display:none"></p>
+      <button id="duGuardarNombre" class="reto-btn-empezar">Continuar</button>
+    </div>
+
+    <div id="duEntradaCategorias" style="display:none">
+      <p class="du-categoria-label">Elige una categoría de duelo</p>
+      <div id="duCategoriaBtns" class="genero-btns du-categoria-btns"></div>
+      <p id="duSinCategorias" class="reto-tagline" style="display:none">Todavía no hay duelos cargados — ¡vuelve pronto! 📚</p>
+      <button id="duVerDuelistas" type="button" class="reto-link-tabla">🏅 Ver duelistas más activos</button>
+      <div id="duDuelistasEntrada" class="reto-tabla-entrada" style="display:none"></div>
+    </div>
+  </div>
+
+  <div id="duJuego" class="reto-juego" style="display:none">
+    <div class="reto-header">
+      <span id="duCategoriaActual" class="du-categoria-actual"></span>
+      <button id="duCambiarCategoria" type="button" class="du-link-cambiar">← Cambiar categoría</button>
+    </div>
+
+    <div id="duVsCard" class="du-vs-card"></div>
+    <div id="duResultado" class="du-resultado" style="display:none"></div>
+
+    <div class="du-acciones">
+      <button id="duOtroDuelo" class="reto-btn-empezar" style="display:none">Siguiente duelo →</button>
+    </div>
+
+    <button id="duVerRanking" type="button" class="reto-link-tabla">📊 Ranking de esta categoría</button>
+    <div id="duRankingCategoria" class="reto-tabla-entrada" style="display:none"></div>
   </div>
 </section>
 
@@ -381,7 +427,7 @@
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="script.js?v=1.28.0"></script>
+  <script src="script.js?v=1.29.0"></script>
 
   <!-- Cloudflare Web Analytics -->
   <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "85978fa0985645ffb561da2af953aad6"}'>
