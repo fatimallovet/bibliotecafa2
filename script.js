@@ -1,7 +1,8 @@
 // BiblioFa script.js · Actualizado: 2026-08-13
+// - v1.29.1: categorías reales del Duelo de Personajes (reemplazan las 7 de prueba):
+//   Magia y Poder, Mentes Maestras, Capa y Espada, Mujeres de Carácter, Villanos.
 // - v1.29.0: nueva pestaña "Duelo de Personajes" (Curiosidades) — votación de "quién
-//   ganaría" entre dos personajes de libros, por categoría (Magia, Intelectual, Capa
-//   y Espada, Liderazgo, Ingenio, Villanos, Resiliencia). Sin respuesta correcta: los
+//   ganaría" entre dos personajes de libros, por categoría. Sin respuesta correcta: los
 //   votos de todos se acumulan y arman un ranking por personaje (win rate) dentro de
 //   cada categoría, más un leaderboard de duelistas más activos. Reutiliza la misma
 //   identidad de jugador (jugador_id + apodo) del Reto Literario — mismo nombre en
@@ -1479,13 +1480,11 @@ _rlCargarBancoPreguntas();
 // columna categoria de duelo_personajes/duelos (mayúsculas y acentos
 // incluidos), o el filtro no encuentra los duelos de esa categoría.
 const DUELO_CATEGORIAS = [
-  { id: 'Magia',         icon: '🔮', label: 'Magia y Poderes' },
-  { id: 'Intelectual',   icon: '🧠', label: 'Intelectual y Estrategia' },
-  { id: 'Capa y Espada', icon: '⚔️', label: 'Capa y Espada' },
-  { id: 'Liderazgo',     icon: '👑', label: 'Liderazgo y Carisma' },
-  { id: 'Ingenio',       icon: '🦊', label: 'Ingenio y Astucia' },
-  { id: 'Villanos',      icon: '🐍', label: 'Villanos' },
-  { id: 'Resiliencia',   icon: '🔥', label: 'Resiliencia y Supervivencia' }
+  { id: 'Magia y Poder',        icon: '🔮', label: 'Magia y Poder' },
+  { id: 'Mentes Maestras',      icon: '🕵️', label: 'Mentes Maestras' },
+  { id: 'Capa y Espada',        icon: '⚔️', label: 'Capa y Espada' },
+  { id: 'Mujeres de Carácter',  icon: '👑', label: 'Mujeres de Carácter' },
+  { id: 'Villanos',             icon: '🐍', label: 'Villanos' }
 ];
 
 // --- Duelos ya votados en este navegador (para no repetirlos) ---
