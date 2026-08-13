@@ -1,4 +1,13 @@
 // BiblioFa script.js · Actualizado: 2026-08-13
+// - v1.31.0: (1) Reto Literario — la tabla de posiciones ya no está detrás de un
+//   toggle: se pinta siempre, en su propia tarjeta (retoTablaBloque) debajo de la de
+//   apodo. Contenedor un poco más ancho (560px → 640px). (2) Duelo de Personajes —
+//   contenedor más ancho (860px), pantallas reorganizadas en bloques con separadores
+//   (categorías / top 3 / duelistas, y VS-card / ranking), elementos centrados, tarjeta
+//   VS con más aire. (3) Ranking de personajes: el orden ahora usa un Wilson score en
+//   vez del % crudo, para que un personaje con 1 voto (100%) no le gane a otro con
+//   muchos más votos y un % real más confiable — ver duelo_personajes_migracion_v5_wilson.sql.
+//   El % que se muestra en pantalla no cambió, solo el criterio de orden.
 // - v1.30.2: se revirtió el intento de ponderar 3 preguntas del quiz (volvió a que las
 //   12 valgan 1 punto parejo). En su lugar, el resultado ya no muestra un encabezado
 //   grande de "Eres un X" separado — ahora es solo el cuadrito "Tu mezcla lectora de
@@ -1221,6 +1230,7 @@ let _rlBloqueado = false;
 
 function _rlMostrarPantalla(pantalla) {
   document.getElementById('retoEntrada').style.display = pantalla === 'entrada' ? '' : 'none';
+  document.getElementById('retoTablaBloque').style.display = pantalla === 'entrada' ? '' : 'none';
   document.getElementById('retoJuego').style.display = pantalla === 'juego' ? '' : 'none';
   document.getElementById('retoFin').style.display = pantalla === 'fin' ? '' : 'none';
 }
@@ -1229,6 +1239,8 @@ function _rlMostrarPantalla(pantalla) {
 // navegador, salta directo a "seguir jugando" en vez de pedirlo de nuevo.
 // Antes de pintar, sincroniza con la base de datos por si el apodo se
 // editó directamente ahí (para que Supabase sea la fuente de verdad real).
+// La tabla de posiciones ya no está detrás de un toggle: se pinta siempre,
+// en su propia tarjeta debajo de la de apodo (ver retoTablaBloque en el HTML).
 async function _rlPintarEntrada() {
   await _rlSincronizarApodoDesdeDB();
 
@@ -1249,6 +1261,8 @@ async function _rlPintarEntrada() {
     document.getElementById('retoNombre').value = '';
     _rlPintarSugerenciasNombre();
   }
+
+  _rlRenderLeaderboard('retoTablaEntrada');
 }
 
 // Pantalla para cambiar el apodo sin perder el puntaje acumulado: reutiliza
@@ -1374,19 +1388,6 @@ async function _rlRenderLeaderboard(contId) {
     '</ol>';
 }
 
-// Toggle para mostrar/ocultar la tabla de posiciones desde la pantalla de entrada
-function _rlMostrarTabla(contId) {
-  const cont = document.getElementById(contId);
-  if (!cont) return;
-  const yaVisible = cont.style.display !== 'none' && cont.innerHTML.trim() !== '';
-  if (yaVisible) {
-    cont.style.display = 'none';
-    cont.innerHTML = '';
-  } else {
-    cont.style.display = '';
-    _rlRenderLeaderboard(contId);
-  }
-}
 
 async function _rlTerminar() {
   document.getElementById('retoTerminar').disabled = true;
@@ -1476,7 +1477,6 @@ document.getElementById('retoCambiarNombre')?.addEventListener('click', () => {
 document.getElementById('retoCancelarRenombrar')?.addEventListener('click', () => {
   _rlPintarEntrada();
 });
-document.getElementById('retoVerTabla')?.addEventListener('click', () => _rlMostrarTabla('retoTablaEntrada'));
 document.getElementById('retoTerminar')?.addEventListener('click', _rlTerminar);
 document.getElementById('retoJugarOtra')?.addEventListener('click', () => {
   _rlPintarEntrada();
@@ -1599,9 +1599,13 @@ async function _duPintarCategorias() {
   _duPintarTopCategorias(categoriasAMostrar);
 }
 
-// Cuadritos con el top 3 (por % acumulado) de cada categoría visible, para
-// que se pueda ver un vistazo general sin tener que entrar una por una.
-// Se puede tocar el cuadrito para saltar directo a esa categoría.
+// Cuadritos con el top 3 de cada categoría visible, para que se pueda ver
+// un vistazo general sin tener que entrar una por una. Se puede tocar el
+// cuadrito para saltar directo a esa categoría.
+// El orden usa ranking_score (Wilson score, ver duelo_personajes_migracion_v5_wilson.sql)
+// en vez del % crudo, para que un personaje con 1 voto a favor de 1 (100%)
+// no le gane a otro con muchos más votos y un % real más confiable. El %
+// que se muestra en pantalla sigue siendo el real (porcentaje_acumulado).
 const DUELO_MEDALLAS = ['🥇', '🥈', '🥉'];
 async function _duPintarTopCategorias(categorias) {
   const cont = document.getElementById('duTopCategorias');
@@ -1611,10 +1615,10 @@ async function _duPintarTopCategorias(categorias) {
 
   const { data, error } = await supabaseClient
     .from('personaje_ranking')
-    .select('categoria, nombre, porcentaje_acumulado, votos_totales')
+    .select('categoria, nombre, porcentaje_acumulado, ranking_score, votos_totales')
     .in('categoria', categorias.map(c => c.id))
     .gt('votos_totales', 0)
-    .order('porcentaje_acumulado', { ascending: false })
+    .order('ranking_score', { ascending: false })
     .order('votos_totales', { ascending: false });
   if (error) { console.error('Error cargando top de categorías:', error); return; }
 
@@ -1801,12 +1805,18 @@ async function _duMostrarRankingCategoria() {
   // sin esto, los que llevan 0 votos (porcentaje_acumulado viene NULL de la
   // vista) terminaban apareciendo primero, porque en Postgres los NULL se
   // ordenan antes que cualquier número al pedir orden descendente.
+  //
+  // El orden usa ranking_score (Wilson score) en vez del % crudo: con pocos
+  // votos, cualquier % se ve "perfecto" (1 voto a favor de 1 = 100%), así
+  // que ranking_score castiga los % con poca muestra detrás. El % que se
+  // muestra en pantalla sigue siendo porcentaje_acumulado, el real — solo
+  // cambia con qué se decide el ORDEN. Ver duelo_personajes_migracion_v5_wilson.sql.
   const { data, error } = await supabaseClient
     .from('personaje_ranking')
-    .select('nombre, votos_a_favor, votos_totales, porcentaje_acumulado')
+    .select('nombre, votos_a_favor, votos_totales, porcentaje_acumulado, ranking_score')
     .eq('categoria', _duCategoriaActual.id)
     .gt('votos_totales', 0)
-    .order('porcentaje_acumulado', { ascending: false })
+    .order('ranking_score', { ascending: false })
     .order('votos_totales', { ascending: false });
   if (error) { console.error('Error cargando ranking:', error); cont.innerHTML = ''; return; }
   if (!data || data.length === 0) {
