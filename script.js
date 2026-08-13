@@ -49,6 +49,15 @@
 //   nombre. "Cambiar de nombre" ya no crea un jugador nuevo (duplicaba filas en la tabla
 //   de posiciones): ahora renombra el mismo registro (mismo jugador_id) y sincroniza el
 //   apodo directo en Supabase.
+// - v1.25.0: 3 ajustes al quiz. (1) Desempate: si al terminar las 7 preguntas hay empate en
+//   el primer lugar, ya no se resuelve al azar — se lanza una pregunta extra mostrando solo a
+//   los arquetipos empatados (_quizArquetiposEmpatados/_renderQuizDesempate), y elegir ahí
+//   suma el punto decisivo. (2) La tarjeta "Tu mezcla lectora de hoy" se movió de en medio
+//   (quedaba raro entre el título y los libros) a debajo de las recomendaciones. (3) Títulos
+//   visibles renombrados sin tocar nada interno: pestaña Mood → "Colecciones" (implica algo
+//   fijo/curado) y pestaña del quiz → "Brújula Lectora" (ya no reclama una identidad
+//   permanente, apunta a lo que te late leer ahora). IDs, funciones y nombres de variables
+//   internos (tabSentimiento, MOODS, QUIZ_ARQUETIPOS, etc.) quedaron intactos.
 // - v1.24.0: quiz de lector ampliado — se separaron 2 arquetipos combinados en 4 propios
 //   (Explorador de Mundos ahora es solo "escapar", + nuevo Explorador Intrépido para
 //   "aventura" con género Aventura; Buscador de Raíces ahora es solo "pasado", + nuevo
@@ -1848,7 +1857,57 @@ function _responderQuiz(arquetipo) {
   _quizPuntajes[arquetipo] = (_quizPuntajes[arquetipo] || 0) + 1;
   _quizIndice++;
   if (_quizIndice < _quizOrdenPreguntas.length) _renderQuizPregunta();
-  else _mostrarResultadoQuiz();
+  else _quizIrAResultadoODesempate();
+}
+
+// Si al terminar las 7 preguntas hay un empate en el primer lugar, en vez de
+// desempatar al azar se lanza UNA pregunta extra mostrando solo a los
+// arquetipos empatados (máximo 4, por el layout de la grilla). Elegir ahí
+// suma el punto decisivo y ya no puede volver a haber empate, porque ese
+// arquetipo queda estrictamente arriba de todos los demás.
+function _quizArquetiposEmpatados() {
+  const max = Math.max(...Object.values(_quizPuntajes));
+  if (max === 0) return [];
+  const empatados = Object.keys(_quizPuntajes).filter(k => _quizPuntajes[k] === max);
+  return empatados.length > 1 ? empatados : [];
+}
+
+function _quizIrAResultadoODesempate() {
+  const empatados = _quizArquetiposEmpatados();
+  if (empatados.length > 1) {
+    _renderQuizDesempate(_quizMezclar(empatados).slice(0, 4));
+  } else {
+    _mostrarResultadoQuiz();
+  }
+}
+
+function _renderQuizDesempate(empatadosIds) {
+  const cont = document.getElementById('quizContainer');
+  if (!cont) return;
+
+  cont.innerHTML = `
+    <div class="quiz-progreso">
+      <div class="quiz-progreso-track"><div class="quiz-progreso-fill" style="width:100%"></div></div>
+      <span class="quiz-progreso-label">Desempate</span>
+    </div>
+    <div class="quiz-card">
+      <p class="quiz-pregunta">¡Casi! Tienes un empate. ¿Cuál de estos te representa mejor ahora mismo?</p>
+      <div class="quiz-opciones"></div>
+    </div>
+  `;
+
+  const wrap = cont.querySelector('.quiz-opciones');
+  empatadosIds.forEach(id => {
+    const arq = QUIZ_ARQUETIPOS[id];
+    const btn = document.createElement('button');
+    btn.className = 'quiz-opcion';
+    btn.innerHTML = `<span class="quiz-opcion-emoji">${arq.emoji}</span><span>${escapeHtml(arq.titulo)}</span>`;
+    btn.addEventListener('click', () => {
+      _quizPuntajes[id] = (_quizPuntajes[id] || 0) + 1;
+      _mostrarResultadoQuiz();
+    });
+    wrap.appendChild(btn);
+  });
 }
 
 // Ranking de arquetipos por puntaje. En empate, se mezcla al azar entre los
@@ -1969,12 +2028,12 @@ function _mostrarResultadoQuiz() {
       <h3>Eres un ${escapeHtml(arq.titulo)}</h3>
       <p class="quiz-tagline">${escapeHtml(arq.tagline)}</p>
     </div>
+    <p class="quiz-resultado-libros-titulo">De mi biblioteca te recomendaría</p>
+    <div id="quizResultCards" class="lista-cards"></div>
     <div class="quiz-pct-card">
       <p class="quiz-pct-titulo-card">Tu mezcla lectora de hoy</p>
       ${filasHtml}
     </div>
-    <p class="quiz-resultado-libros-titulo">De mi biblioteca te recomendaría</p>
-    <div id="quizResultCards" class="lista-cards"></div>
     <button id="btnQuizReiniciar" class="quiz-btn-reiniciar">🔄 Volver a hacer el quiz</button>
   `;
 

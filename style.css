@@ -904,7 +904,7 @@ main {
 /* ── Quiz: desglose por porcentajes ──────────────────── */
 .quiz-pct-card {
   max-width: 560px;
-  margin: 0 auto 32px;
+  margin: 32px auto 0;
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);

@@ -22,7 +22,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BiblioFa</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.20.0" />
+  <link rel="stylesheet" href="style.css?v=1.21.0" />
 
   <!-- Supabase (leaderboard de trivia + sugerencias) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -63,12 +63,12 @@
       <p class="sidebar-nav-label">Explora</p>
       <button class="sidebar-link active" data-tab="tabLibros"><span class="sidebar-link-icon">📚</span> Lista</button>
       <button class="sidebar-link" data-tab="tabGeneros"><span class="sidebar-link-icon">🎭</span> Géneros</button>
-      <button class="sidebar-link" data-tab="tabSentimiento"><span class="sidebar-link-icon">👀</span> Mood</button>
+      <button class="sidebar-link" data-tab="tabSentimiento"><span class="sidebar-link-icon">👀</span> Colecciones</button>
 
       <p class="sidebar-nav-label">Curiosidades</p>
       <button class="sidebar-link" data-tab="tabPopulares"><span class="sidebar-link-icon">🏆</span> Populares</button>
       <button class="sidebar-link" data-tab="tabReto"><span class="sidebar-link-icon">🦉</span> Reto Literario</button>
-      <button class="sidebar-link" data-tab="tabQuiz"><span class="sidebar-link-icon">🧭</span> ¿Qué lector eres?</button>
+      <button class="sidebar-link" data-tab="tabQuiz"><span class="sidebar-link-icon">🧭</span> Brújula Lectora</button>
 
       <p class="sidebar-nav-label">Sobre BiblioFa</p>
       <button class="sidebar-link" data-tab="tabAbout"><span class="sidebar-link-icon">ℹ️</span> Info</button>
@@ -191,8 +191,8 @@
 
 
 <section id="tabQuiz" class="tab">
-  <h2>🧭 ¿Qué tipo de lector eres?</h2>
-  <p class="populares-subtitulo">7 decisiones rápidas para descubrir tu perfil lector, con recomendaciones sacadas directo de mi biblioteca</p>
+  <h2>🧭 Brújula Lectora</h2>
+  <p class="populares-subtitulo">7 decisiones rápidas para orientarte hacia tu próxima lectura, con recomendaciones sacadas directo de mi biblioteca</p>
   <div id="quizContainer" class="quiz-container"></div>
 </section>
 
@@ -381,7 +381,7 @@
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="script.js?v=1.24.0"></script>
+  <script src="script.js?v=1.25.0"></script>
 
   <!-- Cloudflare Web Analytics -->
   <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "85978fa0985645ffb561da2af953aad6"}'>
