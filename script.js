@@ -1,4 +1,20 @@
 // BiblioFa script.js · Actualizado: 2026-08-13
+// - v1.30.1: 3 preguntas del quiz (1 "Entras a una librería...", 5 "En el fondo, qué
+//   buscas..." y 10 "Cuál de estos pequeños placeres...") ahora pesan 2 puntos en vez
+//   de 1 (campo "peso" en QUIZ_PREGUNTAS, leído por _quizRecalcularPuntajes). El
+//   objetivo es que el desglose de "Tu mezcla lectora" casi nunca muestre dos
+//   arquetipos empatados en %. Nota: como estas 3 preguntas no reparten sus 4
+//   opciones parejo entre los 8 arquetipos (algunos aparecen en las 3, otros en
+//   ninguna), deja de ser una distribución perfectamente pareja — es el trade-off
+//   consciente de pedir preguntas específicas en vez de pesar la primera pregunta
+//   nada más.
+// - v1.30.0: (1) Duelo de Personajes — cuadritos de "top 3" por categoría en la
+//   pantalla de selección, tocables para saltar directo a esa categoría. (2) Brújula
+//   Lectora — "Explorador Intrépido" pasó a llamarse "Corazón Aventurero" y "Buscador
+//   de Raíces" a "Viajero en el Tiempo" (se parecían demasiado a "Explorador de
+//   Mundos" y "Buscador de Sentido"). (3) Layout del resultado del quiz reescrito con
+//   CSS grid en vez de flexbox+wrap — el wrap causaba una ruptura visual en anchos de
+//   pantalla intermedios. (4) Texto de la pestaña del quiz actualizado.
 // - v1.29.2: corregido el ranking por categoría del Duelo de Personajes. Antes salían
 //   primero los personajes con 0 votos (NULL ordena antes que los números en DESC),
 //   mostrando "0%" en 1er lugar. Ahora esos personajes se excluyen del ranking hasta
@@ -1582,6 +1598,54 @@ async function _duPintarCategorias() {
     btn.addEventListener('click', () => _duElegirCategoria(cat));
     cont.appendChild(btn);
   });
+
+  _duPintarTopCategorias(categoriasAMostrar);
+}
+
+// Cuadritos con el top 3 (por % acumulado) de cada categoría visible, para
+// que se pueda ver un vistazo general sin tener que entrar una por una.
+// Se puede tocar el cuadrito para saltar directo a esa categoría.
+const DUELO_MEDALLAS = ['🥇', '🥈', '🥉'];
+async function _duPintarTopCategorias(categorias) {
+  const cont = document.getElementById('duTopCategorias');
+  if (!cont) return;
+  cont.innerHTML = '';
+  if (!supabaseClient || categorias.length === 0) return;
+
+  const { data, error } = await supabaseClient
+    .from('personaje_ranking')
+    .select('categoria, nombre, porcentaje_acumulado, votos_totales')
+    .in('categoria', categorias.map(c => c.id))
+    .gt('votos_totales', 0)
+    .order('porcentaje_acumulado', { ascending: false })
+    .order('votos_totales', { ascending: false });
+  if (error) { console.error('Error cargando top de categorías:', error); return; }
+
+  const porCategoria = {};
+  (data || []).forEach(row => {
+    if (!porCategoria[row.categoria]) porCategoria[row.categoria] = [];
+    if (porCategoria[row.categoria].length < 3) porCategoria[row.categoria].push(row);
+  });
+
+  categorias.forEach(cat => {
+    const top3 = porCategoria[cat.id] || [];
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'du-top-card';
+
+    const filas = top3.length
+      ? top3.map((row, i) => `
+          <span class="du-top-card-fila">
+            <span class="du-top-card-medalla">${DUELO_MEDALLAS[i]}</span>
+            <span class="du-top-card-nombre">${escapeHtml(row.nombre)}</span>
+            <span class="du-top-card-pct">${row.porcentaje_acumulado}%</span>
+          </span>`).join('')
+      : '<span class="du-top-card-vacio">Todavía sin votos</span>';
+
+    card.innerHTML = `<span class="du-top-card-titulo">${cat.icon} ${escapeHtml(cat.label)}</span>${filas}`;
+    card.addEventListener('click', () => _duElegirCategoria(cat));
+    cont.appendChild(card);
+  });
 }
 
 // Elige categoría y trae sus duelos activos (con datos de ambos personajes ya incluidos)
@@ -2044,15 +2108,18 @@ document.getElementById('btnVolver').addEventListener('click', () => {
 // QUIZ: BRÚJULA LECTORA
 // 12 preguntas rápidas (en orden aleatorio cada vez) → 8 arquetipos de
 // lector → recomendaciones reales + desglose por porcentajes.
-// Cada opción de cada pregunta suma 1 punto a UN solo arquetipo (nunca a dos
+// Cada opción de cada pregunta suma puntos a UN solo arquetipo (nunca a dos
 // combinados, para que la señal de cada respuesta sea limpia). Las 48
 // opciones están repartidas EXACTO parejo: cada uno de los 8 arquetipos
-// aparece 6 veces. Si al final hay empate en el primer lugar, lo resuelve
-// _quizPesoDesempate — un marcador binario invisible (ver su comentario más
-// abajo) que SIEMPRE tiene un valor distinto entre dos arquetipos, sin
-// excepción. Nunca se le pregunta nada al visitante para desempatar: no
-// tendría forma de conocer los intríngulis de cada arquetipo para decidir
-// con criterio.
+// aparece 6 veces. La mayoría de las preguntas valen 1 punto, pero 3 quedaron
+// marcadas como "peso: 2" (ver QUIZ_PREGUNTAS) porque Fátima las considera
+// más definitorias del tipo de lector — esto hace que los % del desglose
+// final rara vez queden empatados entre sí. Si aun así hay empate real en el
+// primer lugar, lo resuelve _quizPesoDesempate — un marcador binario invisible
+// (ver su comentario más abajo) que SIEMPRE tiene un valor distinto entre dos
+// arquetipos, sin excepción. Nunca se le pregunta nada al visitante para
+// desempatar: no tendría forma de conocer los intríngulis de cada arquetipo
+// para decidir con criterio.
 //
 // Las recomendaciones NO son solo un filtro de Mood (para no repetir la
 // pestaña Mood): cada arquetipo cruza Mood + (Género O Tono), reutilizando
@@ -2076,7 +2143,7 @@ const QUIZ_ARQUETIPOS = {
   },
   intrepido: {
     emoji: '🗺️',
-    titulo: 'Explorador Intrépido',
+    titulo: 'Corazón Aventurero',
     tagline: 'Necesitas una misión, un riesgo, un camino por recorrer — la aventura te llama.',
     moods: ['aventura'],
     generos: ['Aventura'],
@@ -2100,7 +2167,7 @@ const QUIZ_ARQUETIPOS = {
   },
   raices: {
     emoji: '🏛️',
-    titulo: 'Buscador de Raíces',
+    titulo: 'Viajero en el Tiempo',
     tagline: 'Te atrae lo que ya pasó: otras épocas, otras vidas, historias que resistieron el paso del tiempo.',
     moods: ['pasado'],
     generos: ['Histórico'],
@@ -2139,6 +2206,7 @@ const QUIZ_ARQUETIPOS = {
 const QUIZ_PREGUNTAS = [
   {
     texto: 'Entras a una librería. ¿Qué te atrae primero?',
+    peso: 2,
     opciones: [
       { emoji: '🌌', texto: 'Algo raro, original, fuera de lo conocido', arquetipo: 'explorador' },
       { emoji: '🗺️', texto: 'Una historia llena de emociones y aventuras', arquetipo: 'intrepido' },
@@ -2175,6 +2243,7 @@ const QUIZ_PREGUNTAS = [
   },
   {
     texto: 'En el fondo, ¿qué buscas cuando abres un libro?',
+    peso: 2,
     opciones: [
       { emoji: '🚪', texto: 'Desaparecer un rato de este mundo', arquetipo: 'explorador' },
       { emoji: '💔', texto: 'Sentir algo de verdad', arquetipo: 'alma' },
@@ -2220,6 +2289,7 @@ const QUIZ_PREGUNTAS = [
   },
   {
     texto: '¿Cuál de estos pequeños placeres lectores disfrutas más?',
+    peso: 2,
     opciones: [
       { emoji: '😂', texto: 'Encontrar personajes y diálogos que te hagan reír', arquetipo: 'ligero' },
       { emoji: '🌍', texto: 'Descubrir poco a poco las reglas y secretos de un mundo', arquetipo: 'explorador' },
@@ -2294,7 +2364,8 @@ function _quizRecalcularPuntajes() {
   Object.keys(QUIZ_ARQUETIPOS).forEach(k => { _quizPuntajes[k] = 0; _quizPesoDesempate[k] = 0; });
   _quizRespuestas.forEach((arquetipo, idx) => {
     if (!arquetipo) return;
-    _quizPuntajes[arquetipo] += 1;
+    const peso = (_quizOrdenPreguntas[idx] && _quizOrdenPreguntas[idx].peso) || 1;
+    _quizPuntajes[arquetipo] += peso;
     _quizPesoDesempate[arquetipo] += Math.pow(2, idx);
   });
 }

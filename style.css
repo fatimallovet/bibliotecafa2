@@ -767,6 +767,60 @@ main {
 }
 .du-categoria-btns { justify-content: flex-start; margin-bottom: 22px; }
 
+.du-top-categorias {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+  margin: 0 0 26px;
+}
+.du-top-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px 16px 14px;
+  cursor: pointer;
+  transition: all .18s;
+  box-shadow: var(--shadow-sm);
+  font-family: 'DM Sans', system-ui, sans-serif;
+}
+.du-top-card:hover { border-color: var(--gold); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.du-top-card-titulo {
+  display: block;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.96rem;
+  color: var(--navy);
+  margin-bottom: 4px;
+}
+.du-top-card-fila {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--text);
+}
+.du-top-card-medalla { flex-shrink: 0; width: 18px; text-align: center; }
+.du-top-card-nombre {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.du-top-card-pct {
+  flex-shrink: 0;
+  font-weight: 700;
+  color: var(--gold-dk);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.76rem;
+}
+.du-top-card-vacio { font-size: 0.78rem; color: var(--muted); font-style: italic; }
+
 .du-link-cambiar {
   background: none;
   border: none;
@@ -991,19 +1045,17 @@ main {
 .quiz-resultado-top {
   max-width: 940px;
   margin: 0 auto 28px;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  align-items: center;
   gap: 32px;
-  flex-wrap: wrap;
 }
 
 .quiz-resultado-header {
-  flex: 1 1 380px;
-  min-width: 280px;
   text-align: center;
   animation: quizFade .3s ease;
   padding-top: 6px;
+  min-width: 0;
 }
 .quiz-resultado-emoji {
   font-size: 2.6rem;
@@ -1055,8 +1107,7 @@ main {
 
 /* ── Quiz: desglose por porcentajes ──────────────────── */
 .quiz-pct-card {
-  flex: 0 1 320px;
-  min-width: 260px;
+  min-width: 0;
   background: linear-gradient(180deg, var(--surface), var(--bg));
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -1147,8 +1198,8 @@ main {
 }
 
 @media (max-width: 780px) {
-  .quiz-resultado-top { flex-direction: column; align-items: stretch; }
-  .quiz-pct-card { flex-basis: auto; order: 2; }
+  .quiz-resultado-top { grid-template-columns: 1fr; }
+  .quiz-pct-card { order: 2; }
   .quiz-resultado-header { order: 1; }
 }
 

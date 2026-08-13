@@ -22,7 +22,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BiblioFa</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.23.0" />
+  <link rel="stylesheet" href="style.css?v=1.24.0" />
 
   <!-- Supabase (leaderboard de trivia + sugerencias) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -212,6 +212,9 @@
       <p class="du-categoria-label">Elige una categoría de duelo</p>
       <div id="duCategoriaBtns" class="genero-btns du-categoria-btns"></div>
       <p id="duSinCategorias" class="reto-tagline" style="display:none">Todavía no hay duelos cargados — ¡vuelve pronto! 📚</p>
+
+      <div id="duTopCategorias" class="du-top-categorias"></div>
+
       <button id="duVerDuelistas" type="button" class="reto-link-tabla">🏅 Ver duelistas más activos</button>
       <div id="duDuelistasEntrada" class="reto-tabla-entrada" style="display:none"></div>
     </div>
@@ -238,7 +241,7 @@
 
 <section id="tabQuiz" class="tab">
   <h2>🧭 Brújula Lectora</h2>
-  <p class="populares-subtitulo">12 decisiones rápidas para orientarte hacia tu próxima lectura, con recomendaciones sacadas directo de mi biblioteca</p>
+  <p class="populares-subtitulo">Quiz rápido para orientarte a tu próxima lectura, con recomendaciones sacadas directo de mi biblioteca</p>
   <div id="quizContainer" class="quiz-container"></div>
 </section>
 
@@ -427,7 +430,7 @@
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="script.js?v=1.29.2"></script>
+  <script src="script.js?v=1.30.1"></script>
 
   <!-- Cloudflare Web Analytics -->
   <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "85978fa0985645ffb561da2af953aad6"}'>
