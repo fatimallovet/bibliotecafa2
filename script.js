@@ -49,6 +49,16 @@
 //   nombre. "Cambiar de nombre" ya no crea un jugador nuevo (duplicaba filas en la tabla
 //   de posiciones): ahora renombra el mismo registro (mismo jugador_id) y sincroniza el
 //   apodo directo en Supabase.
+// - v1.24.0: quiz de lector ampliado — se separaron 2 arquetipos combinados en 4 propios
+//   (Explorador de Mundos ahora es solo "escapar", + nuevo Explorador Intrépido para
+//   "aventura" con género Aventura; Buscador de Raíces ahora es solo "pasado", + nuevo
+//   Guardián de los Clásicos para "clasico" con género Clásicos), llegando a 8 arquetipos
+//   totales. El orden de las 7 preguntas ahora se mezcla al azar en cada partida
+//   (_quizMezclar / _quizOrdenPreguntas) para que no se sienta repetitivo. Se agregó un
+//   desglose por porcentajes en el resultado (_quizDesglosePorcentajes) mostrando hasta los
+//   6 arquetipos con más puntos, ordenados de mayor a menor. Todo validado contra el CSV real
+//   de Fátima (BD_pa_gina_Biblioteca_-_esp.csv, 172 libros): los 8 arquetipos quedan con
+//   mínimo 18 libros en nivel 1 (Mood+Género/Tono).
 // - v1.23.2: raíces de Tono del quiz validadas contra tu CSV real (BD_pa_gina_Biblioteca_-_esp.csv,
 //   172 libros) — se quitaron las que no matcheaban nada (magic, fascinant, aventurer, vertigin,
 //   inquietant, oscur, evocador, divertid) y se agregaron las que sí existen en tu columna Tono
@@ -1624,11 +1634,12 @@ document.getElementById('btnVolver').addEventListener('click', () => {
 });
 
 // =====================================================
-// QUIZ: ¿QUÉ TIPO DE LECTOR ERES?
-// 7 preguntas rápidas → 6 arquetipos de lector → recomendaciones reales.
+// QUIZ: BRÚJULA LECTORA
+// 7 preguntas rápidas (en orden aleatorio cada vez) → 8 arquetipos de
+// lector → recomendaciones reales + desglose por porcentajes.
 // Cada opción de cada pregunta suma 1 punto a UN solo arquetipo (nunca a dos
 // combinados, para que la señal de cada respuesta sea limpia). Las 28
-// opciones están repartidas para que los 6 arquetipos tengan entre 4 y 5
+// opciones están repartidas para que los 8 arquetipos tengan entre 3 y 4
 // oportunidades de ganar a lo largo del quiz.
 //
 // Las recomendaciones NO son solo un filtro de Mood (para no repetir la
@@ -1637,8 +1648,8 @@ document.getElementById('btnVolver').addEventListener('click', () => {
 // coincidencia por subcadena normalizada contra la columna Tono (mismo
 // patrón que agruparGenero, tolerante a variaciones de redacción). Ej:
 // Detective de Sofá = Mood "atrapar" Y (Género Misterio/Thriller O Tono
-// intrigante/tenso/vertiginoso). Si ese cruce da muy pocos libros, se afloja
-// en 2 niveles: primero solo Mood, y si aun así faltan, se suma el segundo
+// intrigante/tenso). Si ese cruce da muy pocos libros, se afloja en 2
+// niveles: primero solo Mood, y si aun así faltan, se suma el segundo
 // arquetipo mejor puntuado — nunca se inventa nada.
 // =====================================================
 
@@ -1647,9 +1658,17 @@ const QUIZ_ARQUETIPOS = {
     emoji: '🌌',
     titulo: 'Explorador de Mundos',
     tagline: 'Buscas historias que te saquen de la realidad, pero necesitas personajes a los que valga la pena acompañar.',
-    moods: ['escapar', 'aventura'],
+    moods: ['escapar'],
     generos: ['Fantasía', 'Ciencia ficción'],
-    tonos: ['epic', 'imaginativ', 'heroic', 'audaz']
+    tonos: ['imaginativ']
+  },
+  intrepido: {
+    emoji: '🗺️',
+    titulo: 'Explorador Intrépido',
+    tagline: 'Necesitas una misión, un riesgo, un camino por recorrer — la aventura te llama.',
+    moods: ['aventura'],
+    generos: ['Aventura'],
+    tonos: ['epic', 'heroic', 'audaz']
   },
   detective: {
     emoji: '🕵️',
@@ -1671,9 +1690,17 @@ const QUIZ_ARQUETIPOS = {
     emoji: '🏛️',
     titulo: 'Buscador de Raíces',
     tagline: 'Te atrae lo que ya pasó: otras épocas, otras vidas, historias que resistieron el paso del tiempo.',
-    moods: ['pasado', 'clasico'],
-    generos: ['Histórico', 'Clásicos'],
-    tonos: ['nostalg', 'solemn', 'poetic', 'sobri']
+    moods: ['pasado'],
+    generos: ['Histórico'],
+    tonos: ['nostalg', 'solemn']
+  },
+  clasicos: {
+    emoji: '👑',
+    titulo: 'Guardián de los Clásicos',
+    tagline: 'Confías en lo que ya resistió el tiempo — los que nunca pasan de moda.',
+    moods: ['clasico'],
+    generos: ['Clásicos'],
+    tonos: ['poetic', 'sobri']
   },
   ligero: {
     emoji: '🎈',
@@ -1693,81 +1720,98 @@ const QUIZ_ARQUETIPOS = {
   }
 };
 
-// Cada opción apunta a UN solo arquetipo. Distribución balanceada: E5, D4,
-// A4, R5, L5, S5 (28 opciones en total, 7 preguntas × 4).
+// Cada opción apunta a UN solo arquetipo. Distribución balanceada sobre 28
+// opciones (7 preguntas × 4): explorador, detective, alma y sentido aparecen
+// 4 veces cada uno; intrepido, raices, clasicos y ligero aparecen 3 veces
+// cada uno. El orden de las preguntas se mezcla al azar en cada partida
+// (ver iniciarQuiz), así que esta lista es solo el banco de preguntas.
 const QUIZ_PREGUNTAS = [
   {
     texto: 'Estás entrando a una librería. ¿Qué te atrae primero?',
     opciones: [
       { emoji: '🌌', texto: 'Un mundo que no existe', arquetipo: 'explorador' },
-      { emoji: '❤️', texto: 'Una historia que te remueva por dentro', arquetipo: 'alma' },
-      { emoji: '🏰', texto: 'Una historia ambientada hace 300 años', arquetipo: 'raices' },
-      { emoji: '😄', texto: 'Algo ligero que te saque una sonrisa', arquetipo: 'ligero' }
+      { emoji: '🗺️', texto: 'Una aventura o misión que emprender', arquetipo: 'intrepido' },
+      { emoji: '🕵️', texto: 'Un misterio por resolver', arquetipo: 'detective' },
+      { emoji: '🪞', texto: 'Algo que te haga ver la vida distinto', arquetipo: 'sentido' }
     ]
   },
   {
-    texto: '¿Qué ritmo de lectura prefieres?',
+    texto: '¿Qué buscas para una tarde de lectura tranquila?',
     opciones: [
-      { emoji: '🎢', texto: 'Rápido, con acción y adrenalina', arquetipo: 'explorador' },
-      { emoji: '⚡', texto: 'Tenso, que no me deje respirar', arquetipo: 'detective' },
-      { emoji: '🐢', texto: 'Lento, para saborear cada página', arquetipo: 'raices' },
-      { emoji: '🌊', texto: 'Medio, que invite a pensar mientras avanza', arquetipo: 'sentido' }
+      { emoji: '🎉', texto: 'Algo ligero, sin complicaciones', arquetipo: 'ligero' },
+      { emoji: '🏰', texto: 'Algo ambientado en otra época', arquetipo: 'raices' },
+      { emoji: '💔', texto: 'Algo que te remueva por dentro', arquetipo: 'alma' },
+      { emoji: '👑', texto: 'Un clásico que siempre vale la pena', arquetipo: 'clasicos' }
     ]
   },
   {
     texto: '¿Cómo te gustan los finales?',
     opciones: [
-      { emoji: '🤯', texto: 'Con un giro que no viste venir', arquetipo: 'detective' },
       { emoji: '😢', texto: 'Agridulces, pero honestos', arquetipo: 'alma' },
+      { emoji: '🤯', texto: 'Con un giro que no viste venir', arquetipo: 'detective' },
       { emoji: '😊', texto: 'Felices y reconfortantes', arquetipo: 'ligero' },
-      { emoji: '💭', texto: 'Abiertos, que te dejen pensando', arquetipo: 'sentido' }
+      { emoji: '🏆', texto: 'Que dejen ganas de más aventura', arquetipo: 'intrepido' }
     ]
   },
   {
     texto: '¿Qué tipo de personajes te enamoran?',
     opciones: [
-      { emoji: '⚔️', texto: 'Héroes en una misión arriesgada', arquetipo: 'explorador' },
-      { emoji: '📜', texto: 'Voces que parecen venir de otro tiempo', arquetipo: 'raices' },
-      { emoji: '😂', texto: 'Personajes que te sacan una sonrisa', arquetipo: 'ligero' },
-      { emoji: '💪', texto: 'Gente real que superó algo enorme', arquetipo: 'sentido' }
+      { emoji: '🪞', texto: 'Los que te hacen reflexionar sobre ti', arquetipo: 'sentido' },
+      { emoji: '💔', texto: 'Personas imperfectas, muy humanas', arquetipo: 'alma' },
+      { emoji: '🧝', texto: 'Seres de otros mundos', arquetipo: 'explorador' },
+      { emoji: '📜', texto: 'Voces que parecen venir de otro tiempo', arquetipo: 'raices' }
     ]
   },
   {
     texto: '¿Para qué lees, principalmente?',
     opciones: [
-      { emoji: '🚪', texto: 'Para escapar de todo', arquetipo: 'explorador' },
-      { emoji: '🕵️', texto: 'Para no poder soltar el libro', arquetipo: 'detective' },
+      { emoji: '👑', texto: 'Para volver a lo que nunca pasa de moda', arquetipo: 'clasicos' },
       { emoji: '😭', texto: 'Para emocionarme hasta las lágrimas', arquetipo: 'alma' },
-      { emoji: '📖', texto: 'Para volver a historias que ya resistieron el tiempo', arquetipo: 'raices' }
+      { emoji: '🕵️', texto: 'Para no poder soltar el libro', arquetipo: 'detective' },
+      { emoji: '🚪', texto: 'Para escapar de todo', arquetipo: 'explorador' }
     ]
   },
   {
     texto: 'Elige una ambientación',
     opciones: [
-      { emoji: '🌆', texto: 'El presente, con algo oscuro debajo', arquetipo: 'detective' },
-      { emoji: '🏠', texto: 'No importa dónde, importa quién', arquetipo: 'alma' },
-      { emoji: '☁️', texto: 'Cualquier lugar, mientras sea ligero y ameno', arquetipo: 'ligero' },
-      { emoji: '🪞', texto: 'Un lugar que me haga ver la vida distinto', arquetipo: 'sentido' }
+      { emoji: '🌱', texto: 'Un lugar que te obligue a replantearte todo', arquetipo: 'sentido' },
+      { emoji: '🏛️', texto: 'Un escenario que se sienta atemporal', arquetipo: 'clasicos' },
+      { emoji: '🏠', texto: 'No importa dónde, mientras sea ameno', arquetipo: 'ligero' },
+      { emoji: '🌆', texto: 'El presente, con algo oscuro debajo', arquetipo: 'detective' }
     ]
   },
   {
     texto: '¿Qué quieres que te deje la historia al terminar?',
     opciones: [
-      { emoji: '🏆', texto: 'Ganas de vivir mi propia aventura', arquetipo: 'explorador' },
-      { emoji: '👑', texto: 'La sensación de haber leído algo atemporal', arquetipo: 'raices' },
-      { emoji: '🎈', texto: 'Solo una sonrisa, sin más', arquetipo: 'ligero' },
-      { emoji: '🌱', texto: 'Ganas de pensar en ella días después', arquetipo: 'sentido' }
+      { emoji: '☁️', texto: 'Ganas de soñar despierto', arquetipo: 'explorador' },
+      { emoji: '🏆', texto: 'Ganas de vivir mi propia aventura', arquetipo: 'intrepido' },
+      { emoji: '💭', texto: 'Ganas de pensar en ella días después', arquetipo: 'sentido' },
+      { emoji: '📖', texto: 'La sensación de haber leído algo de otro tiempo', arquetipo: 'raices' }
     ]
   }
 ];
 
+let _quizOrdenPreguntas = [];
 let _quizIndice = 0;
 let _quizPuntajes = {};
+
+// Baraja un arreglo sin mutar el original (Fisher-Yates)
+function _quizMezclar(arr) {
+  const copia = [...arr];
+  for (let i = copia.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copia[i], copia[j]] = [copia[j], copia[i]];
+  }
+  return copia;
+}
 
 function iniciarQuiz() {
   _quizIndice = 0;
   _quizPuntajes = {};
   Object.keys(QUIZ_ARQUETIPOS).forEach(k => _quizPuntajes[k] = 0);
+  // Orden de preguntas aleatorio en cada partida, para que no se sienta
+  // siempre igual aunque respondas parecido
+  _quizOrdenPreguntas = _quizMezclar(QUIZ_PREGUNTAS);
   _renderQuizPregunta();
 }
 
@@ -1775,8 +1819,8 @@ function _renderQuizPregunta() {
   const cont = document.getElementById('quizContainer');
   if (!cont) return;
 
-  const pregunta = QUIZ_PREGUNTAS[_quizIndice];
-  const total = QUIZ_PREGUNTAS.length;
+  const pregunta = _quizOrdenPreguntas[_quizIndice];
+  const total = _quizOrdenPreguntas.length;
   const pct = Math.round((_quizIndice / total) * 100);
 
   cont.innerHTML = `
@@ -1803,7 +1847,7 @@ function _renderQuizPregunta() {
 function _responderQuiz(arquetipo) {
   _quizPuntajes[arquetipo] = (_quizPuntajes[arquetipo] || 0) + 1;
   _quizIndice++;
-  if (_quizIndice < QUIZ_PREGUNTAS.length) _renderQuizPregunta();
+  if (_quizIndice < _quizOrdenPreguntas.length) _renderQuizPregunta();
   else _mostrarResultadoQuiz();
 }
 
@@ -1881,6 +1925,22 @@ function _quizElegirRecomendaciones(arquetipoId) {
   return top.slice(0, 6);
 }
 
+// Desglose por porcentajes: todos los arquetipos con puntaje > 0, ordenados
+// de mayor a menor, mostrando como máximo los 6 más altos (de los 8
+// posibles) para no saturar la tarjeta con porcentajes casi en cero.
+function _quizDesglosePorcentajes() {
+  const totalPuntos = Object.values(_quizPuntajes).reduce((a, b) => a + b, 0) || 1;
+  return _quizRankingArquetipos()
+    .filter(id => _quizPuntajes[id] > 0)
+    .slice(0, 6)
+    .map(id => ({
+      id,
+      arq: QUIZ_ARQUETIPOS[id],
+      puntos: _quizPuntajes[id],
+      pct: Math.round((_quizPuntajes[id] / totalPuntos) * 100)
+    }));
+}
+
 function _mostrarResultadoQuiz() {
   const cont = document.getElementById('quizContainer');
   if (!cont) return;
@@ -1888,12 +1948,30 @@ function _mostrarResultadoQuiz() {
   const ganador = _quizRankingArquetipos()[0];
   const arq = QUIZ_ARQUETIPOS[ganador];
   const recomendados = _quizElegirRecomendaciones(ganador);
+  const desglose = _quizDesglosePorcentajes();
+
+  const filasHtml = desglose.map(d => `
+    <div class="quiz-pct-fila">
+      <span class="quiz-pct-emoji">${d.arq.emoji}</span>
+      <div class="quiz-pct-info">
+        <div class="quiz-pct-cabecera">
+          <span class="quiz-pct-titulo">${escapeHtml(d.arq.titulo)}</span>
+          <span class="quiz-pct-num">${d.pct}%</span>
+        </div>
+        <div class="quiz-pct-track"><div class="quiz-pct-fill" style="width:${d.pct}%"></div></div>
+      </div>
+    </div>
+  `).join('');
 
   cont.innerHTML = `
     <div class="quiz-resultado-header">
       <span class="quiz-resultado-emoji">${arq.emoji}</span>
       <h3>Eres un ${escapeHtml(arq.titulo)}</h3>
       <p class="quiz-tagline">${escapeHtml(arq.tagline)}</p>
+    </div>
+    <div class="quiz-pct-card">
+      <p class="quiz-pct-titulo-card">Tu mezcla lectora de hoy</p>
+      ${filasHtml}
     </div>
     <p class="quiz-resultado-libros-titulo">De mi biblioteca te recomendaría</p>
     <div id="quizResultCards" class="lista-cards"></div>
