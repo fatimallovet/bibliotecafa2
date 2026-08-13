@@ -1,13 +1,10 @@
 // BiblioFa script.js · Actualizado: 2026-08-13
-// - v1.30.1: 3 preguntas del quiz (1 "Entras a una librería...", 5 "En el fondo, qué
-//   buscas..." y 10 "Cuál de estos pequeños placeres...") ahora pesan 2 puntos en vez
-//   de 1 (campo "peso" en QUIZ_PREGUNTAS, leído por _quizRecalcularPuntajes). El
-//   objetivo es que el desglose de "Tu mezcla lectora" casi nunca muestre dos
-//   arquetipos empatados en %. Nota: como estas 3 preguntas no reparten sus 4
-//   opciones parejo entre los 8 arquetipos (algunos aparecen en las 3, otros en
-//   ninguna), deja de ser una distribución perfectamente pareja — es el trade-off
-//   consciente de pedir preguntas específicas en vez de pesar la primera pregunta
-//   nada más.
+// - v1.30.2: se revirtió el intento de ponderar 3 preguntas del quiz (volvió a que las
+//   12 valgan 1 punto parejo). En su lugar, el resultado ya no muestra un encabezado
+//   grande de "Eres un X" separado — ahora es solo el cuadrito "Tu mezcla lectora de
+//   hoy", con las filas de cada arquetipo mostrando emoji, título, frase y %, tocables
+//   para ver sus recomendaciones (mismo comportamiento de antes, solo que ahora es lo
+//   único que se ve arriba). CSS de header/quiz-tagline que quedó sin uso, eliminado.
 // - v1.30.0: (1) Duelo de Personajes — cuadritos de "top 3" por categoría en la
 //   pantalla de selección, tocables para saltar directo a esa categoría. (2) Brújula
 //   Lectora — "Explorador Intrépido" pasó a llamarse "Corazón Aventurero" y "Buscador
@@ -2108,18 +2105,15 @@ document.getElementById('btnVolver').addEventListener('click', () => {
 // QUIZ: BRÚJULA LECTORA
 // 12 preguntas rápidas (en orden aleatorio cada vez) → 8 arquetipos de
 // lector → recomendaciones reales + desglose por porcentajes.
-// Cada opción de cada pregunta suma puntos a UN solo arquetipo (nunca a dos
+// Cada opción de cada pregunta suma 1 punto a UN solo arquetipo (nunca a dos
 // combinados, para que la señal de cada respuesta sea limpia). Las 48
 // opciones están repartidas EXACTO parejo: cada uno de los 8 arquetipos
-// aparece 6 veces. La mayoría de las preguntas valen 1 punto, pero 3 quedaron
-// marcadas como "peso: 2" (ver QUIZ_PREGUNTAS) porque Fátima las considera
-// más definitorias del tipo de lector — esto hace que los % del desglose
-// final rara vez queden empatados entre sí. Si aun así hay empate real en el
-// primer lugar, lo resuelve _quizPesoDesempate — un marcador binario invisible
-// (ver su comentario más abajo) que SIEMPRE tiene un valor distinto entre dos
-// arquetipos, sin excepción. Nunca se le pregunta nada al visitante para
-// desempatar: no tendría forma de conocer los intríngulis de cada arquetipo
-// para decidir con criterio.
+// aparece 6 veces. Si al final hay empate en el primer lugar, lo resuelve
+// _quizPesoDesempate — un marcador binario invisible (ver su comentario más
+// abajo) que SIEMPRE tiene un valor distinto entre dos arquetipos, sin
+// excepción. Nunca se le pregunta nada al visitante para desempatar: no
+// tendría forma de conocer los intríngulis de cada arquetipo para decidir
+// con criterio.
 //
 // Las recomendaciones NO son solo un filtro de Mood (para no repetir la
 // pestaña Mood): cada arquetipo cruza Mood + (Género O Tono), reutilizando
@@ -2206,7 +2200,6 @@ const QUIZ_ARQUETIPOS = {
 const QUIZ_PREGUNTAS = [
   {
     texto: 'Entras a una librería. ¿Qué te atrae primero?',
-    peso: 2,
     opciones: [
       { emoji: '🌌', texto: 'Algo raro, original, fuera de lo conocido', arquetipo: 'explorador' },
       { emoji: '🗺️', texto: 'Una historia llena de emociones y aventuras', arquetipo: 'intrepido' },
@@ -2243,7 +2236,6 @@ const QUIZ_PREGUNTAS = [
   },
   {
     texto: 'En el fondo, ¿qué buscas cuando abres un libro?',
-    peso: 2,
     opciones: [
       { emoji: '🚪', texto: 'Desaparecer un rato de este mundo', arquetipo: 'explorador' },
       { emoji: '💔', texto: 'Sentir algo de verdad', arquetipo: 'alma' },
@@ -2289,7 +2281,6 @@ const QUIZ_PREGUNTAS = [
   },
   {
     texto: '¿Cuál de estos pequeños placeres lectores disfrutas más?',
-    peso: 2,
     opciones: [
       { emoji: '😂', texto: 'Encontrar personajes y diálogos que te hagan reír', arquetipo: 'ligero' },
       { emoji: '🌍', texto: 'Descubrir poco a poco las reglas y secretos de un mundo', arquetipo: 'explorador' },
@@ -2364,8 +2355,7 @@ function _quizRecalcularPuntajes() {
   Object.keys(QUIZ_ARQUETIPOS).forEach(k => { _quizPuntajes[k] = 0; _quizPesoDesempate[k] = 0; });
   _quizRespuestas.forEach((arquetipo, idx) => {
     if (!arquetipo) return;
-    const peso = (_quizOrdenPreguntas[idx] && _quizOrdenPreguntas[idx].peso) || 1;
-    _quizPuntajes[arquetipo] += peso;
+    _quizPuntajes[arquetipo] += 1;
     _quizPesoDesempate[arquetipo] += Math.pow(2, idx);
   });
 }
@@ -2519,7 +2509,6 @@ function _mostrarResultadoQuiz() {
   if (!cont) return;
 
   _quizArquetipoGanador = _quizRankingArquetipos()[0];
-  const arq = QUIZ_ARQUETIPOS[_quizArquetipoGanador];
   const desglose = _quizDesglosePorcentajes();
 
   const filasHtml = desglose.map(d => `
@@ -2530,23 +2519,17 @@ function _mostrarResultadoQuiz() {
           <span class="quiz-pct-titulo">${escapeHtml(d.arq.titulo)}</span>
           <span class="quiz-pct-num">${d.pct}%</span>
         </div>
+        <p class="quiz-pct-tagline">${escapeHtml(d.arq.tagline)}</p>
         <div class="quiz-pct-track"><div class="quiz-pct-fill" style="width:${d.pct}%"></div></div>
       </div>
     </button>
   `).join('');
 
   cont.innerHTML = `
-    <div class="quiz-resultado-top">
-      <div class="quiz-resultado-header">
-        <span class="quiz-resultado-emoji">${arq.emoji}</span>
-        <h3>Eres un ${escapeHtml(arq.titulo)}</h3>
-        <p class="quiz-tagline">${escapeHtml(arq.tagline)}</p>
-      </div>
-      <div class="quiz-pct-card">
-        <p class="quiz-pct-titulo-card">Tu mezcla lectora de hoy</p>
-        ${filasHtml}
-        <p class="quiz-pct-hint">Toca un perfil para ver sus recomendaciones</p>
-      </div>
+    <div class="quiz-pct-card quiz-pct-card-solo">
+      <p class="quiz-pct-titulo-card">Tu mezcla lectora de hoy</p>
+      ${filasHtml}
+      <p class="quiz-pct-hint">Toca un perfil para ver sus recomendaciones</p>
     </div>
     <p class="quiz-resultado-libros-titulo" id="quizLibrosTitulo">De mi biblioteca te recomendaría</p>
     <div id="quizResultCards" class="lista-cards"></div>
@@ -2563,9 +2546,9 @@ function _mostrarResultadoQuiz() {
 }
 
 // Cambia qué recomendaciones se muestran cuando el visitante hace clic en
-// una fila de "Tu mezcla lectora de hoy". El encabezado principal ("Eres
-// un...") no cambia — sigue reflejando el resultado real del quiz — solo
-// cambian los libros y el título de esa sección.
+// una fila de "Tu mezcla lectora de hoy". La fila resaltada como "activa"
+// cambia a la que se tocó, pero _quizArquetipoGanador (el resultado real del
+// quiz) no se toca — solo cambian los libros y el título de esa sección.
 function _quizSeleccionarFilaMezcla(arquetipoId) {
   document.querySelectorAll('.quiz-pct-fila').forEach(fila => {
     fila.classList.toggle('quiz-pct-fila-activa', fila.dataset.arquetipo === arquetipoId);
