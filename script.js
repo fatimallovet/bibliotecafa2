@@ -49,6 +49,18 @@
 //   nombre. "Cambiar de nombre" ya no crea un jugador nuevo (duplicaba filas en la tabla
 //   de posiciones): ahora renombra el mismo registro (mismo jugador_id) y sincroniza el
 //   apodo directo en Supabase.
+// - v1.28.0: pulido grande del quiz. (1) Redacción de las 12 preguntas revisada para que sea
+//   más concisa y concreta (misma lógica y mismos puntajes, cero cambios de arquetipo/mood).
+//   (2) Botón "← Atrás" en cada pregunta (excepto la primera): las respuestas ahora se guardan
+//   en _quizRespuestas por índice, y los puntajes (_quizPuntajes y _quizPesoDesempate) se
+//   recalculan desde cero con _quizRecalcularPuntajes() cada vez que se responde o se cambia
+//   una respuesta anterior — más robusto que sumar/restar a mano. (3) Las filas de "Tu mezcla
+//   lectora de hoy" ahora son clicables: al tocar una, cambian los libros recomendados debajo
+//   (_quizSeleccionarFilaMezcla/_quizMostrarRecomendacionesDe) y el título pasa a "Libros para
+//   tu lado [X]". El encabezado principal ("Eres un...") no cambia con el clic — sigue
+//   reflejando siempre el resultado real del quiz. (4) Layout de resultado rediseñado:
+//   encabezado y tarjeta de mezcla ahora van lado a lado (mezcla arriba a la derecha en
+//   desktop, apilada debajo en móvil), con hover/estado activo en las filas.
 // - v1.27.0: rediseño grande del quiz, basado en el mapeo que armó Fátima. (1) Se quitó el
 //   desempate manual (random y luego el de pregunta extra) por una fórmula determinista:
 //   _quizPesoDesempate suma una potencia de 2 distinta por pregunta (2^0..2^11), y como dos
@@ -1764,12 +1776,12 @@ const QUIZ_ARQUETIPOS = {
 // partida (ver iniciarQuiz), así que esta lista es solo el banco de preguntas.
 const QUIZ_PREGUNTAS = [
   {
-    texto: '¿Qué te atrae primero?',
+    texto: 'Entras a una librería. ¿Qué te atrae primero?',
     opciones: [
-      { emoji: '🌌', texto: 'Un mundo completamente distinto al nuestro', arquetipo: 'explorador' },
-      { emoji: '🗺️', texto: 'Una historia que promete acción y aventura', arquetipo: 'intrepido' },
-      { emoji: '🕵️', texto: 'Algo extraño que necesitas entender', arquetipo: 'detective' },
-      { emoji: '🪞', texto: 'Una historia que promete hacerte mirar la vida de otra manera', arquetipo: 'sentido' }
+      { emoji: '🌌', texto: 'Algo raro, original, fuera de lo conocido', arquetipo: 'explorador' },
+      { emoji: '🗺️', texto: 'Una historia llena de emociones y aventuras', arquetipo: 'intrepido' },
+      { emoji: '🕵️', texto: 'Un enigma o misterio por resolver', arquetipo: 'detective' },
+      { emoji: '🪞', texto: 'Algo que se sienta muy real y te haga pensar', arquetipo: 'sentido' }
     ]
   },
   {
@@ -1777,7 +1789,7 @@ const QUIZ_PREGUNTAS = [
     opciones: [
       { emoji: '☕', texto: 'Algo rápido y fácil de leer', arquetipo: 'ligero' },
       { emoji: '🏰', texto: 'Viajar a otra época y sentir que estás ahí', arquetipo: 'raices' },
-      { emoji: '❤️', texto: 'Una historia que te haga encariñarte de verdad con sus personajes', arquetipo: 'alma' },
+      { emoji: '❤️', texto: 'Encariñarme de verdad con los personajes', arquetipo: 'alma' },
       { emoji: '👑', texto: 'Uno de esos libros que todo mundo debería leer', arquetipo: 'clasicos' }
     ]
   },
@@ -1787,16 +1799,16 @@ const QUIZ_PREGUNTAS = [
       { emoji: '😢', texto: 'Uno agridulce, pero que se sienta verdadero', arquetipo: 'alma' },
       { emoji: '🤯', texto: 'Uno que te sorprenda', arquetipo: 'detective' },
       { emoji: '😊', texto: 'Uno que te deje con una sonrisa', arquetipo: 'ligero' },
-      { emoji: '🏆', texto: 'Uno que te haga desear inmediatamente otra aventura', arquetipo: 'intrepido' }
+      { emoji: '🏆', texto: 'Uno que te deje con ganas de más aventura', arquetipo: 'intrepido' }
     ]
   },
   {
     texto: '¿Qué tipo de personaje suele conquistarte?',
     opciones: [
-      { emoji: '💭', texto: 'Alguien cuya forma de ver el mundo te haga pensar', arquetipo: 'sentido' },
+      { emoji: '💭', texto: 'Alguien que te cambia la forma de ver el mundo', arquetipo: 'sentido' },
       { emoji: '⚔️', texto: 'Alguien que tenga que demostrar de qué está hecho', arquetipo: 'intrepido' },
       { emoji: '🧝', texto: 'Alguien imposible de encontrar en nuestra realidad', arquetipo: 'explorador' },
-      { emoji: '📜', texto: 'Alguien cuya vida esté marcada por el tiempo y el lugar en que le tocó vivir', arquetipo: 'raices' }
+      { emoji: '📜', texto: 'Alguien marcado por la época que le tocó vivir', arquetipo: 'raices' }
     ]
   },
   {
@@ -1805,13 +1817,13 @@ const QUIZ_PREGUNTAS = [
       { emoji: '🚪', texto: 'Desaparecer un rato de este mundo', arquetipo: 'explorador' },
       { emoji: '💔', texto: 'Sentir algo de verdad', arquetipo: 'alma' },
       { emoji: '🌱', texto: 'Descubrir una idea que se quede conmigo', arquetipo: 'sentido' },
-      { emoji: '📚', texto: 'Conocer esas historias que forman parte de nuestra cultura', arquetipo: 'clasicos' }
+      { emoji: '📚', texto: 'Conocer las grandes historias de siempre', arquetipo: 'clasicos' }
     ]
   },
   {
-    texto: '¿En qué escenario te instalarías más fácilmente durante 300 páginas?',
+    texto: '¿En qué escenario pasarías 300 páginas a gusto?',
     opciones: [
-      { emoji: '🏘️', texto: 'Un lugar donde se sienta el peso de su historia y sus costumbres', arquetipo: 'raices' },
+      { emoji: '🏘️', texto: 'Un lugar donde se sienta el paso del tiempo', arquetipo: 'raices' },
       { emoji: '🏛️', texto: 'Un escenario que podría seguir funcionando dentro de cien años', arquetipo: 'clasicos' },
       { emoji: '🏠', texto: 'Cualquiera, mientras sea agradable pasar tiempo ahí', arquetipo: 'ligero' },
       { emoji: '🌆', texto: 'Un lugar cotidiano en el que algo no termina de cuadrar', arquetipo: 'detective' }
@@ -1823,25 +1835,25 @@ const QUIZ_PREGUNTAS = [
       { emoji: '❤️', texto: '"Voy a extrañar a esta gente"', arquetipo: 'alma' },
       { emoji: '💡', texto: '"Nunca lo había pensado así"', arquetipo: 'sentido' },
       { emoji: '☁️', texto: '"Quiero volver a perderme en un mundo así"', arquetipo: 'explorador' },
-      { emoji: '👑', texto: '"Ahora entiendo por qué este libro ha sobrevivido tanto tiempo"', arquetipo: 'clasicos' }
+      { emoji: '👑', texto: '"Entiendo por qué este libro ha durado tanto"', arquetipo: 'clasicos' }
     ]
   },
   {
     texto: '¿Qué podría hacerte releer un libro años después?',
     opciones: [
       { emoji: '🗺️', texto: 'Volver a vivir aquella aventura', arquetipo: 'intrepido' },
-      { emoji: '🕰️', texto: 'Regresar a ese tiempo, lugar y forma de vivir', arquetipo: 'raices' },
+      { emoji: '🕰️', texto: 'Regresar a esa época y forma de vivir', arquetipo: 'raices' },
       { emoji: '🔍', texto: 'Descubrir detalles que seguramente se me escaparon', arquetipo: 'detective' },
-      { emoji: '😌', texto: 'Saber que voy a disfrutarlo otra vez sin complicarme la vida', arquetipo: 'ligero' }
+      { emoji: '😌', texto: 'Saber que lo voy a disfrutar sin pensarlo tanto', arquetipo: 'ligero' }
     ]
   },
   {
-    texto: 'Vas por la mitad y ocurre algo inesperado. ¿Qué consigue que sigas leyendo hasta demasiado tarde?',
+    texto: 'Vas por la mitad del libro. ¿Qué te mantiene leyendo hasta tarde?',
     opciones: [
-      { emoji: '⚔️', texto: 'Los protagonistas se meten en un problema enorme y quieres saber cómo van a salir', arquetipo: 'intrepido' },
+      { emoji: '⚔️', texto: 'Los protagonistas están en peligro y necesitas saber cómo salen', arquetipo: 'intrepido' },
       { emoji: '🧩', texto: 'Aparece una pieza que no encaja con nada de lo anterior', arquetipo: 'detective' },
       { emoji: '🏺', texto: 'Descubres algo fascinante sobre la época o el lugar', arquetipo: 'raices' },
-      { emoji: '✍️', texto: 'Hay frases o escenas tan buenas que disfrutas hasta cómo está contado', arquetipo: 'clasicos' }
+      { emoji: '✍️', texto: 'Está tan bien escrito que disfrutas hasta cómo se cuenta', arquetipo: 'clasicos' }
     ]
   },
   {
@@ -1856,19 +1868,19 @@ const QUIZ_PREGUNTAS = [
   {
     texto: 'Si pudieras entrar durante un día en una historia, ¿qué harías?',
     opciones: [
-      { emoji: '🗡️', texto: 'Me uniría a la misión; ya averiguaré después si fue buena idea', arquetipo: 'intrepido' },
+      { emoji: '🗡️', texto: 'Me uniría a la misión sin pensarlo dos veces', arquetipo: 'intrepido' },
       { emoji: '🔎', texto: 'Investigaría eso que nadie parece capaz de explicar', arquetipo: 'detective' },
       { emoji: '🕯️', texto: 'Recorrería el lugar observando cómo vivía realmente la gente', arquetipo: 'raices' },
-      { emoji: '🎭', texto: 'Iría a conocer a uno de esos personajes que todo el mundo reconoce aunque hayan pasado siglos', arquetipo: 'clasicos' }
+      { emoji: '🎭', texto: 'Conocería a un personaje que todos reconocen, aunque hayan pasado siglos', arquetipo: 'clasicos' }
     ]
   },
   {
-    texto: 'Un amigo quiere convencerte de leer un libro. ¿Qué frase tiene más posibilidades de funcionar contigo?',
+    texto: 'Un amigo quiere convencerte de leer un libro. ¿Qué frase te convencería más?',
     opciones: [
-      { emoji: '😄', texto: '"Es de esos que empiezas y, sin darte cuenta, te lo estás pasando genial"', arquetipo: 'ligero' },
+      { emoji: '😄', texto: '"Empiezas y, sin darte cuenta, la estás pasando increíble"', arquetipo: 'ligero' },
       { emoji: '✨', texto: '"No se parece a ningún mundo en el que hayas estado antes"', arquetipo: 'explorador' },
       { emoji: '🫶', texto: '"Los personajes se sienten tan reales que terminas queriéndolos"', arquetipo: 'alma' },
-      { emoji: '🌱', texto: '"Te deja pensando en algo que probablemente nunca te habías planteado"', arquetipo: 'sentido' }
+      { emoji: '🌱', texto: '"Te deja pensando en algo que nunca te habías planteado"', arquetipo: 'sentido' }
     ]
   }
 ];
@@ -1887,6 +1899,11 @@ let _quizPuntajes = {};
 // empatado, así que el empate se resuelve solo, sin preguntarle nada al
 // visitante ni tocar el conteo real que alimenta "Tu mezcla lectora".
 let _quizPesoDesempate = {};
+// Respuesta elegida en cada pregunta (arquetipo o null si no se ha
+// respondido). Guardarlas por índice permite el botón "Atrás": al volver y
+// cambiar una respuesta, los puntajes se recalculan desde cero a partir de
+// este arreglo en vez de sumar/restar a mano (mucho menos propenso a bugs).
+let _quizRespuestas = [];
 
 // Baraja un arreglo sin mutar el original (Fisher-Yates)
 function _quizMezclar(arr) {
@@ -1900,13 +1917,24 @@ function _quizMezclar(arr) {
 
 function iniciarQuiz() {
   _quizIndice = 0;
+  _quizOrdenPreguntas = _quizMezclar(QUIZ_PREGUNTAS);
+  _quizRespuestas = new Array(_quizOrdenPreguntas.length).fill(null);
+  _quizRecalcularPuntajes();
+  _renderQuizPregunta();
+}
+
+// Reconstruye _quizPuntajes y _quizPesoDesempate desde cero a partir de
+// _quizRespuestas. Se llama cada vez que se responde o se cambia una
+// respuesta anterior.
+function _quizRecalcularPuntajes() {
   _quizPuntajes = {};
   _quizPesoDesempate = {};
   Object.keys(QUIZ_ARQUETIPOS).forEach(k => { _quizPuntajes[k] = 0; _quizPesoDesempate[k] = 0; });
-  // Orden de preguntas aleatorio en cada partida, para que no se sienta
-  // siempre igual aunque respondas parecido
-  _quizOrdenPreguntas = _quizMezclar(QUIZ_PREGUNTAS);
-  _renderQuizPregunta();
+  _quizRespuestas.forEach((arquetipo, idx) => {
+    if (!arquetipo) return;
+    _quizPuntajes[arquetipo] += 1;
+    _quizPesoDesempate[arquetipo] += Math.pow(2, idx);
+  });
 }
 
 function _renderQuizPregunta() {
@@ -1916,9 +1944,11 @@ function _renderQuizPregunta() {
   const pregunta = _quizOrdenPreguntas[_quizIndice];
   const total = _quizOrdenPreguntas.length;
   const pct = Math.round((_quizIndice / total) * 100);
+  const respuestaActual = _quizRespuestas[_quizIndice];
 
   cont.innerHTML = `
     <div class="quiz-progreso">
+      ${_quizIndice > 0 ? '<button id="btnQuizAtras" class="btn-volver quiz-btn-atras">← Atrás</button>' : ''}
       <div class="quiz-progreso-track"><div class="quiz-progreso-fill" style="width:${pct}%"></div></div>
       <span class="quiz-progreso-label">${_quizIndice + 1} / ${total}</span>
     </div>
@@ -1931,19 +1961,29 @@ function _renderQuizPregunta() {
   const wrap = cont.querySelector('.quiz-opciones');
   pregunta.opciones.forEach(op => {
     const btn = document.createElement('button');
-    btn.className = 'quiz-opcion';
+    btn.className = 'quiz-opcion' + (op.arquetipo === respuestaActual ? ' quiz-opcion-activa' : '');
     btn.innerHTML = `<span class="quiz-opcion-emoji">${op.emoji}</span><span>${escapeHtml(op.texto)}</span>`;
     btn.addEventListener('click', () => _responderQuiz(op.arquetipo));
     wrap.appendChild(btn);
   });
+
+  const btnAtras = document.getElementById('btnQuizAtras');
+  if (btnAtras) btnAtras.addEventListener('click', _quizRetroceder);
 }
 
 function _responderQuiz(arquetipo) {
-  _quizPuntajes[arquetipo] = (_quizPuntajes[arquetipo] || 0) + 1;
-  _quizPesoDesempate[arquetipo] = (_quizPesoDesempate[arquetipo] || 0) + Math.pow(2, _quizIndice);
+  _quizRespuestas[_quizIndice] = arquetipo;
+  _quizRecalcularPuntajes();
   _quizIndice++;
   if (_quizIndice < _quizOrdenPreguntas.length) _renderQuizPregunta();
   else _mostrarResultadoQuiz();
+}
+
+function _quizRetroceder() {
+  if (_quizIndice > 0) {
+    _quizIndice--;
+    _renderQuizPregunta();
+  }
 }
 
 // Ranking de arquetipos: primero por puntaje real (el que se ve en "Tu
@@ -2036,17 +2076,21 @@ function _quizDesglosePorcentajes() {
     }));
 }
 
+// Arquetipo cuyas recomendaciones se están mostrando actualmente en el
+// resultado (arranca en el ganador, pero cambia si el visitante hace clic
+// en otra fila de "Tu mezcla lectora de hoy" — ver _quizSeleccionarFilaMezcla)
+let _quizArquetipoGanador = null;
+
 function _mostrarResultadoQuiz() {
   const cont = document.getElementById('quizContainer');
   if (!cont) return;
 
-  const ganador = _quizRankingArquetipos()[0];
-  const arq = QUIZ_ARQUETIPOS[ganador];
-  const recomendados = _quizElegirRecomendaciones(ganador);
+  _quizArquetipoGanador = _quizRankingArquetipos()[0];
+  const arq = QUIZ_ARQUETIPOS[_quizArquetipoGanador];
   const desglose = _quizDesglosePorcentajes();
 
   const filasHtml = desglose.map(d => `
-    <div class="quiz-pct-fila">
+    <button type="button" class="quiz-pct-fila${d.id === _quizArquetipoGanador ? ' quiz-pct-fila-activa' : ''}" data-arquetipo="${d.id}">
       <span class="quiz-pct-emoji">${d.arq.emoji}</span>
       <div class="quiz-pct-info">
         <div class="quiz-pct-cabecera">
@@ -2055,23 +2099,55 @@ function _mostrarResultadoQuiz() {
         </div>
         <div class="quiz-pct-track"><div class="quiz-pct-fill" style="width:${d.pct}%"></div></div>
       </div>
-    </div>
+    </button>
   `).join('');
 
   cont.innerHTML = `
-    <div class="quiz-resultado-header">
-      <span class="quiz-resultado-emoji">${arq.emoji}</span>
-      <h3>Eres un ${escapeHtml(arq.titulo)}</h3>
-      <p class="quiz-tagline">${escapeHtml(arq.tagline)}</p>
+    <div class="quiz-resultado-top">
+      <div class="quiz-resultado-header">
+        <span class="quiz-resultado-emoji">${arq.emoji}</span>
+        <h3>Eres un ${escapeHtml(arq.titulo)}</h3>
+        <p class="quiz-tagline">${escapeHtml(arq.tagline)}</p>
+      </div>
+      <div class="quiz-pct-card">
+        <p class="quiz-pct-titulo-card">Tu mezcla lectora de hoy</p>
+        ${filasHtml}
+        <p class="quiz-pct-hint">Toca un perfil para ver sus recomendaciones</p>
+      </div>
     </div>
-    <p class="quiz-resultado-libros-titulo">De mi biblioteca te recomendaría</p>
+    <p class="quiz-resultado-libros-titulo" id="quizLibrosTitulo">De mi biblioteca te recomendaría</p>
     <div id="quizResultCards" class="lista-cards"></div>
-    <div class="quiz-pct-card">
-      <p class="quiz-pct-titulo-card">Tu mezcla lectora de hoy</p>
-      ${filasHtml}
-    </div>
     <button id="btnQuizReiniciar" class="quiz-btn-reiniciar">🔄 Volver a hacer el quiz</button>
   `;
+
+  cont.querySelectorAll('.quiz-pct-fila').forEach(fila => {
+    fila.addEventListener('click', () => _quizSeleccionarFilaMezcla(fila.dataset.arquetipo));
+  });
+
+  _quizMostrarRecomendacionesDe(_quizArquetipoGanador);
+
+  document.getElementById('btnQuizReiniciar').addEventListener('click', iniciarQuiz);
+}
+
+// Cambia qué recomendaciones se muestran cuando el visitante hace clic en
+// una fila de "Tu mezcla lectora de hoy". El encabezado principal ("Eres
+// un...") no cambia — sigue reflejando el resultado real del quiz — solo
+// cambian los libros y el título de esa sección.
+function _quizSeleccionarFilaMezcla(arquetipoId) {
+  document.querySelectorAll('.quiz-pct-fila').forEach(fila => {
+    fila.classList.toggle('quiz-pct-fila-activa', fila.dataset.arquetipo === arquetipoId);
+  });
+  _quizMostrarRecomendacionesDe(arquetipoId);
+}
+
+function _quizMostrarRecomendacionesDe(arquetipoId) {
+  const arq = QUIZ_ARQUETIPOS[arquetipoId];
+  const recomendados = _quizElegirRecomendaciones(arquetipoId);
+
+  const titulo = document.getElementById('quizLibrosTitulo');
+  titulo.textContent = arquetipoId === _quizArquetipoGanador
+    ? 'De mi biblioteca te recomendaría'
+    : `Libros para tu lado ${arq.emoji} ${arq.titulo}`;
 
   if (recomendados.length === 0) {
     document.getElementById('quizResultCards').innerHTML =
@@ -2079,8 +2155,6 @@ function _mostrarResultadoQuiz() {
   } else {
     mostrarTarjetasLista(recomendados, 'quizResultCards');
   }
-
-  document.getElementById('btnQuizReiniciar').addEventListener('click', iniciarQuiz);
 }
 
 // =====================================================
