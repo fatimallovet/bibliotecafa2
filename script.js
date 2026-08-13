@@ -1,4 +1,10 @@
 // BiblioFa script.js · Actualizado: 2026-08-13
+// - v1.29.2: corregido el ranking por categoría del Duelo de Personajes. Antes salían
+//   primero los personajes con 0 votos (NULL ordena antes que los números en DESC),
+//   mostrando "0%" en 1er lugar. Ahora esos personajes se excluyen del ranking hasta
+//   que tengan al menos un voto, y la etiqueta ya no dice "(N duelos)" —que solo
+//   contaba cuántos rivales tiene en el roster, sin relación con los votos— sino
+//   "(X/Y votos)": cuántas veces lo eligieron de los votos totales que ha recibido.
 // - v1.29.1: categorías reales del Duelo de Personajes (reemplazan las 7 de prueba):
 //   Magia y Poder, Mentes Maestras, Capa y Espada, Mujeres de Carácter, Villanos.
 // - v1.29.0: nueva pestaña "Duelo de Personajes" (Curiosidades) — votación de "quién
@@ -1730,11 +1736,17 @@ async function _duMostrarRankingCategoria() {
   cont.innerHTML = '<p style="color:var(--muted)">Cargando...</p>';
   if (!supabaseClient || !_duCategoriaActual) return;
 
+  // Solo entran al ranking los personajes que ya recibieron al menos un voto:
+  // sin esto, los que llevan 0 votos (porcentaje_acumulado viene NULL de la
+  // vista) terminaban apareciendo primero, porque en Postgres los NULL se
+  // ordenan antes que cualquier número al pedir orden descendente.
   const { data, error } = await supabaseClient
     .from('personaje_ranking')
-    .select('nombre, duelos_peleados, porcentaje_acumulado')
+    .select('nombre, votos_a_favor, votos_totales, porcentaje_acumulado')
     .eq('categoria', _duCategoriaActual.id)
-    .order('porcentaje_acumulado', { ascending: false });
+    .gt('votos_totales', 0)
+    .order('porcentaje_acumulado', { ascending: false })
+    .order('votos_totales', { ascending: false });
   if (error) { console.error('Error cargando ranking:', error); cont.innerHTML = ''; return; }
   if (!data || data.length === 0) {
     cont.innerHTML = '<p style="color:var(--muted)">Todavía no hay votos en esta categoría.</p>';
@@ -1742,7 +1754,7 @@ async function _duMostrarRankingCategoria() {
   }
 
   cont.innerHTML = `<h3 class="reto-leaderboard-titulo">📊 Ranking de ${escapeHtml(_duCategoriaActual.label)}</h3><ol class="reto-leaderboard-lista">` +
-    data.map(row => `<li><span>${escapeHtml(row.nombre)} <span class="du-ranking-item-extra">(${row.duelos_peleados} duelo${row.duelos_peleados !== 1 ? 's' : ''})</span></span><span>${row.porcentaje_acumulado ?? 0}%</span></li>`).join('') +
+    data.map(row => `<li><span>${escapeHtml(row.nombre)} <span class="du-ranking-item-extra">(${row.votos_a_favor}/${row.votos_totales} votos)</span></span><span>${row.porcentaje_acumulado}%</span></li>`).join('') +
     '</ol>';
 }
 
