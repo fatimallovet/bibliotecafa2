@@ -22,7 +22,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BiblioFa</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.28.0" />
+  <link rel="stylesheet" href="style.css?v=1.29.0" />
 
   <!-- Supabase (leaderboard de trivia + sugerencias) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -195,8 +195,11 @@
 
 <section id="tabDuelo" class="tab">
   <div id="duEntrada" class="reto-entrada du-ancho">
-    <h2>⚔️ Duelo de Personajes</h2>
-    <p class="reto-tagline">Elige quién ganaría — los votos de todos arman el ranking</p>
+    <div class="du-hero">
+      <span class="du-hero-icon">⚔️</span>
+      <h2>Duelo de Personajes</h2>
+      <p>Elige quién ganaría — cada voto mueve el rango de los dos personajes, como en el ajedrez</p>
+    </div>
 
     <div id="duEntradaApodo" style="display:none">
       <label for="duNombre">Tu nombre o apodo</label>
@@ -213,7 +216,7 @@
     <div id="duEntradaCategorias" style="display:none">
       <div class="du-bloque">
         <p class="du-categoria-label">Elige una categoría de duelo</p>
-        <div id="duCategoriaBtns" class="genero-btns du-categoria-btns"></div>
+        <div id="duCategoriaBtns" class="du-categoria-grid"></div>
         <p id="duSinCategorias" class="reto-tagline" style="display:none">Todavía no hay duelos cargados — ¡vuelve pronto! 📚</p>
       </div>
 
@@ -446,7 +449,7 @@
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="script.js?v=1.32.1"></script>
+  <script src="script.js?v=1.32.2"></script>
 
   <!-- Cloudflare Web Analytics -->
   <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "85978fa0985645ffb561da2af953aad6"}'>

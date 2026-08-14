@@ -1,4 +1,16 @@
 // BiblioFa script.js · Actualizado: 2026-08-14
+// - v1.32.2: (1) El rating ya no se muestra como "Elo" en pantalla (se veía
+//   raro mostrar el nombre técnico tal cual) — ahora aparece como "X pts" en
+//   los cuadritos de top 3 y en el ranking de categoría. El cálculo interno
+//   sigue siendo Elo, solo cambió cómo se llama de cara al visitante. (2)
+//   Rediseño del tab Duelo de Personajes: encabezado tipo "hero" (ícono +
+//   título serif itálica + subtítulo, mismo patrón que Brújula Lectora, en
+//   vez del h2 plano de antes); las categorías pasaron de pills genéricas a
+//   tarjetas con ícono grande y una línea que describe el tipo de personajes
+//   de cada una; la tarjeta VS ganó una insignia circular con degradado
+//   navy + borde dorado (antes un círculo plano) y un acento dorado que
+//   aparece al pasar el cursor sobre cada personaje. El carrusel de "Lo más
+//   votado por categoría" se queda igual (scroll horizontal).
 // - v1.32.1: ajustes al Duelo de Personajes a partir de feedback sobre v1.32.0.
 //   (1) Se quitaron los tiers "2" de todas las categorías — ya no se mezclan
 //   niveles dentro de una categoría, cada una es un solo grupo parejo (esto
@@ -1558,10 +1570,10 @@ _rlCargarBancoPreguntas();
 // columna categoria de duelo_personajes/duelos (mayúsculas y acentos
 // incluidos), o el filtro no encuentra los duelos de esa categoría.
 const DUELO_CATEGORIAS = [
-  { id: 'Magia y Poder',        icon: '🔮', label: 'Magia y Poder' },
-  { id: 'Mentes Maestras',      icon: '🕵️', label: 'Mentes Maestras' },
-  { id: 'Capa y Espada',        icon: '⚔️', label: 'Capa y Espada' },
-  { id: 'Mujeres de Carácter',  icon: '👑', label: 'Mujeres de Carácter' }
+  { id: 'Magia y Poder',        icon: '🔮', label: 'Magia y Poder',       desc: 'Hechiceros, dioses y portadores de un poder fuera de este mundo' },
+  { id: 'Mentes Maestras',      icon: '🕵️', label: 'Mentes Maestras',     desc: 'Detectives, estrategas y genios que ganan pensando, no peleando' },
+  { id: 'Capa y Espada',        icon: '⚔️', label: 'Capa y Espada',       desc: 'Espadachines y aventureros que se juegan todo con acero y astucia' },
+  { id: 'Mujeres de Carácter',  icon: '👑', label: 'Mujeres de Carácter', desc: 'Heroínas de voluntad inquebrantable, dentro y fuera del campo de batalla' }
 ];
 
 // Los rankings (top 3 por categoría y "Ranking de esta categoría") ya no
@@ -1655,8 +1667,12 @@ async function _duPintarCategorias() {
   categoriasAMostrar.forEach(cat => {
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.className = 'genero-btn';
-    btn.textContent = `${cat.icon} ${cat.label}`;
+    btn.className = 'du-categoria-card';
+    btn.innerHTML = `
+      <span class="du-categoria-card-icon">${cat.icon}</span>
+      <span class="du-categoria-card-label">${escapeHtml(cat.label)}</span>
+      <span class="du-categoria-card-desc">${escapeHtml(cat.desc || '')}</span>
+    `;
     btn.addEventListener('click', () => _duElegirCategoria(cat));
     cont.appendChild(btn);
   });
@@ -1704,7 +1720,7 @@ async function _duPintarTopCategorias(categorias) {
           <span class="du-top-card-fila">
             <span class="du-top-card-medalla">${DUELO_MEDALLAS[i]}</span>
             <span class="du-top-card-nombre">${escapeHtml(row.nombre)}</span>
-            <span class="du-top-card-pct">${Math.round(row.elo)} Elo</span>
+            <span class="du-top-card-pct">${Math.round(row.elo)} pts</span>
           </span>`).join('')
       : '<span class="du-top-card-vacio">Todavía sin votos</span>';
 
@@ -1895,7 +1911,7 @@ async function _duMostrarRankingCategoria() {
   }
 
   cont.innerHTML = `<h3 class="reto-leaderboard-titulo">📊 Ranking de ${escapeHtml(_duCategoriaActual.label)}</h3><ol class="reto-leaderboard-lista">` +
-    data.map(row => `<li><span>${escapeHtml(row.nombre)} <span class="du-ranking-item-extra">(${row.duelos_jugados} duelo${row.duelos_jugados !== 1 ? 's' : ''})</span></span><span>${Math.round(row.elo)} Elo</span></li>`).join('') +
+    data.map(row => `<li><span>${escapeHtml(row.nombre)} <span class="du-ranking-item-extra">(${row.duelos_jugados} duelo${row.duelos_jugados !== 1 ? 's' : ''})</span></span><span>${Math.round(row.elo)} pts</span></li>`).join('') +
     '</ol>';
 }
 

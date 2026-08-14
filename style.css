@@ -772,9 +772,38 @@ main {
 
 /* ── Duelo de Personajes ───────────────────────────────── */
 /* Más ancho que el resto de reto-entrada/reto-juego: la pantalla de
-   categorías (pills + cuadritos de top 3) y la tarjeta VS respiran mejor
-   con más espacio horizontal. Misma familia visual, solo más generosa. */
+   categorías (tarjetas + cuadritos de top 3) y la tarjeta VS respiran
+   mejor con más espacio horizontal. Misma familia visual, solo más
+   generosa. */
 .du-ancho { max-width: 860px; }
+
+/* Encabezado tipo "hero", mismo patrón que quiz-hero — ícono grande +
+   título serif itálica + subtítulo, en vez del h2 plano de antes. */
+.du-hero {
+  text-align: center;
+  max-width: 620px;
+  margin: 0 auto 32px;
+}
+.du-hero-icon {
+  display: block;
+  font-size: 2.2rem;
+  line-height: 1;
+  margin-bottom: 10px;
+}
+.du-hero h2 {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.75rem;
+  color: var(--navy);
+  margin: 0 0 10px;
+}
+.du-hero p {
+  font-size: 0.92rem;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0;
+}
 
 .du-bloque {
   padding: 0 0 24px;
@@ -805,15 +834,72 @@ main {
   color: var(--navy);
   margin: 4px 0 14px;
 }
-.du-categoria-btns { justify-content: center; margin-bottom: 4px; }
 
-.du-top-categorias {
+/* Tarjetas de categoría (antes eran pills genéricas tipo filtro de
+   género) — más presencia visual, ícono grande y una línea de contexto
+   para que se entienda de un vistazo qué tipo de personajes trae cada una. */
+.du-categoria-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 14px;
-  margin: 0 0 26px;
+  margin-bottom: 4px;
 }
+.du-categoria-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  padding: 22px 16px;
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--border-md);
+  background: var(--bg);
+  cursor: pointer;
+  transition: all .18s;
+  font-family: 'DM Sans', system-ui, sans-serif;
+}
+.du-categoria-card:hover {
+  border-color: var(--gold);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.du-categoria-card-icon { font-size: 1.9rem; line-height: 1; }
+.du-categoria-card-label {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.05rem;
+  color: var(--navy);
+}
+.du-categoria-card-desc {
+  font-size: 0.76rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+@media (max-width: 600px) {
+  .du-categoria-grid { grid-template-columns: 1fr; }
+}
+
+.du-top-categorias { margin: 0 0 26px; }
+
+/* Carrusel horizontal (mismo patrón que quiz-chips-scroll): cada categoría
+   es un cuadrito angosto que se recorre en vez de apilarse en grid, así
+   no importa si hay 5 categorías o más — siempre se ve compacto. */
+.du-top-carousel {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding: 2px 2px 12px;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+.du-top-carousel::-webkit-scrollbar { height: 6px; }
+.du-top-carousel::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 10px; }
 .du-top-card {
+  scroll-snap-align: start;
+  flex: 0 0 auto;
+  width: 220px;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -877,8 +963,9 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 24px;
+  gap: 20px;
   margin-bottom: 10px;
+  position: relative;
 }
 .du-personaje {
   flex: 1;
@@ -886,21 +973,38 @@ main {
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 34px 22px;
+  padding: 36px 22px;
   border-radius: var(--radius-lg);
   border: 1.5px solid var(--border-md);
   background: var(--bg);
   cursor: pointer;
-  transition: all .15s;
-  min-height: 140px;
+  transition: all .18s;
+  min-height: 150px;
   justify-content: center;
+  position: relative;
+  overflow: hidden;
 }
-.du-personaje:hover:not(:disabled) { border-color: var(--navy); background: var(--surface); box-shadow: var(--shadow-sm); transform: translateY(-2px); }
+.du-personaje::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--gold-dk), var(--gold));
+  transform: scaleX(0);
+  transition: transform .18s;
+}
+.du-personaje:hover:not(:disabled) {
+  border-color: var(--navy);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-3px);
+}
+.du-personaje:hover:not(:disabled)::before { transform: scaleX(1); }
 .du-personaje:disabled { cursor: default; }
 .du-personaje-nombre {
   font-family: var(--font-serif);
   font-style: italic;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   color: var(--text);
   line-height: 1.3;
 }
@@ -909,15 +1013,18 @@ main {
 .du-vs {
   flex-shrink: 0;
   font-family: var(--font-serif);
-  font-weight: 400;
-  font-size: 1rem;
-  color: var(--gold-dk);
-  width: 34px; height: 34px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+  color: #fff;
+  width: 40px; height: 40px;
   border-radius: 50%;
-  background: var(--gold-lt);
+  background: linear-gradient(135deg, var(--navy), var(--navy-lt));
+  box-shadow: 0 3px 10px rgba(0,0,0,.18), 0 0 0 4px var(--gold-lt);
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 1;
 }
 
 .du-resultado { margin-bottom: 18px; }
@@ -964,8 +1071,9 @@ main {
 
 @media (max-width: 600px) {
   .du-vs-card { gap: 8px; }
-  .du-personaje { padding: 18px 10px; min-height: 100px; }
+  .du-personaje { padding: 20px 10px; min-height: 110px; }
   .du-personaje-nombre { font-size: 0.95rem; }
+  .du-vs { width: 32px; height: 32px; font-size: 0.76rem; }
 }
 
 /* ── Quiz: ¿Qué tipo de lector eres? ──────────────────── */
