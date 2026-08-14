@@ -1,4 +1,44 @@
-// BiblioFa script.js · Actualizado: 2026-08-13
+// BiblioFa script.js · Actualizado: 2026-08-14
+// - v1.32.1: ajustes al Duelo de Personajes a partir de feedback sobre v1.32.0.
+//   (1) Se quitaron los tiers "2" de todas las categorías — ya no se mezclan
+//   niveles dentro de una categoría, cada una es un solo grupo parejo (esto
+//   deja fuera definitivamente a los personajes más jóvenes/menores: Lucy
+//   Pevensie, Sophie Hatter, Harry Potter joven, Percy Jackson, Jim Hawkins,
+//   Artemis Fowl, etc. — ver duelo_personajes_reset_v5.sql). (2) Se eliminó
+//   la categoría "Villanos" (DUELO_CATEGORIAS bajó de 5 a 4): era la más
+//   chica y varios de sus personajes no eran villanos en sentido estricto.
+//   Los que sí encajaban por astucia/estrategia se reubicaron en Mentes
+//   Maestras (Moriarty, Milady de Winter, Richelieu, Danglars, Snow,
+//   Claudio, Wargrave); el resto se eliminó del roster. (3) Las 4 categorías
+//   restantes quedaron parejas en 25 personajes cada una, con personajes
+//   nuevos sacados del catálogo real de Fátima (El Señor de los Anillos:
+//   Aragorn y Boromir en Capa y Espada, Éowyn en Mujeres de Carácter — como
+//   pidió; más El archivo de las tormentas, Nacidos de la Bruma, Sherlock
+//   Holmes, Oliver Twist, Quo Vadis, El manto sagrado, El prisionero de
+//   Zenda, La Pimpinela Escarlata, Las cuatro plumas, Las ruinas de Gorlan,
+//   Guerra y paz, Cumbres Borrascosas, El idiota).
+// - v1.32.0: rehecho el Duelo de Personajes de raíz. (1) Rating tipo Elo
+//   (como en ajedrez): cada personaje arranca en 1500 y su rating sube o
+//   baja según qué tan "sorprendente" fue el resultado de cada voto, en
+//   vez de usar el % crudo — ver duelo_personajes_migracion_v6_elo.sql
+//   (función duelo_votar_elo, RPC que guarda el voto Y mueve el Elo en
+//   una sola operación). El ranking de categoría y el top 3 ahora ordenan
+//   por Elo. (2) Tablas de personajes rehechas (duelo_personajes_reset_v4.sql):
+//   se agregó una columna "tier" (1 = poder mayor, 2 = poder emergente) y
+//   los duelos solo se generan entre personajes del mismo tier dentro de
+//   su categoría, así ya no salen enfrentamientos disparejos (ej. Lucy
+//   Pevensie contra Kaladin). Se agregaron personajes nuevos —sacados del
+//   catálogo real— para emparejar el tamaño de las 5 categorías (13 a 24
+//   personajes, antes 11 a 19). Villanos quedó solo con villanos NO
+//   mágicos (los villanos con magia — Voldemort, Sauron, Saruman, la
+//   Bruja Blanca, Smaug, el Lord Legislador— se quedaron únicamente en
+//   Magia y Poder). (3) El texto de "X votos en este duelo" ahora aclara
+//   que es la suma acumulada de TODOS los votos de ese par específico de
+//   personajes (no solo los tuyos) — con muchos duelos posibles por
+//   categoría es normal tardar en repetir el mismo par. (4) "Lo más
+//   votado por categoría" pasó de grid a carrusel horizontal (mismo
+//   patrón que quiz-chips-scroll), para que se vea compacto sin importar
+//   cuántas categorías haya.
 // - v1.31.3: DUELO_MIN_VOTOS bajó de 5 a 1 — cualquier personaje con al menos un voto
 //   real puede aparecer en el ranking, sin mínimo artificial. El ranking sigue
 //   ordenando por % real de mayor a menor; con muestras chicas es normal y esperado
@@ -1521,19 +1561,15 @@ const DUELO_CATEGORIAS = [
   { id: 'Magia y Poder',        icon: '🔮', label: 'Magia y Poder' },
   { id: 'Mentes Maestras',      icon: '🕵️', label: 'Mentes Maestras' },
   { id: 'Capa y Espada',        icon: '⚔️', label: 'Capa y Espada' },
-  { id: 'Mujeres de Carácter',  icon: '👑', label: 'Mujeres de Carácter' },
-  { id: 'Villanos',             icon: '🐍', label: 'Villanos' }
+  { id: 'Mujeres de Carácter',  icon: '👑', label: 'Mujeres de Carácter' }
 ];
 
-// Mínimo de votos totales para que un personaje pueda aparecer en un
-// ranking (top 3 por categoría o "Ranking de esta categoría") — en 1 porque
-// cualquier personaje con al menos un voto real debe poder mostrarse, ni
-// aunque sea con muestra chica. El ranking ordena por % de mayor a menor
-// (ver _duMostrarRankingCategoria); cuando dos o más quedan empatados en %
-// —lo más común con muestras chicas, ej. varios en 100% con 1 o 2 votos—
-// el desempate es por votos_totales: no cambia el %, solo decide quién de
-// los empatados va primero, favoreciendo al que tiene más respaldo detrás.
-const DUELO_MIN_VOTOS = 1;
+// Los rankings (top 3 por categoría y "Ranking de esta categoría") ya no
+// usan un mínimo de votos artificial: ordenan por rating Elo, que siempre
+// carga información real (incluso con 1 solo duelo jugado) porque cada
+// ajuste ya compara contra el rival, no solo cuenta victorias sueltas.
+// Solo se excluyen los personajes con 0 duelos jugados (nunca han sido
+// votados) — ver duelo_personajes_migracion_v6_elo.sql.
 
 // --- Duelos ya votados en este navegador (para no repetirlos) ---
 const DUELO_VISTOS_KEY = 'bibliof_duelo_vistos';
@@ -1628,11 +1664,11 @@ async function _duPintarCategorias() {
   _duPintarTopCategorias(categoriasAMostrar);
 }
 
-// Cuadritos con el top 3 de cada categoría visible, para que se pueda ver
+// Cuadritos con el top 3 de cada categoría visible, en un carrusel
+// horizontal (mismo patrón que quiz-chips-scroll), para que se pueda ver
 // un vistazo general sin tener que entrar una por una. Se puede tocar el
 // cuadrito para saltar directo a esa categoría.
-// El orden es por % real, de mayor a menor (DUELO_MIN_VOTOS decide quién
-// entra, no cómo se ordena) — ver nota completa en _duMostrarRankingCategoria.
+// El orden es por rating Elo, de mayor a menor — ver _duMostrarRankingCategoria.
 const DUELO_MEDALLAS = ['🥇', '🥈', '🥉'];
 async function _duPintarTopCategorias(categorias) {
   const cont = document.getElementById('duTopCategorias');
@@ -1641,12 +1677,11 @@ async function _duPintarTopCategorias(categorias) {
   if (!supabaseClient || categorias.length === 0) return;
 
   const { data, error } = await supabaseClient
-    .from('personaje_ranking')
-    .select('categoria, nombre, porcentaje_acumulado, votos_totales')
+    .from('duelo_personajes')
+    .select('categoria, nombre, elo, duelos_jugados')
     .in('categoria', categorias.map(c => c.id))
-    .gte('votos_totales', DUELO_MIN_VOTOS)
-    .order('porcentaje_acumulado', { ascending: false })
-    .order('votos_totales', { ascending: false });
+    .gt('duelos_jugados', 0)
+    .order('elo', { ascending: false });
   if (error) { console.error('Error cargando top de categorías:', error); return; }
 
   const porCategoria = {};
@@ -1654,6 +1689,9 @@ async function _duPintarTopCategorias(categorias) {
     if (!porCategoria[row.categoria]) porCategoria[row.categoria] = [];
     if (porCategoria[row.categoria].length < 3) porCategoria[row.categoria].push(row);
   });
+
+  const track = document.createElement('div');
+  track.className = 'du-top-carousel';
 
   categorias.forEach(cat => {
     const top3 = porCategoria[cat.id] || [];
@@ -1666,14 +1704,16 @@ async function _duPintarTopCategorias(categorias) {
           <span class="du-top-card-fila">
             <span class="du-top-card-medalla">${DUELO_MEDALLAS[i]}</span>
             <span class="du-top-card-nombre">${escapeHtml(row.nombre)}</span>
-            <span class="du-top-card-pct">${row.porcentaje_acumulado}%</span>
+            <span class="du-top-card-pct">${Math.round(row.elo)} Elo</span>
           </span>`).join('')
       : '<span class="du-top-card-vacio">Todavía sin votos</span>';
 
     card.innerHTML = `<span class="du-top-card-titulo">${cat.icon} ${escapeHtml(cat.label)}</span>${filas}`;
     card.addEventListener('click', () => _duElegirCategoria(cat));
-    cont.appendChild(card);
+    track.appendChild(card);
   });
+
+  cont.appendChild(track);
 }
 
 // Elige categoría y trae sus duelos activos (con datos de ambos personajes ya incluidos)
@@ -1766,14 +1806,16 @@ async function _duVotar(duelo, personajeElegidoId) {
   document.querySelectorAll('.du-personaje').forEach(b => b.disabled = true);
 
   if (supabaseClient) {
-    const { error } = await supabaseClient.from('duelo_votos').insert({
-      duelo_id: duelo.id,
-      jugador_id: _rlJugadorId(),
-      personaje_elegido_id: personajeElegidoId
+    // duelo_votar_elo guarda el voto Y actualiza el rating Elo de los dos
+    // personajes en una sola operación (ver duelo_personajes_migracion_v6_elo.sql).
+    // Si este jugador ya había votado este mismo duelo, la función no hace
+    // nada (ni guarda un voto repetido ni mueve el Elo dos veces).
+    const { error } = await supabaseClient.rpc('duelo_votar_elo', {
+      p_duelo_id: duelo.id,
+      p_personaje_elegido_id: personajeElegidoId,
+      p_jugador_id: _rlJugadorId()
     });
-    // Si ya existía un voto de este jugador en este duelo (restricción única),
-    // lo ignoramos — igual mostramos el resultado acumulado.
-    if (error && error.code !== '23505') console.error('Error guardando voto:', error);
+    if (error) console.error('Error guardando voto:', error);
   }
 
   _duVistos.add(duelo.id);
@@ -1812,10 +1854,15 @@ async function _duMostrarResultado(duelo, personajeElegidoId) {
       </div>
     </div>`;
 
+  // Este total es la suma de TODOS los votos que ha recibido este par de
+  // personajes específico, de cualquier jugador, desde siempre — no solo
+  // el tuyo. Si casi siempre marca 1, es porque cada categoría tiene
+  // muchos duelos posibles (ver tabla duelos) y el sitio elige uno al
+  // azar cada vez, así que es normal tardar en repetir el mismo par.
   cont.innerHTML =
     fila(duelo.personaje_a.nombre, pctA, personajeElegidoId === duelo.personaje_a.id) +
     fila(duelo.personaje_b.nombre, pctB, personajeElegidoId === duelo.personaje_b.id) +
-    `<p class="du-resultado-total">${total} voto${total !== 1 ? 's' : ''} en este duelo</p>`;
+    `<p class="du-resultado-total">${total} voto${total !== 1 ? 's' : ''} acumulado${total !== 1 ? 's' : ''} entre estos dos personajes</p>`;
 }
 
 // Ranking acumulado de personajes dentro de la categoría elegida (win rate)
@@ -1828,20 +1875,19 @@ async function _duMostrarRankingCategoria() {
   cont.innerHTML = '<p style="color:var(--muted)">Cargando...</p>';
   if (!supabaseClient || !_duCategoriaActual) return;
 
-  // El ranking ordena por % real, de mayor a menor — el número que se ve
-  // en pantalla es el mismo que decide el orden, sin scores escondidos.
-  // Cualquier personaje con al menos un voto puede aparecer (DUELO_MIN_VOTOS = 1),
-  // así que con muestras chicas es normal ver varios empatados en 100% —
-  // eso ya no se "corrige" quitando gente del ranking. El desempate entre
-  // empatados es por votos_totales (más votos primero), solo para que el
-  // orden dentro del empate tenga sentido; el % mostrado no cambia.
+  // El ranking ahora ordena por rating Elo (como el ajedrez) en vez de por
+  // % crudo — ver duelo_personajes_migracion_v6_elo.sql. Cada vez que
+  // alguien vota, el Elo de los dos personajes del duelo se ajusta según
+  // qué tan "sorprendente" fue el resultado, así que ya no hace falta un
+  // mínimo de votos para que el número signifique algo: con 1500 de
+  // arranque para todos, solo se listan los que ya jugaron al menos un
+  // duelo (duelos_jugados > 0).
   const { data, error } = await supabaseClient
-    .from('personaje_ranking')
-    .select('nombre, votos_a_favor, votos_totales, porcentaje_acumulado')
+    .from('duelo_personajes')
+    .select('nombre, elo, duelos_jugados')
     .eq('categoria', _duCategoriaActual.id)
-    .gte('votos_totales', DUELO_MIN_VOTOS)
-    .order('porcentaje_acumulado', { ascending: false })
-    .order('votos_totales', { ascending: false });
+    .gt('duelos_jugados', 0)
+    .order('elo', { ascending: false });
   if (error) { console.error('Error cargando ranking:', error); cont.innerHTML = ''; return; }
   if (!data || data.length === 0) {
     cont.innerHTML = '<p style="color:var(--muted)">Todavía no hay votos en esta categoría.</p>';
@@ -1849,7 +1895,7 @@ async function _duMostrarRankingCategoria() {
   }
 
   cont.innerHTML = `<h3 class="reto-leaderboard-titulo">📊 Ranking de ${escapeHtml(_duCategoriaActual.label)}</h3><ol class="reto-leaderboard-lista">` +
-    data.map(row => `<li><span>${escapeHtml(row.nombre)} <span class="du-ranking-item-extra">(${row.votos_a_favor}/${row.votos_totales} votos)</span></span><span>${row.porcentaje_acumulado}%</span></li>`).join('') +
+    data.map(row => `<li><span>${escapeHtml(row.nombre)} <span class="du-ranking-item-extra">(${row.duelos_jugados} duelo${row.duelos_jugados !== 1 ? 's' : ''})</span></span><span>${Math.round(row.elo)} Elo</span></li>`).join('') +
     '</ol>';
 }
 
