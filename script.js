@@ -1,4 +1,12 @@
 // BiblioFa script.js · Actualizado: 2026-08-13
+// - v1.31.1: (1) Encabezado de Brújula Lectora rediseñado (quiz-hero: ícono grande +
+//   título serif itálica + subtítulo con más cuerpo) — se veía plano comparado con el
+//   resto del quiz. (2) Resultado del quiz: la lista vertical de arquetipos se
+//   reemplazó por un carrusel horizontal de chips compactos (quiz-chips-scroll), con
+//   la frase del arquetipo activo mostrada aparte, debajo del carrusel. La tarjeta
+//   "Tu mezcla lectora de hoy" ya no depende de cuántos arquetipos traiga el
+//   desglose para su altura, así que las recomendaciones quedan visibles sin tanto
+//   scroll.
 // - v1.31.0: (1) Reto Literario — la tabla de posiciones ya no está detrás de un
 //   toggle: se pinta siempre, en su propia tarjeta (retoTablaBloque) debajo de la de
 //   apodo. Contenedor un poco más ancho (560px → 640px). (2) Duelo de Personajes —
@@ -2521,33 +2529,33 @@ function _mostrarResultadoQuiz() {
   _quizArquetipoGanador = _quizRankingArquetipos()[0];
   const desglose = _quizDesglosePorcentajes();
 
-  const filasHtml = desglose.map(d => `
-    <button type="button" class="quiz-pct-fila${d.id === _quizArquetipoGanador ? ' quiz-pct-fila-activa' : ''}" data-arquetipo="${d.id}">
-      <span class="quiz-pct-emoji">${d.arq.emoji}</span>
-      <div class="quiz-pct-info">
-        <div class="quiz-pct-cabecera">
-          <span class="quiz-pct-titulo">${escapeHtml(d.arq.titulo)}</span>
-          <span class="quiz-pct-num">${d.pct}%</span>
-        </div>
-        <p class="quiz-pct-tagline">${escapeHtml(d.arq.tagline)}</p>
-        <div class="quiz-pct-track"><div class="quiz-pct-fill" style="width:${d.pct}%"></div></div>
-      </div>
+  // Chips horizontales en vez de una lista vertical: la tarjeta se queda
+  // compacta (una sola fila que se desliza) para que "De mi biblioteca te
+  // recomendaría" aparezca justo debajo, sin tener que bajar tanto. La frase
+  // de cada arquetipo se muestra aparte, debajo del carrusel, y cambia según
+  // cuál chip esté activo.
+  const chipsHtml = desglose.map(d => `
+    <button type="button" class="quiz-chip${d.id === _quizArquetipoGanador ? ' quiz-chip-activo' : ''}" data-arquetipo="${d.id}">
+      <span class="quiz-chip-emoji">${d.arq.emoji}</span>
+      <span class="quiz-chip-titulo">${escapeHtml(d.arq.titulo)}</span>
+      <span class="quiz-chip-pct">${d.pct}%</span>
     </button>
   `).join('');
 
   cont.innerHTML = `
     <div class="quiz-pct-card quiz-pct-card-solo">
       <p class="quiz-pct-titulo-card">Tu mezcla lectora de hoy</p>
-      ${filasHtml}
-      <p class="quiz-pct-hint">Toca un perfil para ver sus recomendaciones</p>
+      <div class="quiz-chips-scroll">${chipsHtml}</div>
+      <p class="quiz-chip-tagline" id="quizChipTagline">${escapeHtml(QUIZ_ARQUETIPOS[_quizArquetipoGanador].tagline)}</p>
+      <p class="quiz-pct-hint">Desliza y toca otro perfil para ver sus recomendaciones</p>
     </div>
     <p class="quiz-resultado-libros-titulo" id="quizLibrosTitulo">De mi biblioteca te recomendaría</p>
     <div id="quizResultCards" class="lista-cards"></div>
     <button id="btnQuizReiniciar" class="quiz-btn-reiniciar">🔄 Volver a hacer el quiz</button>
   `;
 
-  cont.querySelectorAll('.quiz-pct-fila').forEach(fila => {
-    fila.addEventListener('click', () => _quizSeleccionarFilaMezcla(fila.dataset.arquetipo));
+  cont.querySelectorAll('.quiz-chip').forEach(chip => {
+    chip.addEventListener('click', () => _quizSeleccionarFilaMezcla(chip.dataset.arquetipo));
   });
 
   _quizMostrarRecomendacionesDe(_quizArquetipoGanador);
@@ -2555,14 +2563,18 @@ function _mostrarResultadoQuiz() {
   document.getElementById('btnQuizReiniciar').addEventListener('click', iniciarQuiz);
 }
 
-// Cambia qué recomendaciones se muestran cuando el visitante hace clic en
-// una fila de "Tu mezcla lectora de hoy". La fila resaltada como "activa"
-// cambia a la que se tocó, pero _quizArquetipoGanador (el resultado real del
-// quiz) no se toca — solo cambian los libros y el título de esa sección.
+// Cambia qué recomendaciones se muestran cuando el visitante toca otro chip
+// en "Tu mezcla lectora de hoy". El chip activo y la frase debajo del
+// carrusel cambian, pero _quizArquetipoGanador (el resultado real del quiz)
+// no se toca — solo cambian los libros y el título de esa sección.
 function _quizSeleccionarFilaMezcla(arquetipoId) {
-  document.querySelectorAll('.quiz-pct-fila').forEach(fila => {
-    fila.classList.toggle('quiz-pct-fila-activa', fila.dataset.arquetipo === arquetipoId);
+  document.querySelectorAll('.quiz-chip').forEach(chip => {
+    const activo = chip.dataset.arquetipo === arquetipoId;
+    chip.classList.toggle('quiz-chip-activo', activo);
+    if (activo) chip.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
   });
+  const tagline = document.getElementById('quizChipTagline');
+  if (tagline) tagline.textContent = QUIZ_ARQUETIPOS[arquetipoId].tagline;
   _quizMostrarRecomendacionesDe(arquetipoId);
 }
 
