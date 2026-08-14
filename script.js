@@ -1,4 +1,10 @@
 // BiblioFa script.js · Actualizado: 2026-08-14
+// - v1.33.0: pestaña Lista ya no abre en seco con solo el buscador — se agregó un
+//   bloque de bienvenida (.lista-intro) arriba del buscador con el total real de
+//   libros y 4 accesos rápidos a secciones que antes solo vivían en el sidebar
+//   (🎲 Sorpréndeme = abre el modal random, 👀 Por mood, 🧭 Brújula Lectora,
+//   🏆 Populares). La Lista se sigue abriendo primero, como antes — esto solo le
+//   da contexto antes de la tabla, sin moverla ni agregar una pestaña nueva.
 // - v1.32.3: ajustes finos al Duelo de Personajes tras otra ronda de feedback.
 //   (1) Se quitaron emojis decorativos que no aportaban nada (📊 en "Lo más
 //   votado por categoría" y en "Ranking de esta categoría", 🏅 en el link de
@@ -494,6 +500,7 @@ Papa.parse(sheetUrl, {
 
     llenarSelectGeneros(libros);
     actualizarContador(libros.length);
+    actualizarIntroTexto(libros.length);
 
     // Trae los likes en paralelo y refresca la vista cuando lleguen
     cargarLikesCache().then(() => {
@@ -1034,6 +1041,14 @@ function actualizarContador(num){
   document.getElementById('contadorLibros').textContent = `${num} libro${num!==1?'s':''} encontrados`;
 }
 
+// Texto de bienvenida arriba del buscador, en tabLibros — se pinta una sola
+// vez con el total real de la biblioteca (no cambia con la búsqueda/filtros).
+function actualizarIntroTexto(num){
+  const el = document.getElementById('listaIntroTexto');
+  if (!el) return;
+  el.textContent = `📚 ${num} libro${num!==1?'s':''} catalogados`;
+}
+
 // simple escape
 function escapeHtml(s){
   if(!s) return '';
@@ -1091,6 +1106,18 @@ history.replaceState({ tab: _tabActual }, '', location.pathname + '#' + _tabActu
 // Enlaces del menú (sidebar en escritorio, drawer en móvil)
 document.querySelectorAll('.sidebar-link[data-tab]').forEach(btn => {
   btn.addEventListener('click', () => activarTab(btn.dataset.tab));
+});
+
+// Accesos rápidos arriba del buscador en tabLibros (mismo patrón que el
+// sidebar: data-tab navega, data-accion="random" abre el modal random)
+document.querySelectorAll('.lista-intro-chip').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (btn.dataset.accion === 'random') {
+      mostrarLibroRandomEnModal();
+    } else if (btn.dataset.tab) {
+      activarTab(btn.dataset.tab);
+    }
+  });
 });
 
 // =====================================================

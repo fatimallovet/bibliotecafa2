@@ -1,4 +1,8 @@
-/* BiblioFa style.css · Actualizado: 2026-08-03 — rediseño: serif editorial, fondo cálido, botones píldora, acento dorado en favoritas, barra inferior de 4 tabs + FABs
+/* BiblioFa style.css
+   · 2026-08-14 (v1.31.0): nuevo bloque .lista-intro arriba del buscador en la pestaña Lista
+     (contador real de libros + accesos rápidos a Mood/Brújula/Populares/Random), para que la
+     pestaña principal no abra en seco solo con el buscador y la tabla.
+   · 2026-08-03 — rediseño: serif editorial, fondo cálido, botones píldora, acento dorado en favoritas, barra inferior de 4 tabs + FABs
    · 2026-08-03: tarjetas más legibles (reseña tipo cita, ícono en flags y autor) y más anchas en desktop (≥901px)
    · 2026-08-03: ficha de detalle rediseñada — header con subtítulo, ficha técnica en grid, reseña como cita, más ancha en desktop
    · 2026-08-03 (v2): ficha de detalle vuelta a hacer — hero navy tipo solapa de libro, specs en línea con divisores en vez de cajitas grises, sin alerta roja genérica, cita editorial sin caja
@@ -220,7 +224,79 @@ main {
 .tab.active { display: block; }
 
 
+/* ── Bienvenida arriba del buscador (tabLibros) ───────
+   Bloque discreto de una línea: contador real de la biblioteca +
+   accesos rápidos a secciones que antes solo vivían en el sidebar.
+   No reemplaza la Lista ni le agrega scroll de más — solo le da
+   contexto antes de la tabla. */
+.lista-intro {
+  margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
 
+.lista-intro-tagline {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.15rem;
+  color: var(--navy);
+  margin: 0 0 8px;
+}
+
+.lista-intro-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+}
+
+.lista-intro-texto {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 0;
+}
+
+.lista-intro-accesos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.lista-intro-chip {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 100px;
+  border: 1px solid var(--border-md);
+  background: var(--surface);
+  color: var(--navy);
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: var(--shadow-sm);
+  transition: all .15s;
+}
+.lista-intro-chip:hover {
+  border-color: var(--gold-dk);
+  background: var(--gold-lt);
+  color: var(--gold-dk);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 600px) {
+  .lista-intro { padding-bottom: 14px; }
+  .lista-intro-tagline { font-size: 1.02rem; }
+  .lista-intro-accesos {
+    width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
+  }
+  .lista-intro-chip { flex: 0 0 auto; }
+}
 
 /* ── Buscador + selector de orden ───────────────────── */
 .section-header {
