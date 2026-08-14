@@ -1,4 +1,12 @@
 // BiblioFa script.js · Actualizado: 2026-08-13
+// - v1.31.2: se revirtió el orden por ranking_score (Wilson) en los rankings del Duelo
+//   de Personajes — volvió a ordenar por % real, de mayor a menor (más predecible: el
+//   número que se ve es el mismo que decide el orden). Para que no vuelva a pasar lo
+//   de antes (un personaje con 1 voto a favor de 1 sale en 100% y se cuela arriba de
+//   otros con más respaldo), ahora hace falta un mínimo de DUELO_MIN_VOTOS = 5 votos
+//   totales para aparecer en cualquier ranking (top 3 por categoría o el detallado).
+//   La columna ranking_score se queda en la vista de Supabase por si se vuelve a
+//   necesitar, pero ya no se usa en el front.
 // - v1.31.1: (1) Encabezado de Brújula Lectora rediseñado (quiz-hero: ícono grande +
 //   título serif itálica + subtítulo con más cuerpo) — se veía plano comparado con el
 //   resto del quiz. (2) Resultado del quiz: la lista vertical de arquetipos se
@@ -1514,6 +1522,12 @@ const DUELO_CATEGORIAS = [
   { id: 'Villanos',             icon: '🐍', label: 'Villanos' }
 ];
 
+// Mínimo de votos totales que necesita un personaje para poder aparecer en
+// un ranking (top 3 por categoría o "Ranking de esta categoría"). Sin esto,
+// alguien con 1 voto a favor de 1 sale en 100% y se cuela arriba de otros
+// con muchos más votos y un % igual de real pero más confiable.
+const DUELO_MIN_VOTOS = 5;
+
 // --- Duelos ya votados en este navegador (para no repetirlos) ---
 const DUELO_VISTOS_KEY = 'bibliof_duelo_vistos';
 function _duVistosCargar() {
@@ -1610,10 +1624,8 @@ async function _duPintarCategorias() {
 // Cuadritos con el top 3 de cada categoría visible, para que se pueda ver
 // un vistazo general sin tener que entrar una por una. Se puede tocar el
 // cuadrito para saltar directo a esa categoría.
-// El orden usa ranking_score (Wilson score, ver duelo_personajes_migracion_v5_wilson.sql)
-// en vez del % crudo, para que un personaje con 1 voto a favor de 1 (100%)
-// no le gane a otro con muchos más votos y un % real más confiable. El %
-// que se muestra en pantalla sigue siendo el real (porcentaje_acumulado).
+// El orden es por % real, de mayor a menor (DUELO_MIN_VOTOS decide quién
+// entra, no cómo se ordena) — ver nota completa en _duMostrarRankingCategoria.
 const DUELO_MEDALLAS = ['🥇', '🥈', '🥉'];
 async function _duPintarTopCategorias(categorias) {
   const cont = document.getElementById('duTopCategorias');
@@ -1623,10 +1635,10 @@ async function _duPintarTopCategorias(categorias) {
 
   const { data, error } = await supabaseClient
     .from('personaje_ranking')
-    .select('categoria, nombre, porcentaje_acumulado, ranking_score, votos_totales')
+    .select('categoria, nombre, porcentaje_acumulado, votos_totales')
     .in('categoria', categorias.map(c => c.id))
-    .gt('votos_totales', 0)
-    .order('ranking_score', { ascending: false })
+    .gte('votos_totales', DUELO_MIN_VOTOS)
+    .order('porcentaje_acumulado', { ascending: false })
     .order('votos_totales', { ascending: false });
   if (error) { console.error('Error cargando top de categorías:', error); return; }
 
@@ -1809,26 +1821,24 @@ async function _duMostrarRankingCategoria() {
   cont.innerHTML = '<p style="color:var(--muted)">Cargando...</p>';
   if (!supabaseClient || !_duCategoriaActual) return;
 
-  // Solo entran al ranking los personajes que ya recibieron al menos un voto:
-  // sin esto, los que llevan 0 votos (porcentaje_acumulado viene NULL de la
-  // vista) terminaban apareciendo primero, porque en Postgres los NULL se
-  // ordenan antes que cualquier número al pedir orden descendente.
-  //
-  // El orden usa ranking_score (Wilson score) en vez del % crudo: con pocos
-  // votos, cualquier % se ve "perfecto" (1 voto a favor de 1 = 100%), así
-  // que ranking_score castiga los % con poca muestra detrás. El % que se
-  // muestra en pantalla sigue siendo porcentaje_acumulado, el real — solo
-  // cambia con qué se decide el ORDEN. Ver duelo_personajes_migracion_v5_wilson.sql.
+  // El ranking ordena por % real, de mayor a menor — nada de scores raros
+  // que no coincidan con el número que se ve en pantalla. Para evitar el
+  // problema original (un personaje con 1 voto a favor de 1 sale en 100% y
+  // se cuela arriba de otros con muchos más votos), lo que se ajustó fue
+  // QUIÉN ENTRA al ranking, no el orden: hace falta un mínimo de
+  // DUELO_MIN_VOTOS votos totales para aparecer. Con eso, todo lo que se
+  // muestra ya tiene suficiente respaldo detrás de su %, y el orden por %
+  // se puede leer tal cual, de arriba a abajo.
   const { data, error } = await supabaseClient
     .from('personaje_ranking')
-    .select('nombre, votos_a_favor, votos_totales, porcentaje_acumulado, ranking_score')
+    .select('nombre, votos_a_favor, votos_totales, porcentaje_acumulado')
     .eq('categoria', _duCategoriaActual.id)
-    .gt('votos_totales', 0)
-    .order('ranking_score', { ascending: false })
+    .gte('votos_totales', DUELO_MIN_VOTOS)
+    .order('porcentaje_acumulado', { ascending: false })
     .order('votos_totales', { ascending: false });
   if (error) { console.error('Error cargando ranking:', error); cont.innerHTML = ''; return; }
   if (!data || data.length === 0) {
-    cont.innerHTML = '<p style="color:var(--muted)">Todavía no hay votos en esta categoría.</p>';
+    cont.innerHTML = `<p style="color:var(--muted)">Todavía no hay suficientes votos en esta categoría (hace falta un mínimo de ${DUELO_MIN_VOTOS} votos por personaje).</p>`;
     return;
   }
 
