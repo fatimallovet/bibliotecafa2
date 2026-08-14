@@ -22,7 +22,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BiblioFa</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.29.0" />
+  <link rel="stylesheet" href="style.css?v=1.30.0" />
 
   <!-- Supabase (leaderboard de trivia + sugerencias) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -220,13 +220,13 @@
         <p id="duSinCategorias" class="reto-tagline" style="display:none">Todavía no hay duelos cargados — ¡vuelve pronto! 📚</p>
       </div>
 
-      <div class="du-bloque">
-        <p class="du-bloque-titulo">📊 Lo más votado por categoría</p>
+      <div class="du-top-bloque">
+        <p class="du-top-bloque-titulo">Lo más votado por categoría</p>
         <div id="duTopCategorias" class="du-top-categorias"></div>
       </div>
 
       <div class="du-bloque du-bloque-centrado du-bloque-ultimo">
-        <button id="duVerDuelistas" type="button" class="reto-link-tabla">🏅 Ver duelistas más activos</button>
+        <button id="duVerDuelistas" type="button" class="reto-link-tabla">Personajes más votados</button>
         <div id="duDuelistasEntrada" class="reto-tabla-entrada" style="display:none"></div>
       </div>
     </div>
@@ -248,7 +248,7 @@
     </div>
 
     <div class="du-bloque du-bloque-centrado du-bloque-ultimo">
-      <button id="duVerRanking" type="button" class="reto-link-tabla">📊 Ranking de esta categoría</button>
+      <button id="duVerRanking" type="button" class="reto-link-tabla">Ranking de esta categoría</button>
       <div id="duRankingCategoria" class="reto-tabla-entrada" style="display:none"></div>
     </div>
   </div>
@@ -449,7 +449,7 @@
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="script.js?v=1.32.2"></script>
+  <script src="script.js?v=1.32.3"></script>
 
   <!-- Cloudflare Web Analytics -->
   <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "85978fa0985645ffb561da2af953aad6"}'>

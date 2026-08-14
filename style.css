@@ -836,51 +836,76 @@ main {
 }
 
 /* Tarjetas de categoría (antes eran pills genéricas tipo filtro de
-   género) — más presencia visual, ícono grande y una línea de contexto
-   para que se entienda de un vistazo qué tipo de personajes trae cada una. */
+   género) — discretas: fila con ícono + nombre y una línea de contexto
+   chica debajo, sin convertirse en un mosaico grande. */
 .du-categoria-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
+  gap: 10px;
   margin-bottom: 4px;
 }
 .du-categoria-card {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 6px;
-  padding: 22px 16px;
-  border-radius: var(--radius-lg);
-  border: 1.5px solid var(--border-md);
+  align-items: flex-start;
+  text-align: left;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-md);
   background: var(--bg);
   cursor: pointer;
-  transition: all .18s;
+  transition: all .15s;
   font-family: 'DM Sans', system-ui, sans-serif;
 }
 .du-categoria-card:hover {
   border-color: var(--gold);
   background: var(--surface);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
 }
-.du-categoria-card-icon { font-size: 1.9rem; line-height: 1; }
+.du-categoria-card-top {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.du-categoria-card-icon { font-size: 1.05rem; line-height: 1; }
 .du-categoria-card-label {
   font-family: var(--font-serif);
   font-style: italic;
-  font-size: 1.05rem;
+  font-size: 0.92rem;
   color: var(--navy);
 }
 .du-categoria-card-desc {
-  font-size: 0.76rem;
+  font-size: 0.7rem;
   color: var(--muted);
-  line-height: 1.4;
+  line-height: 1.35;
 }
 @media (max-width: 600px) {
   .du-categoria-grid { grid-template-columns: 1fr; }
 }
 
-.du-top-categorias { margin: 0 0 26px; }
+/* Bloque de "Lo más votado por categoría": tarjeta propia (fondo +
+   borde), separada del resto de la pantalla en vez de ser un bloque más
+   entre los separadores de línea — así se distingue como su propia
+   sección en vez de mezclarse con el resto. */
+.du-top-bloque {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px 14px;
+  margin: 0 0 24px;
+}
+.du-top-bloque-titulo {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 0.98rem;
+  color: var(--navy);
+  text-align: center;
+  margin: 0 0 14px;
+}
+
+.du-top-categorias { margin: 0; }
 
 /* Carrusel horizontal (mismo patrón que quiz-chips-scroll): cada categoría
    es un cuadrito angosto que se recorre en vez de apilarse en grid, así

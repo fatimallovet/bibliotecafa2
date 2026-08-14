@@ -1,4 +1,23 @@
 // BiblioFa script.js · Actualizado: 2026-08-14
+// - v1.32.3: ajustes finos al Duelo de Personajes tras otra ronda de feedback.
+//   (1) Se quitaron emojis decorativos que no aportaban nada (📊 en "Lo más
+//   votado por categoría" y en "Ranking de esta categoría", 🏅 en el link de
+//   personajes más votados) — se dejaron solo los que sí cumplen una función:
+//   el ícono del hero, los íconos de cada categoría y las medallas 🥇🥈🥉 del
+//   ranking. (2) "Lo más votado por categoría" ahora vive en su propia
+//   tarjeta (fondo + borde propio) en vez de ser un bloque más separado por
+//   línea, para que se distinga como su propia sección. (3) "Ver duelistas
+//   más activos" (ranking de JUGADORES por cuántos votos habían emitido) se
+//   reemplazó por "Personajes más votados": ahora es un ranking de
+//   PERSONAJES por votos a favor recibidos en total, con el número real de
+//   votos como dato — más relevante que cuántas veces jugó cada persona.
+//   Reutiliza la vista personaje_ranking (ya existía en Supabase, solo había
+//   dejado de usarse para el ranking por categoría). (4) Las tarjetas de
+//   categoría bajaron de tamaño (ícono y texto más chicos, layout en fila en
+//   vez de apilado) — se sentían demasiado grandes. (5) La descripción de
+//   "Magia y Poder" ya no menciona "dioses" (no hay ningún personaje así en
+//   esa categoría): ahora dice "Magos y hechiceros con un poder que desafía
+//   las reglas del mundo real".
 // - v1.32.2: (1) El rating ya no se muestra como "Elo" en pantalla (se veía
 //   raro mostrar el nombre técnico tal cual) — ahora aparece como "X pts" en
 //   los cuadritos de top 3 y en el ranking de categoría. El cálculo interno
@@ -1570,7 +1589,7 @@ _rlCargarBancoPreguntas();
 // columna categoria de duelo_personajes/duelos (mayúsculas y acentos
 // incluidos), o el filtro no encuentra los duelos de esa categoría.
 const DUELO_CATEGORIAS = [
-  { id: 'Magia y Poder',        icon: '🔮', label: 'Magia y Poder',       desc: 'Hechiceros, dioses y portadores de un poder fuera de este mundo' },
+  { id: 'Magia y Poder',        icon: '🔮', label: 'Magia y Poder',       desc: 'Magos y hechiceros con un poder que desafía las reglas del mundo real' },
   { id: 'Mentes Maestras',      icon: '🕵️', label: 'Mentes Maestras',     desc: 'Detectives, estrategas y genios que ganan pensando, no peleando' },
   { id: 'Capa y Espada',        icon: '⚔️', label: 'Capa y Espada',       desc: 'Espadachines y aventureros que se juegan todo con acero y astucia' },
   { id: 'Mujeres de Carácter',  icon: '👑', label: 'Mujeres de Carácter', desc: 'Heroínas de voluntad inquebrantable, dentro y fuera del campo de batalla' }
@@ -1669,8 +1688,10 @@ async function _duPintarCategorias() {
     btn.type = 'button';
     btn.className = 'du-categoria-card';
     btn.innerHTML = `
-      <span class="du-categoria-card-icon">${cat.icon}</span>
-      <span class="du-categoria-card-label">${escapeHtml(cat.label)}</span>
+      <span class="du-categoria-card-top">
+        <span class="du-categoria-card-icon">${cat.icon}</span>
+        <span class="du-categoria-card-label">${escapeHtml(cat.label)}</span>
+      </span>
       <span class="du-categoria-card-desc">${escapeHtml(cat.desc || '')}</span>
     `;
     btn.addEventListener('click', () => _duElegirCategoria(cat));
@@ -1910,13 +1931,18 @@ async function _duMostrarRankingCategoria() {
     return;
   }
 
-  cont.innerHTML = `<h3 class="reto-leaderboard-titulo">📊 Ranking de ${escapeHtml(_duCategoriaActual.label)}</h3><ol class="reto-leaderboard-lista">` +
+  cont.innerHTML = `<h3 class="reto-leaderboard-titulo">Ranking de ${escapeHtml(_duCategoriaActual.label)}</h3><ol class="reto-leaderboard-lista">` +
     data.map(row => `<li><span>${escapeHtml(row.nombre)} <span class="du-ranking-item-extra">(${row.duelos_jugados} duelo${row.duelos_jugados !== 1 ? 's' : ''})</span></span><span>${Math.round(row.elo)} pts</span></li>`).join('') +
     '</ol>';
 }
 
-// Leaderboard de duelistas más activos (participación, no acierto)
-async function _duMostrarDuelistas() {
+// Ranking global de personajes más votados (de cualquier categoría), con
+// el dato duro de cuántos votos a favor ha recibido cada uno en total —
+// distinto del ranking "por categoría", que ordena por rango. Usa la
+// vista personaje_ranking (el % acumulado por votos, ver
+// duelo_personajes_migracion.sql), que se queda en la base de datos
+// aunque el ranking por categoría ya no la use para ordenar.
+async function _duMostrarPersonajesMasVotados() {
   const cont = document.getElementById('duDuelistasEntrada');
   const yaVisible = cont.style.display !== 'none' && cont.innerHTML.trim() !== '';
   if (yaVisible) { cont.style.display = 'none'; cont.innerHTML = ''; return; }
@@ -1926,18 +1952,18 @@ async function _duMostrarDuelistas() {
   if (!supabaseClient) return;
 
   const { data, error } = await supabaseClient
-    .from('duelista_ranking')
-    .select('apodo, puntaje_duelos')
-    .order('puntaje_duelos', { ascending: false })
+    .from('personaje_ranking')
+    .select('nombre, categoria, votos_a_favor')
+    .order('votos_a_favor', { ascending: false })
     .limit(10);
-  if (error) { console.error('Error cargando duelistas:', error); cont.innerHTML = ''; return; }
+  if (error) { console.error('Error cargando personajes más votados:', error); cont.innerHTML = ''; return; }
   if (!data || data.length === 0) {
-    cont.innerHTML = '<p style="color:var(--muted)">Todavía no hay nadie en la tabla — ¡sé la primera persona! ⚔️</p>';
+    cont.innerHTML = '<p style="color:var(--muted)">Todavía no hay votos — ¡sé la primera persona en votar! ⚔️</p>';
     return;
   }
 
-  cont.innerHTML = '<h3 class="reto-leaderboard-titulo">🏅 Duelistas más activos</h3><ol class="reto-leaderboard-lista">' +
-    data.map(row => `<li><span>${escapeHtml(row.apodo || 'Anónimo')}</span><span>${row.puntaje_duelos}</span></li>`).join('') +
+  cont.innerHTML = '<h3 class="reto-leaderboard-titulo">Personajes más votados</h3><ol class="reto-leaderboard-lista">' +
+    data.map(row => `<li><span>${escapeHtml(row.nombre)} <span class="du-ranking-item-extra">(${escapeHtml(row.categoria)})</span></span><span>${row.votos_a_favor} voto${row.votos_a_favor !== 1 ? 's' : ''}</span></li>`).join('') +
     '</ol>';
 }
 
@@ -1970,7 +1996,7 @@ document.getElementById('duNombre')?.addEventListener('keydown', e => {
   if (e.key === 'Enter') { e.preventDefault(); document.getElementById('duGuardarNombre').click(); }
 });
 document.getElementById('duOtrasSugerencias')?.addEventListener('click', _duPintarSugerenciasNombre);
-document.getElementById('duVerDuelistas')?.addEventListener('click', _duMostrarDuelistas);
+document.getElementById('duVerDuelistas')?.addEventListener('click', _duMostrarPersonajesMasVotados);
 document.getElementById('duCambiarCategoria')?.addEventListener('click', _duPintarEntrada);
 document.getElementById('duOtroDuelo')?.addEventListener('click', _duSiguienteDuelo);
 document.getElementById('duVerRanking')?.addEventListener('click', _duMostrarRankingCategoria);
