@@ -1,12 +1,15 @@
 // BiblioFa script.js · Actualizado: 2026-08-13
+// - v1.31.3: DUELO_MIN_VOTOS bajó de 5 a 1 — cualquier personaje con al menos un voto
+//   real puede aparecer en el ranking, sin mínimo artificial. El ranking sigue
+//   ordenando por % real de mayor a menor; con muestras chicas es normal y esperado
+//   ver varios empatados en 100% (ya no se "arregla" ocultando a esos personajes). El
+//   desempate entre empatados usa votos_totales (más votos primero) solo para que el
+//   orden dentro del empate tenga sentido — el % mostrado no cambia con eso.
 // - v1.31.2: se revirtió el orden por ranking_score (Wilson) en los rankings del Duelo
 //   de Personajes — volvió a ordenar por % real, de mayor a menor (más predecible: el
-//   número que se ve es el mismo que decide el orden). Para que no vuelva a pasar lo
-//   de antes (un personaje con 1 voto a favor de 1 sale en 100% y se cuela arriba de
-//   otros con más respaldo), ahora hace falta un mínimo de DUELO_MIN_VOTOS = 5 votos
-//   totales para aparecer en cualquier ranking (top 3 por categoría o el detallado).
-//   La columna ranking_score se queda en la vista de Supabase por si se vuelve a
-//   necesitar, pero ya no se usa en el front.
+//   número que se ve es el mismo que decide el orden). La columna ranking_score se
+//   queda en la vista de Supabase por si se vuelve a necesitar, pero ya no se usa en
+//   el front.
 // - v1.31.1: (1) Encabezado de Brújula Lectora rediseñado (quiz-hero: ícono grande +
 //   título serif itálica + subtítulo con más cuerpo) — se veía plano comparado con el
 //   resto del quiz. (2) Resultado del quiz: la lista vertical de arquetipos se
@@ -1522,11 +1525,15 @@ const DUELO_CATEGORIAS = [
   { id: 'Villanos',             icon: '🐍', label: 'Villanos' }
 ];
 
-// Mínimo de votos totales que necesita un personaje para poder aparecer en
-// un ranking (top 3 por categoría o "Ranking de esta categoría"). Sin esto,
-// alguien con 1 voto a favor de 1 sale en 100% y se cuela arriba de otros
-// con muchos más votos y un % igual de real pero más confiable.
-const DUELO_MIN_VOTOS = 5;
+// Mínimo de votos totales para que un personaje pueda aparecer en un
+// ranking (top 3 por categoría o "Ranking de esta categoría") — en 1 porque
+// cualquier personaje con al menos un voto real debe poder mostrarse, ni
+// aunque sea con muestra chica. El ranking ordena por % de mayor a menor
+// (ver _duMostrarRankingCategoria); cuando dos o más quedan empatados en %
+// —lo más común con muestras chicas, ej. varios en 100% con 1 o 2 votos—
+// el desempate es por votos_totales: no cambia el %, solo decide quién de
+// los empatados va primero, favoreciendo al que tiene más respaldo detrás.
+const DUELO_MIN_VOTOS = 1;
 
 // --- Duelos ya votados en este navegador (para no repetirlos) ---
 const DUELO_VISTOS_KEY = 'bibliof_duelo_vistos';
@@ -1821,14 +1828,13 @@ async function _duMostrarRankingCategoria() {
   cont.innerHTML = '<p style="color:var(--muted)">Cargando...</p>';
   if (!supabaseClient || !_duCategoriaActual) return;
 
-  // El ranking ordena por % real, de mayor a menor — nada de scores raros
-  // que no coincidan con el número que se ve en pantalla. Para evitar el
-  // problema original (un personaje con 1 voto a favor de 1 sale en 100% y
-  // se cuela arriba de otros con muchos más votos), lo que se ajustó fue
-  // QUIÉN ENTRA al ranking, no el orden: hace falta un mínimo de
-  // DUELO_MIN_VOTOS votos totales para aparecer. Con eso, todo lo que se
-  // muestra ya tiene suficiente respaldo detrás de su %, y el orden por %
-  // se puede leer tal cual, de arriba a abajo.
+  // El ranking ordena por % real, de mayor a menor — el número que se ve
+  // en pantalla es el mismo que decide el orden, sin scores escondidos.
+  // Cualquier personaje con al menos un voto puede aparecer (DUELO_MIN_VOTOS = 1),
+  // así que con muestras chicas es normal ver varios empatados en 100% —
+  // eso ya no se "corrige" quitando gente del ranking. El desempate entre
+  // empatados es por votos_totales (más votos primero), solo para que el
+  // orden dentro del empate tenga sentido; el % mostrado no cambia.
   const { data, error } = await supabaseClient
     .from('personaje_ranking')
     .select('nombre, votos_a_favor, votos_totales, porcentaje_acumulado')
@@ -1838,7 +1844,7 @@ async function _duMostrarRankingCategoria() {
     .order('votos_totales', { ascending: false });
   if (error) { console.error('Error cargando ranking:', error); cont.innerHTML = ''; return; }
   if (!data || data.length === 0) {
-    cont.innerHTML = `<p style="color:var(--muted)">Todavía no hay suficientes votos en esta categoría (hace falta un mínimo de ${DUELO_MIN_VOTOS} votos por personaje).</p>`;
+    cont.innerHTML = '<p style="color:var(--muted)">Todavía no hay votos en esta categoría.</p>';
     return;
   }
 
