@@ -1,4 +1,19 @@
 // BiblioFa script.js · Actualizado: 2026-08-14
+// - v1.34.1: textoLista() (texto de "↗ Compartir lista") ajustado tras feedback — el cierre
+//   "¿Me ayudas a conseguir alguno? 🙏" de v1.34.0 asumía que el destinatario siempre era
+//   Fátima, pero la lista también se comparte con amigos como recomendación. Se quitó ese
+//   cierre: ahora es solo "Mi lista de antojos" + los libros + el link, sin asumir para qué
+//   la están mandando — sirve igual para pedir ayuda (ese uso ya lo explica la nota dentro
+//   del panel, .antojos-nota, antes de compartir) que para recomendarla.
+// - v1.34.0: sección Antojos ahora facilita pedir ayuda para conseguir un libro.
+//   (1) actualizarAntojosUI() pinta un estado vacío amable (antojos-vacio) si el
+//   panel queda abierto sin libros guardados (puede pasar tras "Vaciar todo").
+//   (2) textoLista() (el texto de "↗ Compartir lista") se reescribió: pasó de
+//   "Mi lista de lectura" + firma "Recomendado por Fátima Ll" (pensado para
+//   reenviar una recomendación) a "Mi lista de antojos" + cierre "¿Me ayudas a
+//   conseguir alguno? 🙏" — ahora sirve para mandarle la lista a Fátima
+//   pidiéndole ayuda, que es el uso real que le da la gente. textoLibro() (compartir
+//   UN libro) no cambió, sigue siendo la firma de recomendación.
 // - v1.33.1: revertidos los 4 chips de acceso rápido de v1.33.0 (duplicaban el
 //   sidebar y confundían) — el header de Lista ahora solo trae título + descripción
 //   + buscador/orden, agrupados en su propia tarjeta (.lista-header, ver index.html
@@ -2843,6 +2858,10 @@ function actualizarAntojosUI() {
 
   const lista = document.getElementById('antojosLista');
   lista.innerHTML = '';
+  if (items.length === 0) {
+    lista.innerHTML = '<li class="antojos-vacio">Aún no has guardado ningún libro. Toca el ✓ en cualquier tarjeta para agregarlo aquí.</li>';
+    return;
+  }
   items.forEach(libro => {
     const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
     const autor  = libro['Autor'] || libro['Author'] || '';
@@ -2936,16 +2955,16 @@ function textoLibro(libro) {
 }
 
 function textoLista(items) {
-  let t = `📚 *Mi lista de lectura*\n${items.length} libro${items.length !== 1 ? 's' : ''}\n\n`;
+  let t = `📚 *Mi lista de antojos* (${items.length} libro${items.length !== 1 ? 's' : ''})\n\n`;
   items.forEach((libro, i) => {
     const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
     const autor  = libro['Autor'] || libro['Author'] || '';
     const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
-    t += `${i + 1}. *${titulo}*\n   ${autor}`;
-    if (genero) t += ` · ${genero}`;
+    t += `${i + 1}. *${titulo}* — ${autor}`;
+    if (genero) t += ` (${genero})`;
     t += '\n';
   });
-  t += `\n— Recomendado por Fátima Ll\n🔗 ${PAGINA_URL}`;
+  t += `\n🔗 ${PAGINA_URL}`;
   return t;
 }
 

@@ -1,4 +1,10 @@
 /* BiblioFa style.css
+   · 2026-08-14 (v1.32.0): rediseño del panel de Antojos + nuevo bloque .info-callout-cta en
+     info.html. Panel: ancho 380px→420px, header con ícono 🤤, filas de la lista con separador
+     y estado vacío (.antojos-vacio) para cuando queda abierto sin libros, footer con fondo propio
+     (surface2) + nota .antojos-nota invitando a compartir la lista para pedir ayuda a conseguir
+     un libro. info.html: nueva franja navy dentro del callout dorado de "Mis antojos" con el
+     mismo mensaje, para quien lea la página de Info en vez de usar la app directo.
    · 2026-08-14 (v1.31.4): revertido el max-width del bloque .lista-header de v1.31.2 (no era lo
      que se buscaba — encogía toda la tarjeta, buscador incluido). El bloque vuelve a ocupar todo
      el ancho de main, como antes; el ajuste ahora es solo en el texto: .lista-header-desc pasó de
@@ -1781,6 +1787,22 @@ h2 {
   display: flex; align-items: center; justify-content: center;
 }
 
+/* CTA dentro del callout de antojos — pedir ayuda para conseguir un libro.
+   Franja navy dentro de la caja dorada, para que se note como "el dato
+   importante" sin perderse entre los pasos numerados. */
+.info-callout-cta {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 14px 16px;
+  background: var(--navy);
+  border-radius: var(--radius-md);
+}
+.info-callout-cta-icon { font-size: 1.3rem; line-height: 1; flex-shrink: 0; }
+.info-callout-cta p { margin: 0; font-size: 0.88rem; line-height: 1.55; color: var(--gold-lt); }
+.info-callout-cta strong { color: var(--gold); }
+
 /* Bloque de cierre / agradecimiento */
 .info-contact { text-align: center; }
 .info-contact a:not(.info-contact-btn) {
@@ -2067,7 +2089,7 @@ h2 {
 .antojos-panel.hidden { display: none; }
 
 .antojos-panel-box {
-  width: 100%; max-width: 380px;
+  width: 100%; max-width: 420px;
   max-height: 78vh;
   background: var(--surface);
   border: 1px solid var(--border); border-radius: var(--radius-lg);
@@ -2077,52 +2099,74 @@ h2 {
 }
 .antojos-panel-header {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 16px 16px 12px;
+  padding: 18px 18px 14px;
   border-bottom: 1px solid var(--border);
-  font-size: 0.95rem; font-weight: 600; flex-shrink: 0;
+  font-size: 1rem; font-weight: 600; flex-shrink: 0;
   background: var(--navy); color: var(--gold);
 }
 .antojos-cerrar {
   background: none; border: none; font-size: 1rem; cursor: pointer;
   color: rgba(255,255,255,0.6); padding: 2px 6px; border-radius: 4px;
+  transition: color .15s;
 }
 .antojos-cerrar:hover { color: white; }
-.antojos-lista { list-style: none; margin: 0; padding: 8px 0; overflow-y: auto; flex: 1; }
+.antojos-lista { list-style: none; margin: 0; padding: 6px 0; overflow-y: auto; flex: 1; }
 .antojos-item {
-  display: flex; align-items: center; gap: 8px;
-  padding: 8px 16px; transition: background .12s;
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 18px; transition: background .12s;
+  border-bottom: 1px solid var(--border);
 }
+.antojos-item:last-child { border-bottom: none; }
 .antojos-item:hover { background: var(--surface2); }
 .antojos-item-info { flex: 1; min-width: 0; }
 .antojos-item-titulo {
-  display: block; font-size: 0.85rem; font-weight: 600;
+  display: block; font-size: 0.86rem; font-weight: 600;
   color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .antojos-item-autor { display: block; font-size: 0.75rem; color: var(--muted); }
-.antojos-item-stars { display: block; font-size: 0.72rem; color: var(--gold-dk); }
+.antojos-item-stars { display: block; font-size: 0.72rem; color: var(--gold-dk); margin-top: 1px; }
 .antojos-item-actions { display: flex; gap: 4px; flex-shrink: 0; }
 .antojos-item-share, .antojos-item-remove {
   background: none; border: none; font-size: 0.9rem; cursor: pointer;
-  padding: 4px 6px; border-radius: 6px; color: var(--muted); transition: all .12s;
+  padding: 5px 7px; border-radius: 6px; color: var(--muted); transition: all .12s;
 }
 .antojos-item-share:hover { background: var(--gold-lt); color: var(--gold-dk); }
 .antojos-item-remove:hover { background: #fdecea; color: #c0392b; }
+
+/* Estado vacío — el panel solo se puede abrir con al menos 1 item guardado,
+   pero puede quedar vacío si vacías la lista sin cerrar el panel. */
+.antojos-vacio {
+  padding: 32px 20px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
 .antojos-footer-actions {
-  padding: 12px 16px; border-top: 1px solid var(--border);
-  display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;
+  padding: 14px 18px 16px; border-top: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 10px; flex-shrink: 0;
+  background: var(--surface2);
+}
+.antojos-nota {
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0 0 2px;
 }
 .btn-antojos-primary {
   font-family: 'DM Sans', system-ui, sans-serif;
   font-size: 0.85rem; font-weight: 600;
-  padding: 10px 14px; border-radius: 8px; border: none;
+  padding: 11px 14px; border-radius: 8px; border: none;
   background: var(--navy); color: var(--gold); cursor: pointer;
-  transition: filter .15s;
+  box-shadow: var(--shadow-sm);
+  transition: filter .15s, transform .15s;
 }
-.btn-antojos-primary:hover { filter: brightness(1.15); }
+.btn-antojos-primary:hover { filter: brightness(1.15); transform: translateY(-1px); }
 .btn-antojos-secondary {
   font-family: 'DM Sans', system-ui, sans-serif;
   font-size: 0.82rem; padding: 8px 14px; border-radius: 8px;
-  border: 1px solid var(--border-md); background: transparent;
+  border: 1px solid var(--border-md); background: var(--surface);
   color: var(--muted); cursor: pointer; transition: all .15s; width: 100%;
 }
 .btn-antojos-secondary:hover { border-color: #c0392b; color: #c0392b; }
