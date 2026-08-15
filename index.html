@@ -22,7 +22,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BiblioFa</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.31.2" />
+  <link rel="stylesheet" href="style.css?v=1.31.3" />
 
   <!-- Supabase (leaderboard de trivia + sugerencias) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -69,6 +69,9 @@
       <button class="sidebar-link" data-tab="tabReto"><span class="sidebar-link-icon">🦉</span> Reto Literario</button>
       <button class="sidebar-link" data-tab="tabDuelo"><span class="sidebar-link-icon">⚔️</span> Duelo de Personajes</button>
       <button class="sidebar-link" data-tab="tabQuiz"><span class="sidebar-link-icon">🧭</span> Brújula Lectora</button>
+      <button id="randomFab" class="sidebar-link" aria-label="Libro al azar">
+        <span class="sidebar-link-icon">🎲</span> Libro al azar
+      </button>
 
       <p class="sidebar-nav-label">Sobre BiblioFa</p>
       <button class="sidebar-link" data-tab="tabAbout"><span class="sidebar-link-icon">ℹ️</span> Info</button>
@@ -76,9 +79,6 @@
     </div>
 
     <div class="sidebar-actions">
-      <button id="randomFab" class="sidebar-link" aria-label="Libro al azar">
-        <span class="sidebar-link-icon">🎲</span> Libro al azar
-      </button>
       <button id="antojosBtn" class="sidebar-link" style="display:none" aria-label="Mis antojos">
         <span class="sidebar-link-icon">🤤</span> Mis antojos
         <span id="antojosCount" class="antojos-count">0</span>
@@ -101,7 +101,7 @@
   <section id="tabLibros" class="tab active">
     <div class="lista-header">
       <h2 class="lista-header-titulo">Mi biblioteca personal de recomendaciones.</h2>
-      <p class="lista-header-desc">Aquí tienes el catálogo completo: búscalo o ordénalo como quieras. Desde el menú puedes explorarlo de otras formas — por género, por estado de ánimo, o entre las curiosidades como el Reto Literario y el Duelo de Personajes.</p>
+      <p class="lista-header-desc">Aquí puedes ver el catálogo completo: busca cualquier cosa o ordénalo como quieras. En el menú puedes encontrar otras formas de explorarlo: por género, por estado de ánimo, o entre las curiosidades como el Reto Literario y la Brújula Lectora.</p>
 
       <div class="section-header">
         <div class="search-wrap">

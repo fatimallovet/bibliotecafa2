@@ -1,4 +1,8 @@
 /* BiblioFa style.css
+   · 2026-08-14 (v1.31.2): .lista-header ahora tiene max-width (860px) en vez de estirarse a todo
+     el ancho de main — en pantallas grandes el bloque se veía como una caja casi vacía con el
+     texto pegado a la izquierda. El buscador/orden, al vivir dentro del mismo header, también
+     quedó con un ancho más razonable en vez de estirarse a >1300px.
    · 2026-08-14 (v1.31.1): revertidos los accesos rápidos de v1.31.0 (duplicaban el sidebar).
      .lista-intro* se reemplazó por .lista-header* — tarjeta propia con título + descripción
      ("Mi biblioteca personal de recomendaciones" + qué es esta pestaña vs. el resto del menú)
@@ -232,6 +236,7 @@ main {
   border-radius: var(--radius-lg);
   padding: 28px 32px 24px;
   margin-bottom: 24px;
+  max-width: 860px;
   box-shadow: var(--shadow-sm);
 }
 
@@ -248,7 +253,6 @@ main {
   font-size: 0.92rem;
   color: var(--muted);
   line-height: 1.6;
-  max-width: 640px;
   margin: 0 0 22px;
 }
 
