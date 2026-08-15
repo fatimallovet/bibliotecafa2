@@ -1,4 +1,9 @@
 /* BiblioFa style.css
+   · 2026-08-14 (v1.32.1): quitado .lista-header-desc del header de Lista — el párrafo era
+     redundante (el buscador ya dice "busca...", y que el dropdown ordene es evidente).
+     .lista-header-titulo quedó con más margen abajo (10px→18px) ya que ahora es el único
+     texto antes del buscador. Pendiente: reemplazar ese espacio por un logo/imagen discreta
+     (a definir).
    · 2026-08-14 (v1.32.0): rediseño del panel de Antojos + nuevo bloque .info-callout-cta en
      info.html. Panel: ancho 380px→420px, header con ícono 🤤, filas de la lista con separador
      y estado vacío (.antojos-vacio) para cuando queda abierto sin libros, footer con fondo propio
@@ -256,23 +261,14 @@ main {
   font-weight: 400;
   font-size: 1.5rem;
   color: var(--navy);
-  margin: 0 0 10px;
-}
-
-.lista-header-desc {
-  font-size: 0.92rem;
-  color: var(--muted);
-  line-height: 1.6;
-  max-width: 900px;
-  margin: 0 0 22px;
+  margin: 0 0 18px;
 }
 
 .lista-header .section-header { margin-bottom: 0; }
 
 @media (max-width: 600px) {
   .lista-header { padding: 22px 20px 20px; }
-  .lista-header-titulo { font-size: 1.25rem; }
-  .lista-header-desc { margin-bottom: 18px; }
+  .lista-header-titulo { font-size: 1.25rem; margin-bottom: 14px; }
 }
 
 /* ── Buscador + selector de orden ───────────────────── */

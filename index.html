@@ -22,7 +22,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BiblioFa</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.32.0" />
+  <link rel="stylesheet" href="style.css?v=1.32.1" />
 
   <!-- Supabase (leaderboard de trivia + sugerencias) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -101,7 +101,6 @@
   <section id="tabLibros" class="tab active">
     <div class="lista-header">
       <h2 class="lista-header-titulo">Mi biblioteca personal de recomendaciones.</h2>
-      <p class="lista-header-desc">Aquí puedes ver el catálogo completo: busca cualquier cosa o ordénalo como quieras. En el menú puedes encontrar otras formas de explorarlo: por género, por estado de ánimo, o entre las curiosidades como el Reto Literario y la Brújula Lectora.</p>
 
       <div class="section-header">
         <div class="search-wrap">
@@ -110,7 +109,7 @@
         </div>
         <div class="orden-wrap">
           <select id="ordenSelect" class="orden-select">
-            <option value="recientes">Agregado</option>
+            <option value="recientes">Últimos agregados</option>
             <option value="calificacion">Calificación</option>
             <option value="publicacion">Año de publicación</option>
           </select>
