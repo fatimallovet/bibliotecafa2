@@ -22,7 +22,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BiblioFa</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.31.1" />
+  <link rel="stylesheet" href="style.css?v=1.31.2" />
 
   <!-- Supabase (leaderboard de trivia + sugerencias) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -56,7 +56,6 @@
         <strong>Biblioteca</strong>
         <span>Fátima Ll</span>
       </h1>
-      <p class="site-tagline">mis recomendaciones, sin filtro</p>
     </div>
 
     <div class="sidebar-nav">
@@ -100,38 +99,30 @@
 
   <!-- Pestaña principal -->
   <section id="tabLibros" class="tab active">
-    <div class="lista-intro">
-      <p class="lista-intro-tagline">Mi biblioteca personal de recomendaciones.</p>
-      <div class="lista-intro-row">
-        <p id="listaIntroTexto" class="lista-intro-texto">Cargando tu biblioteca…</p>
-        <div class="lista-intro-accesos">
-          <button type="button" class="lista-intro-chip" data-accion="random">🎲 Sorpréndeme</button>
-          <button type="button" class="lista-intro-chip" data-tab="tabSentimiento">👀 Por mood</button>
-          <button type="button" class="lista-intro-chip" data-tab="tabQuiz">🧭 Brújula Lectora</button>
-          <button type="button" class="lista-intro-chip" data-tab="tabPopulares">🏆 Populares</button>
-        </div>
-      </div>
-    </div>
+    <div class="lista-header">
+      <h2 class="lista-header-titulo">Mi biblioteca personal de recomendaciones.</h2>
+      <p class="lista-header-desc">Aquí tienes el catálogo completo: búscalo o ordénalo como quieras. Desde el menú puedes explorarlo de otras formas — por género, por estado de ánimo, o entre las curiosidades como el Reto Literario y el Duelo de Personajes.</p>
 
-    <div class="section-header">
-      <div class="search-wrap">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input id="busqueda" type="text" placeholder="Buscar por título, autor, género...">
-      </div>
-      <div class="orden-wrap">
-        <select id="ordenSelect" class="orden-select">
-          <option value="recientes">Agregado</option>
-          <option value="calificacion">Calificación</option>
-          <option value="publicacion">Año de publicación</option>
-        </select>
-        <button id="ordenDireccion" class="orden-dir-btn" type="button" aria-label="Cambiar dirección de orden" title="Descendente">↓</button>
+      <div class="section-header">
+        <div class="search-wrap">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input id="busqueda" type="text" placeholder="Buscar por título, autor, género...">
+        </div>
+        <div class="orden-wrap">
+          <select id="ordenSelect" class="orden-select">
+            <option value="recientes">Agregado</option>
+            <option value="calificacion">Calificación</option>
+            <option value="publicacion">Año de publicación</option>
+          </select>
+          <button id="ordenDireccion" class="orden-dir-btn" type="button" aria-label="Cambiar dirección de orden" title="Descendente">↓</button>
+        </div>
       </div>
     </div>
 
     <div id="listaCards" class="lista-cards"></div>
 
     <p id="contadorLibros" class="contador"></p>
-  </section> 
+  </section>
 
 
   <!-- Pestaña de géneros -->

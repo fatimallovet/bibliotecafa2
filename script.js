@@ -1,4 +1,11 @@
 // BiblioFa script.js · Actualizado: 2026-08-14
+// - v1.33.1: revertidos los 4 chips de acceso rápido de v1.33.0 (duplicaban el
+//   sidebar y confundían) — el header de Lista ahora solo trae título + descripción
+//   + buscador/orden, agrupados en su propia tarjeta (.lista-header, ver index.html
+//   y style.css) para separarse visualmente del grid de fichas. Se quitó
+//   actualizarIntroTexto() (el conteo dinámico ya no se usa ahí, sigue existiendo
+//   abajo del grid vía actualizarContador). También se quitó el tagline del sidebar
+//   ("mis recomendaciones, sin filtro") — se duplicaba con la descripción nueva.
 // - v1.33.0: pestaña Lista ya no abre en seco con solo el buscador — se agregó un
 //   bloque de bienvenida (.lista-intro) arriba del buscador con el total real de
 //   libros y 4 accesos rápidos a secciones que antes solo vivían en el sidebar
@@ -500,7 +507,6 @@ Papa.parse(sheetUrl, {
 
     llenarSelectGeneros(libros);
     actualizarContador(libros.length);
-    actualizarIntroTexto(libros.length);
 
     // Trae los likes en paralelo y refresca la vista cuando lleguen
     cargarLikesCache().then(() => {
@@ -1041,14 +1047,6 @@ function actualizarContador(num){
   document.getElementById('contadorLibros').textContent = `${num} libro${num!==1?'s':''} encontrados`;
 }
 
-// Texto de bienvenida arriba del buscador, en tabLibros — se pinta una sola
-// vez con el total real de la biblioteca (no cambia con la búsqueda/filtros).
-function actualizarIntroTexto(num){
-  const el = document.getElementById('listaIntroTexto');
-  if (!el) return;
-  el.textContent = `📚 ${num} libro${num!==1?'s':''} catalogados`;
-}
-
 // simple escape
 function escapeHtml(s){
   if(!s) return '';
@@ -1106,18 +1104,6 @@ history.replaceState({ tab: _tabActual }, '', location.pathname + '#' + _tabActu
 // Enlaces del menú (sidebar en escritorio, drawer en móvil)
 document.querySelectorAll('.sidebar-link[data-tab]').forEach(btn => {
   btn.addEventListener('click', () => activarTab(btn.dataset.tab));
-});
-
-// Accesos rápidos arriba del buscador en tabLibros (mismo patrón que el
-// sidebar: data-tab navega, data-accion="random" abre el modal random)
-document.querySelectorAll('.lista-intro-chip').forEach(btn => {
-  btn.addEventListener('click', () => {
-    if (btn.dataset.accion === 'random') {
-      mostrarLibroRandomEnModal();
-    } else if (btn.dataset.tab) {
-      activarTab(btn.dataset.tab);
-    }
-  });
 });
 
 // =====================================================

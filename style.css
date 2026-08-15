@@ -1,4 +1,9 @@
 /* BiblioFa style.css
+   · 2026-08-14 (v1.31.1): revertidos los accesos rápidos de v1.31.0 (duplicaban el sidebar).
+     .lista-intro* se reemplazó por .lista-header* — tarjeta propia con título + descripción
+     ("Mi biblioteca personal de recomendaciones" + qué es esta pestaña vs. el resto del menú)
+     y el buscador/orden adentro, separada del grid de fichas. También se quitó .site-tagline
+     del sidebar (se duplicaba con la descripción nueva).
    · 2026-08-14 (v1.31.0): nuevo bloque .lista-intro arriba del buscador en la pestaña Lista
      (contador real de libros + accesos rápidos a Mood/Brújula/Populares/Random), para que la
      pestaña principal no abra en seco solo con el buscador y la tabla.
@@ -137,14 +142,6 @@ body {
   font-size: 0.95rem;
 }
 
-.site-tagline {
-  font-size: 0.72rem;
-  font-weight: 500;
-  letter-spacing: 0.03em;
-  color: var(--gold-dk);
-  margin-top: 6px;
-}
-
 .sidebar-nav {
   padding: 10px 12px;
   display: flex;
@@ -224,78 +221,43 @@ main {
 .tab.active { display: block; }
 
 
-/* ── Bienvenida arriba del buscador (tabLibros) ───────
-   Bloque discreto de una línea: contador real de la biblioteca +
-   accesos rápidos a secciones que antes solo vivían en el sidebar.
-   No reemplaza la Lista ni le agrega scroll de más — solo le da
-   contexto antes de la tabla. */
-.lista-intro {
-  margin-bottom: 18px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--border);
+/* ── Header de Lista (tabLibros) ───────────────────────
+   Tarjeta propia con título + descripción + buscador/orden, separada
+   visualmente del grid de fichas de abajo (no un widget con su propio
+   scroll — la página entera se sigue desplazando normal, igual que el
+   resto de las pestañas). */
+.lista-header {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px 32px 24px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
 }
 
-.lista-intro-tagline {
+.lista-header-titulo {
   font-family: var(--font-serif);
   font-style: italic;
   font-weight: 400;
-  font-size: 1.15rem;
+  font-size: 1.5rem;
   color: var(--navy);
-  margin: 0 0 8px;
+  margin: 0 0 10px;
 }
 
-.lista-intro-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px 16px;
-}
-
-.lista-intro-texto {
-  font-size: 0.85rem;
+.lista-header-desc {
+  font-size: 0.92rem;
   color: var(--muted);
-  margin: 0;
+  line-height: 1.6;
+  max-width: 640px;
+  margin: 0 0 22px;
 }
 
-.lista-intro-accesos {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.lista-intro-chip {
-  font-family: 'DM Sans', system-ui, sans-serif;
-  font-size: 0.8rem;
-  font-weight: 600;
-  padding: 7px 14px;
-  border-radius: 100px;
-  border: 1px solid var(--border-md);
-  background: var(--surface);
-  color: var(--navy);
-  cursor: pointer;
-  white-space: nowrap;
-  box-shadow: var(--shadow-sm);
-  transition: all .15s;
-}
-.lista-intro-chip:hover {
-  border-color: var(--gold-dk);
-  background: var(--gold-lt);
-  color: var(--gold-dk);
-  transform: translateY(-1px);
-}
+.lista-header .section-header { margin-bottom: 0; }
 
 @media (max-width: 600px) {
-  .lista-intro { padding-bottom: 14px; }
-  .lista-intro-tagline { font-size: 1.02rem; }
-  .lista-intro-accesos {
-    width: 100%;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 2px;
-  }
-  .lista-intro-chip { flex: 0 0 auto; }
+  .lista-header { padding: 22px 20px 20px; }
+  .lista-header-titulo { font-size: 1.25rem; }
+  .lista-header-desc { margin-bottom: 18px; }
 }
 
 /* ── Buscador + selector de orden ───────────────────── */
