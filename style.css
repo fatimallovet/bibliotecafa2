@@ -497,12 +497,6 @@ main {
   margin-top: 12px;
 }
 
-.populares-subtitulo {
-  color: var(--muted);
-  font-size: 0.88rem;
-  margin: -6px 0 16px;
-}
-
 /* ── Reto Literario ── */
 .reto-entrada, .reto-juego, .reto-fin {
   max-width: 640px;

@@ -1,4 +1,10 @@
 // BiblioFa script.js · Actualizado: 2026-08-14
+// - v1.36.0: se quitó la pestaña Populares (sidebar, sección, mostrarPopulares() y el hook en
+//   _aplicarTabDOM) — por ahora no se veía necesaria. Los likes no desaparecen: ahora se usan
+//   como desempate al ordenar Lista por Calificación (ordenarLibros/_likesDeLibro), así que
+//   entre dos libros con la misma calificación (ej. dos de 5 estrellas), sube primero el que
+//   más likes tiene de la comunidad. El desempate respeta la dirección del orden (ascendente/
+//   descendente) igual que el criterio principal.
 // - v1.35.0: Brújula Lectora — redacción de las 12 preguntas/opciones reescrita por Fátima
 //   (mismo mapeo a arquetipos y mismo balance 6x8, sin tocar puntajes ni lógica). Se quitaron
 //   los emojis por opción (campo `emoji` eliminado de QUIZ_PREGUNTAS, ya no se renderiza
@@ -468,30 +474,6 @@ async function cargarLikesCache() {
   likesCache = conteo;
 }
 
-// Arma el ranking de "Populares": solo libros con al menos un like, de más a menos.
-function mostrarPopulares() {
-  const cont = document.getElementById('popularesCards');
-  if (!cont) return;
-
-  const conLikes = libros.filter(l => {
-    const t = l['Título'] || l['Titulo'] || l['Title'] || '';
-    return (likesCache[t] || 0) > 0;
-  });
-
-  conLikes.sort((a, b) => {
-    const ta = a['Título'] || a['Titulo'] || a['Title'] || '';
-    const tb = b['Título'] || b['Titulo'] || b['Title'] || '';
-    return (likesCache[tb] || 0) - (likesCache[ta] || 0);
-  });
-
-  if (conLikes.length === 0) {
-    cont.innerHTML = '<p style="color:var(--muted)">Todavía no hay likes — ¡sé la primera persona en darle uno a un libro! 👍</p>';
-    return;
-  }
-
-  mostrarTarjetasLista(conLikes, 'popularesCards');
-}
-
 let libros = [];
 let ordenActual = {col: null, asc: true};
 
@@ -528,10 +510,10 @@ Papa.parse(sheetUrl, {
     llenarSelectGeneros(libros);
     actualizarContador(libros.length);
 
-    // Trae los likes en paralelo y refresca la vista cuando lleguen
+    // Trae los likes en paralelo y refresca la vista cuando lleguen (los likes
+    // ahora también se usan como desempate al ordenar Lista por Calificación)
     cargarLikesCache().then(() => {
       mostrarTabla(ultimaData);
-      if (_tabActual === 'tabPopulares') mostrarPopulares();
     });
   },
   error: err => showError('Error leyendo CSV: ' + err)
@@ -560,6 +542,12 @@ let ultimaData = [];
 let ordenSeleccionado = 'recientes';
 let ordenAscendente = false;
 
+// Número de likes de un libro (0 si no tiene o si el cache de likes aún no ha llegado)
+function _likesDeLibro(libro) {
+  const t = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+  return likesCache[t] || 0;
+}
+
 function ordenarLibros(data, criterio, ascendente) {
   const copia = [...data];
   const dir = ascendente ? 1 : -1;
@@ -569,7 +557,10 @@ function ordenarLibros(data, criterio, ascendente) {
     copia.sort((a, b) => {
       const ca = parseFloat(getCampo(a, 'Calificación', 'Estrellas', 'Stars')) || 0;
       const cb = parseFloat(getCampo(b, 'Calificación', 'Estrellas', 'Stars')) || 0;
-      return dir * (ca - cb);
+      if (ca !== cb) return dir * (ca - cb);
+      // Empate en calificación: desempata por likes, así entre dos libros
+      // de 5 estrellas sube primero el que la comunidad ya votó más
+      return dir * (_likesDeLibro(a) - _likesDeLibro(b));
     });
   } else if (criterio === 'publicacion') {
     copia.sort((a, b) => {
@@ -1105,7 +1096,6 @@ function _aplicarTabDOM(target) {
 
   _tabActual = target;
   if (target === 'tabAbout') cargarInfo();
-  if (target === 'tabPopulares') mostrarPopulares();
   if (target === 'tabReto') _rlPintarEntrada();
   if (target === 'tabDuelo') _duPintarEntrada();
   if (target === 'tabQuiz') iniciarQuiz();
@@ -2797,9 +2787,9 @@ function _pintarBotonLike(btn, tituloLibro) {
 }
 
 // Registro de qué botones de like están montados en el DOM para cada título
-// (puede haber varios a la vez: la tarjeta en Lista, en Géneros, en Populares,
-// y/o la ficha abierta). Así, cuando cambia el like de UNO, se refrescan TODOS
-// sin necesidad de recargar la página.
+// (puede haber varios a la vez: la tarjeta en Lista, en Géneros, en Colecciones,
+// en Brújula Lectora y/o la ficha abierta). Así, cuando cambia el like de UNO,
+// se refrescan TODOS sin necesidad de recargar la página.
 const _likeBotones = {}; // título -> Set<HTMLElement>
 
 function _registrarBotonLike(btn, tituloLibro) {

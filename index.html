@@ -22,7 +22,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BiblioFa</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.32.1" />
+  <link rel="stylesheet" href="style.css?v=1.32.2" />
 
   <!-- Supabase (leaderboard de trivia + sugerencias) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -65,7 +65,6 @@
       <button class="sidebar-link" data-tab="tabSentimiento"><span class="sidebar-link-icon">👀</span> Colecciones</button>
 
       <p class="sidebar-nav-label">Curiosidades</p>
-      <button class="sidebar-link" data-tab="tabPopulares"><span class="sidebar-link-icon">🏆</span> Populares</button>
       <button class="sidebar-link" data-tab="tabReto"><span class="sidebar-link-icon">🦉</span> Reto Literario</button>
       <button class="sidebar-link" data-tab="tabDuelo"><span class="sidebar-link-icon">⚔️</span> Duelo de Personajes</button>
       <button class="sidebar-link" data-tab="tabQuiz"><span class="sidebar-link-icon">🧭</span> Brújula Lectora</button>
@@ -135,13 +134,6 @@
 
 <section id="tabAbout" class="tab">
   <div id="infoContenido"><p style="color:var(--muted)">Cargando...</p></div>
-</section>
-
-
-<section id="tabPopulares" class="tab">
-  <h2>🏆 Los más populares</h2>
-  <p class="populares-subtitulo">Los libros con más likes de la comunidad, de más a menos</p>
-  <div id="popularesCards" class="lista-cards"></div>
 </section>
 
 
@@ -453,7 +445,7 @@
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="script.js?v=1.35.0"></script>
+  <script src="script.js?v=1.36.0"></script>
 
   <!-- Cloudflare Web Analytics -->
   <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "85978fa0985645ffb561da2af953aad6"}'>
