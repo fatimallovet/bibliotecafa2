@@ -1,4 +1,9 @@
 // BiblioFa script.js · Actualizado: 2026-08-14
+// - v1.35.0: Brújula Lectora — redacción de las 12 preguntas/opciones reescrita por Fátima
+//   (mismo mapeo a arquetipos y mismo balance 6x8, sin tocar puntajes ni lógica). Se quitaron
+//   los emojis por opción (campo `emoji` eliminado de QUIZ_PREGUNTAS, ya no se renderiza
+//   `.quiz-opcion-emoji`) para probar cómo se ve el quiz sin ellos — se sentían excesivos.
+//   Nada más del sitio (Reto Literario, Mood, tarjetas, etc.) se tocó.
 // - v1.34.1: textoLista() (texto de "↗ Compartir lista") ajustado tras feedback — el cierre
 //   "¿Me ayudas a conseguir alguno? 🙏" de v1.34.0 asumía que el destinatario siempre era
 //   Fátima, pero la lista también se comparte con amigos como recomendación. Se quitó ese
@@ -2351,109 +2356,109 @@ const QUIZ_PREGUNTAS = [
   {
     texto: 'Entras a una librería. ¿Qué te atrae primero?',
     opciones: [
-      { emoji: '🌌', texto: 'Algo raro, original, fuera de lo conocido', arquetipo: 'explorador' },
-      { emoji: '🗺️', texto: 'Una historia llena de emociones y aventuras', arquetipo: 'intrepido' },
-      { emoji: '🕵️', texto: 'Un enigma o misterio por resolver', arquetipo: 'detective' },
-      { emoji: '🪞', texto: 'Algo que se sienta muy real y te haga pensar', arquetipo: 'sentido' }
+      { texto: 'Algo raro, original, que no se parezca a lo de siempre', arquetipo: 'explorador' },
+      { texto: 'Una historia que prometa aventuras desde la primera página', arquetipo: 'intrepido' },
+      { texto: 'Un misterio que me rete a descubrir qué está pasando', arquetipo: 'detective' },
+      { texto: 'Una historia muy humana que me haga mirar las cosas de otra manera', arquetipo: 'sentido' }
     ]
   },
   {
     texto: 'Tienes una tarde entera para leer. ¿Qué te apetece?',
     opciones: [
-      { emoji: '☕', texto: 'Algo rápido y fácil de leer', arquetipo: 'ligero' },
-      { emoji: '🏰', texto: 'Viajar a otra época y sentir que estás ahí', arquetipo: 'raices' },
-      { emoji: '❤️', texto: 'Encariñarme de verdad con los personajes', arquetipo: 'alma' },
-      { emoji: '👑', texto: 'Uno de esos libros que todo mundo debería leer', arquetipo: 'clasicos' }
+      { texto: 'Algo entretenido, ágil y que se lea casi solo', arquetipo: 'ligero' },
+      { texto: 'Viajar a otra época y sentir por unas horas que vivo ahí', arquetipo: 'raices' },
+      { texto: 'Encariñarme de verdad con los personajes', arquetipo: 'alma' },
+      { texto: 'Uno de esos libros que llevan generaciones conquistando lectores', arquetipo: 'clasicos' }
     ]
   },
   {
     texto: '¿Qué tipo de final te gusta más?',
     opciones: [
-      { emoji: '😢', texto: 'Uno agridulce, pero que se sienta verdadero', arquetipo: 'alma' },
-      { emoji: '🤯', texto: 'Uno que te sorprenda', arquetipo: 'detective' },
-      { emoji: '😊', texto: 'Uno que te deje con una sonrisa', arquetipo: 'ligero' },
-      { emoji: '🏆', texto: 'Uno que te deje con ganas de más aventura', arquetipo: 'intrepido' }
+      { texto: 'Uno que me deje con el corazón un poquito apachurrado, pero feliz de haberlo leído', arquetipo: 'alma' },
+      { texto: 'Uno que me haga pensar: «¿¡Cómo no me di cuenta antes!?»', arquetipo: 'detective' },
+      { texto: 'Uno que me haga cerrar el libro todavía con una sonrisa', arquetipo: 'ligero' },
+      { texto: 'Uno que me haga desear que la aventura todavía no termine', arquetipo: 'intrepido' }
     ]
   },
   {
-    texto: '¿Qué tipo de personaje suele conquistarte?',
+    texto: 'Si fueras un personaje de un libro, ¿quién te gustaría ser?',
     opciones: [
-      { emoji: '💭', texto: 'Alguien que te cambia la forma de ver el mundo', arquetipo: 'sentido' },
-      { emoji: '⚔️', texto: 'Alguien que tenga que demostrar de qué está hecho', arquetipo: 'intrepido' },
-      { emoji: '🧝', texto: 'Alguien imposible de encontrar en nuestra realidad', arquetipo: 'explorador' },
-      { emoji: '📜', texto: 'Alguien marcado por la época que le tocó vivir', arquetipo: 'raices' }
+      { texto: 'El que descubre algo sobre la vida que termina cambiándolo por completo', arquetipo: 'sentido' },
+      { texto: 'El que se lanza a la aventura, derrota a los malos y vive para contarlo', arquetipo: 'intrepido' },
+      { texto: 'El que descubre que tiene poderes y es el único que puede salvar al mundo', arquetipo: 'explorador' },
+      { texto: 'Alguien que vive en otra época y puede presenciar la Historia desde dentro', arquetipo: 'raices' }
     ]
   },
   {
     texto: 'En el fondo, ¿qué buscas cuando abres un libro?',
     opciones: [
-      { emoji: '🚪', texto: 'Desaparecer un rato de este mundo', arquetipo: 'explorador' },
-      { emoji: '💔', texto: 'Sentir algo de verdad', arquetipo: 'alma' },
-      { emoji: '🌱', texto: 'Descubrir una idea que se quede conmigo', arquetipo: 'sentido' },
-      { emoji: '📚', texto: 'Conocer las grandes historias de siempre', arquetipo: 'clasicos' }
+      { texto: 'Desaparecer un rato de este mundo y entrar en otro', arquetipo: 'explorador' },
+      { texto: 'Sentir algo de verdad y que los personajes me importen', arquetipo: 'alma' },
+      { texto: 'Encontrarme con una idea que siga conmigo después de cerrar el libro', arquetipo: 'sentido' },
+      { texto: 'Conocer esas grandes historias que han sobrevivido a generaciones', arquetipo: 'clasicos' }
     ]
   },
   {
-    texto: '¿En qué escenario pasarías 300 páginas a gusto?',
+    texto: 'Un libro empieza a conquistarte cuando...',
     opciones: [
-      { emoji: '🏘️', texto: 'Un lugar donde se sienta el paso del tiempo', arquetipo: 'raices' },
-      { emoji: '🏛️', texto: 'Un escenario que podría seguir funcionando dentro de cien años', arquetipo: 'clasicos' },
-      { emoji: '🏠', texto: 'Cualquiera, mientras sea agradable pasar tiempo ahí', arquetipo: 'ligero' },
-      { emoji: '🌆', texto: 'Un lugar cotidiano en el que algo no termina de cuadrar', arquetipo: 'detective' }
+      { texto: '...empiezo a imaginar cómo habría sido vivir en esa época', arquetipo: 'raices' },
+      { texto: '...siento que estoy leyendo una historia que vale la pena recordar', arquetipo: 'clasicos' },
+      { texto: '...me lo estoy pasando tan bien que no quiero que termine', arquetipo: 'ligero' },
+      { texto: '...me tiene tan intrigado que ya no puedo soltarlo', arquetipo: 'detective' }
     ]
   },
   {
     texto: 'Cierras el libro. ¿Cuál de estas sensaciones te parece la mejor señal?',
     opciones: [
-      { emoji: '❤️', texto: '"Voy a extrañar a esta gente"', arquetipo: 'alma' },
-      { emoji: '💡', texto: '"Nunca lo había pensado así"', arquetipo: 'sentido' },
-      { emoji: '☁️', texto: '"Quiero volver a perderme en un mundo así"', arquetipo: 'explorador' },
-      { emoji: '👑', texto: '"Entiendo por qué este libro ha durado tanto"', arquetipo: 'clasicos' }
+      { texto: '«Voy a extrañar a esta gente»', arquetipo: 'alma' },
+      { texto: '«Nunca lo había pensado así»', arquetipo: 'sentido' },
+      { texto: '«No quiero despedirme de este mundo todavía»', arquetipo: 'explorador' },
+      { texto: '«Ahora entiendo por qué seguimos leyendo esto tantos años después»', arquetipo: 'clasicos' }
     ]
   },
   {
     texto: '¿Qué podría hacerte releer un libro años después?',
     opciones: [
-      { emoji: '🗺️', texto: 'Volver a vivir aquella aventura', arquetipo: 'intrepido' },
-      { emoji: '🕰️', texto: 'Regresar a esa época y forma de vivir', arquetipo: 'raices' },
-      { emoji: '🔍', texto: 'Descubrir detalles que seguramente se me escaparon', arquetipo: 'detective' },
-      { emoji: '😌', texto: 'Saber que lo voy a disfrutar sin pensarlo tanto', arquetipo: 'ligero' }
+      { texto: 'Volver a vivir aquella aventura', arquetipo: 'intrepido' },
+      { texto: 'Regresar a esa época y volver a mirar el mundo con sus ojos', arquetipo: 'raices' },
+      { texto: 'Descubrir pistas y detalles que seguramente se me escaparon', arquetipo: 'detective' },
+      { texto: 'Saber que voy a pasármelo bien desde la primera página', arquetipo: 'ligero' }
     ]
   },
   {
     texto: 'Vas por la mitad del libro. ¿Qué te mantiene leyendo hasta tarde?',
     opciones: [
-      { emoji: '⚔️', texto: 'Los protagonistas están en peligro y necesitas saber cómo salen', arquetipo: 'intrepido' },
-      { emoji: '🧩', texto: 'Aparece una pieza que no encaja con nada de lo anterior', arquetipo: 'detective' },
-      { emoji: '🏺', texto: 'Descubres algo fascinante sobre la época o el lugar', arquetipo: 'raices' },
-      { emoji: '✍️', texto: 'Está tan bien escrito que disfrutas hasta cómo se cuenta', arquetipo: 'clasicos' }
+      { texto: 'Los protagonistas están en problemas y necesito saber cómo demonios van a salir de esta', arquetipo: 'intrepido' },
+      { texto: 'Aparece una pieza que hace que todo lo anterior deje de encajar', arquetipo: 'detective' },
+      { texto: 'Descubro algo fascinante sobre cómo era realmente aquella época', arquetipo: 'raices' },
+      { texto: 'Está tan bien escrito que disfruto tanto la historia como la forma de contarla', arquetipo: 'clasicos' }
     ]
   },
   {
     texto: '¿Cuál de estos pequeños placeres lectores disfrutas más?',
     opciones: [
-      { emoji: '😂', texto: 'Encontrar personajes y diálogos que te hagan reír', arquetipo: 'ligero' },
-      { emoji: '🌍', texto: 'Descubrir poco a poco las reglas y secretos de un mundo', arquetipo: 'explorador' },
-      { emoji: '❤️', texto: 'Admirar cómo un personaje cambia casi sin darte cuenta', arquetipo: 'alma' },
-      { emoji: '💭', texto: 'Encontrarte una idea que quieras subrayar', arquetipo: 'sentido' }
+      { texto: 'Encontrarme un diálogo tan bueno que tengo que volver a leerlo solo para reírme otra vez', arquetipo: 'ligero' },
+      { texto: 'Descubrir que ese mundo tiene lugares, criaturas, secretos y reglas que no existen en el mío', arquetipo: 'explorador' },
+      { texto: 'Descubrir que ya estoy emocionalmente involucrada en la vida de alguien que ni siquiera existe', arquetipo: 'alma' },
+      { texto: 'Leer una frase, cerrar el libro un segundo y pensar: «Caray... tiene razón»', arquetipo: 'sentido' }
     ]
   },
   {
     texto: 'Si pudieras entrar durante un día en una historia, ¿qué harías?',
     opciones: [
-      { emoji: '🗡️', texto: 'Me uniría a la misión sin pensarlo dos veces', arquetipo: 'intrepido' },
-      { emoji: '🔎', texto: 'Investigaría eso que nadie parece capaz de explicar', arquetipo: 'detective' },
-      { emoji: '🕯️', texto: 'Recorrería el lugar observando cómo vivía realmente la gente', arquetipo: 'raices' },
-      { emoji: '🎭', texto: 'Conocería a un personaje que todos reconocen, aunque hayan pasado siglos', arquetipo: 'clasicos' }
+      { texto: 'Me uniría a la misión. Ya preguntaré después a dónde vamos', arquetipo: 'intrepido' },
+      { texto: 'Intentaría resolver el misterio antes que el detective', arquetipo: 'detective' },
+      { texto: 'Recorrería el lugar fijándome en cómo vivía realmente la gente', arquetipo: 'raices' },
+      { texto: 'Querría presenciar en primera fila una de esas escenas que se volvieron inolvidables', arquetipo: 'clasicos' }
     ]
   },
   {
     texto: 'Un amigo quiere convencerte de leer un libro. ¿Qué frase te convencería más?',
     opciones: [
-      { emoji: '😄', texto: '"Empiezas y, sin darte cuenta, la estás pasando increíble"', arquetipo: 'ligero' },
-      { emoji: '✨', texto: '"No se parece a ningún mundo en el que hayas estado antes"', arquetipo: 'explorador' },
-      { emoji: '🫶', texto: '"Los personajes se sienten tan reales que terminas queriéndolos"', arquetipo: 'alma' },
-      { emoji: '🌱', texto: '"Te deja pensando en algo que nunca te habías planteado"', arquetipo: 'sentido' }
+      { texto: '«Es de esos libros que te ponen de buen humor casi sin proponérselo.»', arquetipo: 'ligero' },
+      { texto: '«Tiene un mundo tan increíble que vas a querer mudarte ahí aunque sea por unas horas.»', arquetipo: 'explorador' },
+      { texto: '«Vas a terminar queriendo a los personajes como si los conocieras de toda la vida.»', arquetipo: 'alma' },
+      { texto: '«Te hace ver algo completamente cotidiano desde un ángulo que nunca se te habría ocurrido.»', arquetipo: 'sentido' }
     ]
   }
 ];
@@ -2535,7 +2540,7 @@ function _renderQuizPregunta() {
   pregunta.opciones.forEach(op => {
     const btn = document.createElement('button');
     btn.className = 'quiz-opcion' + (op.arquetipo === respuestaActual ? ' quiz-opcion-activa' : '');
-    btn.innerHTML = `<span class="quiz-opcion-emoji">${op.emoji}</span><span>${escapeHtml(op.texto)}</span>`;
+    btn.innerHTML = `<span>${escapeHtml(op.texto)}</span>`;
     btn.addEventListener('click', () => _responderQuiz(op.arquetipo));
     wrap.appendChild(btn);
   });
