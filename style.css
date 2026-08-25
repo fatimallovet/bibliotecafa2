@@ -2256,7 +2256,7 @@ h2 {
 .share-modal.hidden { display: none; }
 .share-modal-box {
   background: var(--surface);
-  border-radius: var(--radius-lg); width: 92%; max-width: 300px;
+  border-radius: var(--radius-lg); width: 92%; max-width: 340px;
   box-shadow: var(--shadow-lg); overflow: hidden; animation: slideUp .2s ease;
 }
 .share-modal-header {
@@ -2265,7 +2265,14 @@ h2 {
   font-size: 0.95rem; font-weight: 600;
   background: var(--navy); color: var(--gold);
 }
-.share-modal-body { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.share-modal-body { padding: 12px; display: flex; flex-direction: column; gap: 8px; max-height: 80vh; overflow-y: auto; }
+.share-preview-img {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 4px;
+}
 .share-option {
   font-family: 'DM Sans', system-ui, sans-serif;
   font-size: 0.9rem; font-weight: 500;

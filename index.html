@@ -22,7 +22,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BiblioFa</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.32.2" />
+  <link rel="stylesheet" href="style.css?v=1.32.3" />
 
   <!-- Supabase (leaderboard de trivia + sugerencias) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -439,13 +439,16 @@
         <button id="shareModalCerrar" class="antojos-cerrar">✕</button>
       </div>
       <div class="share-modal-body">
+        <img id="sharePreviewImg" class="share-preview-img" alt="Vista previa de la tarjeta" style="display:none">
         <button id="shareWhatsapp" class="share-option">💬 Enviar por WhatsApp</button>
-        <button id="shareCopiar" class="share-option">📋 Copiar al portapapeles</button>
+        <button id="shareCopiar" class="share-option">📋 Copiar texto</button>
+        <button id="shareDescargarImagen" class="share-option" style="display:none">🖼️ Descargar imagen</button>
+        <button id="shareCopiarImagen" class="share-option" style="display:none">📎 Copiar imagen</button>
       </div>
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="script.js?v=1.36.0"></script>
+  <script src="script.js?v=1.37.0"></script>
 
   <!-- Cloudflare Web Analytics -->
   <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "85978fa0985645ffb561da2af953aad6"}'>

@@ -1,4 +1,15 @@
 // BiblioFa script.js · Actualizado: 2026-08-14
+// - v1.37.0: sistema de compartir rediseñado (libro individual y lista de antojos), a raíz de
+//   que WhatsApp rompía los emojis al compartir directo (navigator.share) aunque copiar-pegar
+//   sí los conservaba. Dos cambios: (1) textoLibroPlano()/textoListaPlano() — versión sin
+//   emojis para WhatsApp/share nativo (el canal que los rompe); "Copiar texto" sigue usando la
+//   versión con emojis, que ya funcionaba bien. (2) generarImagenLibro()/generarImagenLista()
+//   generan una tarjeta (canvas, 1080x1350) con el diseño del sitio (navy/dorado, DM Serif
+//   Display + DM Sans) — al ser una imagen (píxeles), los emojis dentro de ella nunca se
+//   pueden romper. En móvil, _compartir() intenta primero adjuntar la imagen vía
+//   navigator.share({files}), con 2 niveles de fallback (share de solo texto, luego el modal).
+//   El modal de escritorio ahora muestra una vista previa de la imagen y agrega botones
+//   "Descargar imagen" / "Copiar imagen" (Clipboard API, con feature-detection).
 // - v1.36.0: se quitó la pestaña Populares (sidebar, sección, mostrarPopulares() y el hook en
 //   _aplicarTabDOM) — por ahora no se veía necesaria. Los likes no desaparecen: ahora se usan
 //   como desempate al ordenar Lista por Calificación (ordenarLibros/_likesDeLibro), así que
@@ -2918,6 +2929,15 @@ document.getElementById('btnVaciarAntojos').addEventListener('click', () => {
 // =====================================================
 // COMPARTIR
 // =====================================================
+// Sistema de 2 capas para evitar el problema de "WhatsApp rompe los emojis"
+// cuando se comparte texto directo (navigator.share / wa.me):
+//   - textoLibro()/textoLista(): version CON emojis, para "Copiar texto"
+//     (copiar-pegar sí los conserva bien).
+//   - textoLibroPlano()/textoListaPlano(): version SIN emojis, para el botón
+//     de WhatsApp y como caption del share nativo — el canal que sí los rompe.
+// Además, se genera una imagen (canvas) con el mismo diseño del sitio para
+// compartir directo en móvil: como es una imagen (píxeles, no texto), los
+// emojis dentro de ella jamás se pueden corromper.
 const PAGINA_URL = 'https://fatimallovet.github.io/bibliotecafa2/';
 
 function textoLibro(libro) {
@@ -2949,6 +2969,37 @@ function textoLibro(libro) {
   return t;
 }
 
+// Misma información que textoLibro() pero sin emojis — para WhatsApp directo
+// y como caption del share nativo, que es donde se rompen.
+function textoLibroPlano(libro) {
+  const titulo    = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+  const autor     = libro['Autor'] || libro['Author'] || '';
+  const genero    = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
+  const tono      = libro['Tono'] || '';
+  const ritmo     = libro['Ritmo'] || '';
+  const publico   = libro['Público'] || libro['Publico'] || '';
+  const publicado = getCampo(libro, 'Publicado', 'Publicación', 'Publicacion', 'Año', 'Ano', 'Year');
+  const resena    = libro['Reseña'] || libro['Resena'] || libro['Review'] || '';
+  const loMejor   = getCampo(libro, 'Lo mejor', 'Lo Mejor', 'LoMejor', 'Best');
+  const flags     = libro['Flags'] || '';
+  const estrellasRaw = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
+  const { texto: textoEstrellas } = desglosarEstrellas(estrellasRaw); // ★ no es emoji, se conserva bien
+
+  let t = `${titulo}\n${autor}\n`;
+  if (textoEstrellas) t += `${textoEstrellas}\n`;
+  t += `\n`;
+  if (genero)    t += `Género: ${genero}\n`;
+  if (publicado) t += `Publicado: ${publicado}\n`;
+  if (tono)    t += `Tono: ${tono}\n`;
+  if (ritmo)   t += `Ritmo: ${ritmo}\n`;
+  if (publico) t += `Público: ${publico}\n`;
+  if (flags && flags.toLowerCase() !== 'ninguno') t += `${flags}\n`;
+  if (resena)  t += `\n${resena}\n`;
+  if (loMejor) t += `\nLo mejor: ${loMejor}\n`;
+  t += `\n— Recomendado por Fátima Ll\n${PAGINA_URL}`;
+  return t;
+}
+
 function textoLista(items) {
   let t = `📚 *Mi lista de antojos* (${items.length} libro${items.length !== 1 ? 's' : ''})\n\n`;
   items.forEach((libro, i) => {
@@ -2963,29 +3014,296 @@ function textoLista(items) {
   return t;
 }
 
+function textoListaPlano(items) {
+  let t = `Mi lista de antojos (${items.length} libro${items.length !== 1 ? 's' : ''})\n\n`;
+  items.forEach((libro, i) => {
+    const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+    const autor  = libro['Autor'] || libro['Author'] || '';
+    const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
+    t += `${i + 1}. ${titulo} — ${autor}`;
+    if (genero) t += ` (${genero})`;
+    t += '\n';
+  });
+  t += `\n${PAGINA_URL}`;
+  return t;
+}
+
+// ── Generador de tarjeta-imagen (canvas) ────────────────────────────────
+// Usa la misma paleta y tipografías del sitio (navy/dorado, DM Serif Display
+// + DM Sans). Al ser una imagen, los emojis nunca se corrompen al compartir.
+
+async function _cargarFuentesCanvas() {
+  if (!document.fonts) return;
+  try {
+    await Promise.all([
+      document.fonts.load('italic 700 60px "DM Serif Display"'),
+      document.fonts.load('400 30px "DM Sans"'),
+      document.fonts.load('600 26px "DM Sans"'),
+      document.fonts.load('700 30px "DM Sans"'),
+    ]);
+  } catch (e) { /* si falla, el canvas usa una fuente de respaldo del sistema */ }
+}
+
+// Envuelve un texto en varias líneas para que quepa en maxWidth (canvas)
+function _envolverTextoCanvas(ctx, texto, maxWidth) {
+  const palabras = texto.split(' ');
+  const lineas = [];
+  let actual = '';
+  palabras.forEach(palabra => {
+    const prueba = actual ? `${actual} ${palabra}` : palabra;
+    if (ctx.measureText(prueba).width > maxWidth && actual) {
+      lineas.push(actual);
+      actual = palabra;
+    } else {
+      actual = prueba;
+    }
+  });
+  if (actual) lineas.push(actual);
+  return lineas;
+}
+
+// Cabecera de marca compartida por ambas tarjetas (libro y lista)
+function _dibujarCabeceraCanvas(ctx, W) {
+  ctx.fillStyle = '#1a2744';
+  ctx.fillRect(0, 0, W, 104);
+  ctx.fillStyle = '#f0c040';
+  ctx.fillRect(0, 104, W, 5);
+  ctx.fillStyle = '#f0c040';
+  ctx.font = '600 28px "DM Sans", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('📚 BIBLIOTECA FÁTIMA', W / 2, 52);
+}
+
+function _dibujarPieCanvas(ctx, W, H) {
+  ctx.strokeStyle = 'rgba(26,39,68,0.15)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(90, H - 130);
+  ctx.lineTo(W - 90, H - 130);
+  ctx.stroke();
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#1a2744';
+  ctx.font = '700 30px "DM Sans", sans-serif';
+  ctx.fillText('— Recomendado por Fátima Ll —', W / 2, H - 85);
+
+  ctx.fillStyle = '#6b7a99';
+  ctx.font = '400 24px "DM Sans", sans-serif';
+  ctx.fillText(PAGINA_URL.replace('https://', ''), W / 2, H - 45);
+}
+
+async function generarImagenLibro(libro) {
+  await _cargarFuentesCanvas();
+
+  const W = 1080, H = 1350;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = '#faf7f1';
+  ctx.fillRect(0, 0, W, H);
+  _dibujarCabeceraCanvas(ctx, W);
+
+  const titulo    = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+  const autor     = libro['Autor'] || libro['Author'] || '';
+  const genero    = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
+  const loMejor   = getCampo(libro, 'Lo mejor', 'Lo Mejor', 'LoMejor', 'Best');
+  const estrellasRaw = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
+  const { texto: textoEstrellas } = desglosarEstrellas(estrellasRaw);
+
+  let y = 300;
+
+  ctx.fillStyle = '#1a2744';
+  ctx.font = 'italic 700 62px "DM Serif Display", Georgia, serif';
+  ctx.textAlign = 'center';
+  const maxAnchoTitulo = W - 160;
+  const lineasTitulo = _envolverTextoCanvas(ctx, titulo, maxAnchoTitulo).slice(0, 4);
+  lineasTitulo.forEach(linea => { ctx.fillText(linea, W / 2, y); y += 74; });
+
+  y += 16;
+  ctx.fillStyle = '#6b7a99';
+  ctx.font = '400 34px "DM Sans", sans-serif';
+  ctx.fillText(autor, W / 2, y);
+  y += 56;
+
+  if (textoEstrellas) {
+    ctx.fillStyle = '#f0c040';
+    ctx.font = '400 40px "DM Sans", sans-serif';
+    ctx.fillText(textoEstrellas, W / 2, y);
+    y += 60;
+  }
+
+  if (genero) {
+    ctx.font = '600 26px "DM Sans", sans-serif';
+    const anchoTag = ctx.measureText(genero).width + 56;
+    const xTag = (W - anchoTag) / 2;
+    ctx.fillStyle = '#1a2744';
+    if (ctx.roundRect) {
+      ctx.beginPath();
+      ctx.roundRect(xTag, y - 26, anchoTag, 52, 26);
+      ctx.fill();
+    } else {
+      ctx.fillRect(xTag, y - 26, anchoTag, 52); // navegadores viejos sin roundRect: pastilla cuadrada
+    }
+    ctx.fillStyle = '#f0c040';
+    ctx.fillText(genero, W / 2, y);
+    y += 76;
+  }
+
+  if (loMejor && y < H - 300) {
+    ctx.fillStyle = '#1a2744';
+    ctx.font = 'italic 400 32px "DM Serif Display", Georgia, serif';
+    const lineasMejor = _envolverTextoCanvas(ctx, `"${loMejor}"`, W - 200).slice(0, 5);
+    y += 20;
+    lineasMejor.forEach(linea => { ctx.fillText(linea, W / 2, y); y += 42; });
+  }
+
+  _dibujarPieCanvas(ctx, W, H);
+
+  return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+}
+
+async function generarImagenLista(items) {
+  await _cargarFuentesCanvas();
+
+  const W = 1080, H = 1350;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = '#faf7f1';
+  ctx.fillRect(0, 0, W, H);
+  _dibujarCabeceraCanvas(ctx, W);
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#1a2744';
+  ctx.font = 'italic 700 54px "DM Serif Display", Georgia, serif';
+  ctx.fillText('Mi lista de antojos', W / 2, 210);
+
+  ctx.fillStyle = '#6b7a99';
+  ctx.font = '400 28px "DM Sans", sans-serif';
+  ctx.fillText(`${items.length} libro${items.length !== 1 ? 's' : ''}`, W / 2, 260);
+
+  const maxItems = 9;
+  const mostrados = items.slice(0, maxItems);
+  const anchoLinea = W - 180;
+  let y = 340;
+
+  ctx.textAlign = 'left';
+  mostrados.forEach((libro, i) => {
+    const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+    const autor  = libro['Autor'] || libro['Author'] || '';
+
+    ctx.fillStyle = '#b8860b';
+    ctx.font = '700 30px "DM Sans", sans-serif';
+    ctx.fillText(`${i + 1}.`, 90, y);
+
+    ctx.fillStyle = '#1a2744';
+    ctx.font = '700 30px "DM Sans", sans-serif';
+    const prefijo = `${i + 1}. `;
+    const anchoPrefijo = ctx.measureText(prefijo).width;
+    const lineasTitulo = _envolverTextoCanvas(ctx, titulo, anchoLinea - anchoPrefijo).slice(0, 2);
+    ctx.fillText(lineasTitulo[0] || '', 90 + anchoPrefijo, y);
+    y += 40;
+    if (lineasTitulo[1]) { ctx.fillText(lineasTitulo[1], 90 + anchoPrefijo, y); y += 40; }
+
+    if (autor) {
+      ctx.fillStyle = '#6b7a99';
+      ctx.font = '400 26px "DM Sans", sans-serif';
+      ctx.fillText(autor, 90 + anchoPrefijo, y);
+      y += 44;
+    } else {
+      y += 12;
+    }
+  });
+
+  if (items.length > maxItems) {
+    ctx.fillStyle = '#6b7a99';
+    ctx.font = 'italic 400 26px "DM Serif Display", Georgia, serif';
+    ctx.fillText(`+ ${items.length - maxItems} más...`, 90, y);
+  }
+
+  _dibujarPieCanvas(ctx, W, H);
+
+  return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+}
+
 function esMobile() {
   return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 }
 
-let _textoCompartir = '';
+let _textoCompartir = '';       // versión con emojis, para "Copiar texto"
+let _textoCompartirPlano = '';  // versión sin emojis, para WhatsApp / share nativo
+let _blobImagenActual = null;   // imagen ya generada, para descargar/copiar/adjuntar
+let _previewObjectUrl = null;
 
-function compartirTexto(titulo, texto) {
-  _textoCompartir = texto;
-  if (esMobile() && navigator.share) {
-    navigator.share({ title: titulo, text: texto }).catch(e => {
-      if (e.name !== 'AbortError') mostrarShareModal();
-    });
-  } else {
-    mostrarShareModal();
+// Intenta compartir imagen + texto plano por el share nativo del sistema
+// (funciona en la mayoría de navegadores móviles). Si no se puede adjuntar
+// imagen, intenta compartir solo texto. Si nada de eso existe (escritorio,
+// o el visitante canceló), cae al modal con vista previa + botones.
+async function _compartir(titulo, generarBlobFn) {
+  _blobImagenActual = null;
+  let blob = null;
+  try { blob = await generarBlobFn(); } catch (e) { console.error('No se pudo generar la imagen para compartir:', e); }
+  _blobImagenActual = blob;
+
+  if (blob && esMobile() && navigator.canShare) {
+    const archivo = new File([blob], 'bibliofa.png', { type: 'image/png' });
+    if (navigator.canShare({ files: [archivo] })) {
+      try {
+        await navigator.share({ title, text: _textoCompartirPlano, files: [archivo] });
+        return;
+      } catch (e) {
+        if (e.name === 'AbortError') return; // el visitante canceló, no insistir
+      }
+    }
   }
+
+  if (esMobile() && navigator.share) {
+    try {
+      await navigator.share({ title, text: _textoCompartirPlano });
+      return;
+    } catch (e) {
+      if (e.name === 'AbortError') return;
+    }
+  }
+
+  mostrarShareModal();
 }
 
 function compartirLibro(libro) {
   const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
-  compartirTexto(titulo, textoLibro(libro));
+  _textoCompartir = textoLibro(libro);
+  _textoCompartirPlano = textoLibroPlano(libro);
+  _compartir(titulo, () => generarImagenLibro(libro));
+}
+
+function compartirListaAntojos(items) {
+  _textoCompartir = textoLista(items);
+  _textoCompartirPlano = textoListaPlano(items);
+  _compartir('Mi lista de antojos', () => generarImagenLista(items));
 }
 
 function mostrarShareModal() {
+  const preview = document.getElementById('sharePreviewImg');
+  const btnDescargar = document.getElementById('shareDescargarImagen');
+  const btnCopiarImg = document.getElementById('shareCopiarImagen');
+
+  if (_previewObjectUrl) { URL.revokeObjectURL(_previewObjectUrl); _previewObjectUrl = null; }
+
+  if (_blobImagenActual) {
+    _previewObjectUrl = URL.createObjectURL(_blobImagenActual);
+    preview.src = _previewObjectUrl;
+    preview.style.display = '';
+    btnDescargar.style.display = '';
+    btnCopiarImg.style.display = (window.ClipboardItem) ? '' : 'none';
+  } else {
+    preview.style.display = 'none';
+    btnDescargar.style.display = 'none';
+    btnCopiarImg.style.display = 'none';
+  }
+
   document.getElementById('shareModal').classList.remove('hidden');
   history.pushState({ tab: _tabActual, overlay: 'share' }, '', '#share');
 }
@@ -2999,7 +3317,7 @@ document.getElementById('shareModal').addEventListener('click', e => {
   if (e.target === document.getElementById('shareModal')) cerrarShareModal();
 });
 document.getElementById('shareWhatsapp').addEventListener('click', () => {
-  window.open('https://wa.me/?text=' + encodeURIComponent(_textoCompartir), '_blank');
+  window.open('https://wa.me/?text=' + encodeURIComponent(_textoCompartirPlano), '_blank');
   cerrarShareModal();
 });
 document.getElementById('shareCopiar').addEventListener('click', () => {
@@ -3008,12 +3326,35 @@ document.getElementById('shareCopiar').addEventListener('click', () => {
     cerrarShareModal();
   }).catch(() => mostrarToast('No se pudo copiar'));
 });
+document.getElementById('shareDescargarImagen').addEventListener('click', () => {
+  if (!_blobImagenActual) { mostrarToast('No se pudo generar la imagen'); return; }
+  const url = URL.createObjectURL(_blobImagenActual);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'bibliofa.png';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  mostrarToast('🖼️ Imagen descargada');
+  cerrarShareModal();
+});
+document.getElementById('shareCopiarImagen').addEventListener('click', async () => {
+  if (!_blobImagenActual) { mostrarToast('No se pudo generar la imagen'); return; }
+  try {
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': _blobImagenActual })]);
+    mostrarToast('🖼️ Imagen copiada');
+    cerrarShareModal();
+  } catch (e) {
+    mostrarToast('Tu navegador no permite copiar imágenes');
+  }
+});
 
 // Compartir todos los antojos
 document.getElementById('btnCompartirTodos').addEventListener('click', () => {
   const items = antojosCargar();
   if (items.length === 0) return;
-  compartirTexto('Mi lista de lectura', textoLista(items));
+  compartirListaAntojos(items);
 });
 
 function mostrarToast(msg) {
