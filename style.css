@@ -2282,6 +2282,13 @@ h2 {
   cursor: pointer; text-align: left; transition: all .15s;
 }
 .share-option:hover { border-color: var(--navy); background: var(--gold-lt); }
+.share-hint {
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-align: center;
+  margin: 2px 4px 0;
+  line-height: 1.4;
+}
 
 /* ── Toast ───────────────────────────────────────────── */
 .share-toast {

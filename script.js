@@ -1,4 +1,17 @@
 // BiblioFa script.js · Actualizado: 2026-08-14
+// - v1.38.0: sistema de compartir ajustado tras feedback. (1) Libro individual: la tarjeta-
+//   imagen ahora lleva la FICHA COMPLETA (antes solo título/autor/estrellas/género/lo mejor;
+//   ahora suma publicado, tono, ritmo, público, flags y reseña), con altura dinámica calculada
+//   según cuánto contenido tenga cada libro (generarImagenLibro() mide antes de dibujar). El
+//   texto que acompaña la imagen al compartir ya no repite toda la ficha (redundante, ahora que
+//   vive en la imagen) — es solo "Título — recomendado por Fátima Ll" + el link en su propia
+//   línea, para que apps como WhatsApp lo vuelvan hipervínculo clickeable (captionLibroImagen).
+//   (2) Lista de antojos: sigue siendo texto plano, sin imagen — sin cambios ahí.
+//   (3) Se quitó "Enviar por WhatsApp" del modal cuando se comparte un libro (wa.me no puede
+//   adjuntar la imagen, así que el botón no tenía sentido ahí); en su lugar aparece un texto
+//   sugiriendo descargar la imagen y adjuntarla a mano. El botón de WhatsApp se queda solo para
+//   compartir la lista de antojos (que sí es texto puro). generarImagenLista() se quitó por no
+//   usarse más.
 // - v1.37.0: sistema de compartir rediseñado (libro individual y lista de antojos), a raíz de
 //   que WhatsApp rompía los emojis al compartir directo (navigator.share) aunque copiar-pegar
 //   sí los conservaba. Dos cambios: (1) textoLibroPlano()/textoListaPlano() — versión sin
@@ -2929,15 +2942,19 @@ document.getElementById('btnVaciarAntojos').addEventListener('click', () => {
 // =====================================================
 // COMPARTIR
 // =====================================================
-// Sistema de 2 capas para evitar el problema de "WhatsApp rompe los emojis"
-// cuando se comparte texto directo (navigator.share / wa.me):
-//   - textoLibro()/textoLista(): version CON emojis, para "Copiar texto"
-//     (copiar-pegar sí los conserva bien).
-//   - textoLibroPlano()/textoListaPlano(): version SIN emojis, para el botón
-//     de WhatsApp y como caption del share nativo — el canal que sí los rompe.
-// Además, se genera una imagen (canvas) con el mismo diseño del sitio para
-// compartir directo en móvil: como es una imagen (píxeles, no texto), los
-// emojis dentro de ella jamás se pueden corromper.
+// Libro individual: se comparte una TARJETA-IMAGEN (canvas) con TODA la
+// ficha del libro (autor, estrellas, género, publicado, tono, ritmo,
+// público, flags, reseña, lo mejor) — como es una imagen (píxeles), los
+// emojis dentro de ella nunca se pueden corromper al compartir. El texto que
+// la acompaña es solo un link a la página (así WhatsApp lo vuelve
+// hipervínculo clickeable); no hay botón de WhatsApp en el modal de
+// escritorio porque el link wa.me no puede llevar la imagen adjunta — para
+// eso está "Descargar imagen" + adjuntarla a mano.
+//
+// Lista de antojos: se queda como texto plano (sin imagen), igual que antes.
+// Sigue usando 2 versiones: textoLista() (con emojis, para "Copiar texto")
+// y textoListaPlano() (sin emojis, para WhatsApp / share nativo — el canal
+// que sí los rompe).
 const PAGINA_URL = 'https://fatimallovet.github.io/bibliotecafa2/';
 
 function textoLibro(libro) {
@@ -2969,35 +2986,13 @@ function textoLibro(libro) {
   return t;
 }
 
-// Misma información que textoLibro() pero sin emojis — para WhatsApp directo
-// y como caption del share nativo, que es donde se rompen.
-function textoLibroPlano(libro) {
-  const titulo    = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
-  const autor     = libro['Autor'] || libro['Author'] || '';
-  const genero    = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
-  const tono      = libro['Tono'] || '';
-  const ritmo     = libro['Ritmo'] || '';
-  const publico   = libro['Público'] || libro['Publico'] || '';
-  const publicado = getCampo(libro, 'Publicado', 'Publicación', 'Publicacion', 'Año', 'Ano', 'Year');
-  const resena    = libro['Reseña'] || libro['Resena'] || libro['Review'] || '';
-  const loMejor   = getCampo(libro, 'Lo mejor', 'Lo Mejor', 'LoMejor', 'Best');
-  const flags     = libro['Flags'] || '';
-  const estrellasRaw = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
-  const { texto: textoEstrellas } = desglosarEstrellas(estrellasRaw); // ★ no es emoji, se conserva bien
-
-  let t = `${titulo}\n${autor}\n`;
-  if (textoEstrellas) t += `${textoEstrellas}\n`;
-  t += `\n`;
-  if (genero)    t += `Género: ${genero}\n`;
-  if (publicado) t += `Publicado: ${publicado}\n`;
-  if (tono)    t += `Tono: ${tono}\n`;
-  if (ritmo)   t += `Ritmo: ${ritmo}\n`;
-  if (publico) t += `Público: ${publico}\n`;
-  if (flags && flags.toLowerCase() !== 'ninguno') t += `${flags}\n`;
-  if (resena)  t += `\n${resena}\n`;
-  if (loMejor) t += `\nLo mejor: ${loMejor}\n`;
-  t += `\n— Recomendado por Fátima Ll\n${PAGINA_URL}`;
-  return t;
+// Caption corta que acompaña la tarjeta-imagen al compartir un libro: sin
+// emojis (por seguridad) y con el link en su propia línea para que apps
+// como WhatsApp lo conviertan en hipervínculo clickeable. Toda la ficha
+// completa ya va dentro de la imagen, así que aquí no se repite.
+function captionLibroImagen(libro) {
+  const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+  return `${titulo} — recomendado por Fátima Ll\n${PAGINA_URL}`;
 }
 
 function textoLista(items) {
@@ -3028,16 +3023,20 @@ function textoListaPlano(items) {
   return t;
 }
 
-// ── Generador de tarjeta-imagen (canvas) ────────────────────────────────
+// ── Generador de tarjeta-imagen (canvas) para un libro completo ─────────
 // Usa la misma paleta y tipografías del sitio (navy/dorado, DM Serif Display
-// + DM Sans). Al ser una imagen, los emojis nunca se corrompen al compartir.
+// + DM Sans). La altura se calcula según cuánto contenido tenga el libro
+// (reseña larga, varios campos, etc.) en vez de usar un tamaño fijo, para
+// que nunca se vea ni con espacio de más ni recortada.
 
 async function _cargarFuentesCanvas() {
   if (!document.fonts) return;
   try {
     await Promise.all([
-      document.fonts.load('italic 700 60px "DM Serif Display"'),
+      document.fonts.load('italic 700 58px "DM Serif Display"'),
+      document.fonts.load('italic 400 30px "DM Serif Display"'),
       document.fonts.load('400 30px "DM Sans"'),
+      document.fonts.load('italic 400 28px "DM Sans"'),
       document.fonts.load('600 26px "DM Sans"'),
       document.fonts.load('700 30px "DM Sans"'),
     ]);
@@ -3062,7 +3061,6 @@ function _envolverTextoCanvas(ctx, texto, maxWidth) {
   return lineas;
 }
 
-// Cabecera de marca compartida por ambas tarjetas (libro y lista)
 function _dibujarCabeceraCanvas(ctx, W) {
   ctx.fillStyle = '#1a2744';
   ctx.fillRect(0, 0, W, 104);
@@ -3096,7 +3094,57 @@ function _dibujarPieCanvas(ctx, W, H) {
 async function generarImagenLibro(libro) {
   await _cargarFuentesCanvas();
 
-  const W = 1080, H = 1350;
+  const W = 1080;
+  const margenX = 90;
+  const anchoContenido = W - margenX * 2;
+
+  const titulo    = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+  const autor     = libro['Autor'] || libro['Author'] || '';
+  const genero    = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
+  const tono      = libro['Tono'] || '';
+  const ritmo     = libro['Ritmo'] || '';
+  const publico   = libro['Público'] || libro['Publico'] || '';
+  const publicado = getCampo(libro, 'Publicado', 'Publicación', 'Publicacion', 'Año', 'Ano', 'Year');
+  const resena    = libro['Reseña'] || libro['Resena'] || libro['Review'] || '';
+  const loMejor   = getCampo(libro, 'Lo mejor', 'Lo Mejor', 'LoMejor', 'Best');
+  const flags     = libro['Flags'] || '';
+  const estrellasRaw = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
+  const { texto: textoEstrellas } = desglosarEstrellas(estrellasRaw);
+  const flagsValidas = (flags && flags.toLowerCase() !== 'ninguno') ? flags : '';
+
+  // --- Medición previa: mismas fuentes que se usan al dibujar, para que la
+  // altura calculada coincida exactamente con lo que se va a pintar ---
+  const medCtx = document.createElement('canvas').getContext('2d');
+
+  medCtx.font = 'italic 700 58px "DM Serif Display", Georgia, serif';
+  const lineasTitulo = _envolverTextoCanvas(medCtx, titulo, anchoContenido).slice(0, 4);
+
+  const lineasFicha = [];
+  if (publicado) lineasFicha.push(`Publicado: ${publicado}`);
+  if (tono)      lineasFicha.push(`Tono: ${tono}`);
+  if (ritmo)     lineasFicha.push(`Ritmo: ${ritmo}`);
+  if (publico)   lineasFicha.push(`Público: ${publico}`);
+
+  medCtx.font = 'italic 400 28px "DM Sans", sans-serif';
+  const lineasResenaTotal = resena ? _envolverTextoCanvas(medCtx, resena, anchoContenido) : [];
+  const resenaTruncada = lineasResenaTotal.length > 9;
+  const lineasResena = lineasResenaTotal.slice(0, 9);
+
+  medCtx.font = 'italic 400 30px "DM Serif Display", Georgia, serif';
+  const lineasLoMejor = loMejor ? _envolverTextoCanvas(medCtx, `"${loMejor}"`, anchoContenido).slice(0, 5) : [];
+
+  // --- Altura total según el contenido real ---
+  let H = 300;                                  // cabecera + aire antes del título
+  H += lineasTitulo.length * 70 + 20;
+  H += 46 + 20;                                 // autor
+  if (textoEstrellas) H += 56;
+  if (genero) H += 76;
+  if (flagsValidas) H += 46;
+  if (lineasFicha.length) H += lineasFicha.length * 40 + 20;
+  if (lineasResena.length) H += lineasResena.length * 40 + 30;
+  if (lineasLoMejor.length) H += lineasLoMejor.length * 40 + 20;
+  H += 200;                                     // pie
+
   const canvas = document.createElement('canvas');
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
@@ -3105,123 +3153,74 @@ async function generarImagenLibro(libro) {
   ctx.fillRect(0, 0, W, H);
   _dibujarCabeceraCanvas(ctx, W);
 
-  const titulo    = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
-  const autor     = libro['Autor'] || libro['Author'] || '';
-  const genero    = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
-  const loMejor   = getCampo(libro, 'Lo mejor', 'Lo Mejor', 'LoMejor', 'Best');
-  const estrellasRaw = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
-  const { texto: textoEstrellas } = desglosarEstrellas(estrellasRaw);
-
+  ctx.textAlign = 'center';
   let y = 300;
 
   ctx.fillStyle = '#1a2744';
-  ctx.font = 'italic 700 62px "DM Serif Display", Georgia, serif';
-  ctx.textAlign = 'center';
-  const maxAnchoTitulo = W - 160;
-  const lineasTitulo = _envolverTextoCanvas(ctx, titulo, maxAnchoTitulo).slice(0, 4);
-  lineasTitulo.forEach(linea => { ctx.fillText(linea, W / 2, y); y += 74; });
+  ctx.font = 'italic 700 58px "DM Serif Display", Georgia, serif';
+  lineasTitulo.forEach(linea => { ctx.fillText(linea, W / 2, y); y += 70; });
+  y += 20;
 
-  y += 16;
   ctx.fillStyle = '#6b7a99';
-  ctx.font = '400 34px "DM Sans", sans-serif';
+  ctx.font = '400 32px "DM Sans", sans-serif';
   ctx.fillText(autor, W / 2, y);
-  y += 56;
+  y += 46;
 
   if (textoEstrellas) {
     ctx.fillStyle = '#f0c040';
-    ctx.font = '400 40px "DM Sans", sans-serif';
+    ctx.font = '400 38px "DM Sans", sans-serif';
     ctx.fillText(textoEstrellas, W / 2, y);
-    y += 60;
+    y += 56;
   }
 
   if (genero) {
-    ctx.font = '600 26px "DM Sans", sans-serif';
+    ctx.font = '600 25px "DM Sans", sans-serif';
     const anchoTag = ctx.measureText(genero).width + 56;
     const xTag = (W - anchoTag) / 2;
     ctx.fillStyle = '#1a2744';
     if (ctx.roundRect) {
       ctx.beginPath();
-      ctx.roundRect(xTag, y - 26, anchoTag, 52, 26);
+      ctx.roundRect(xTag, y - 24, anchoTag, 48, 24);
       ctx.fill();
     } else {
-      ctx.fillRect(xTag, y - 26, anchoTag, 52); // navegadores viejos sin roundRect: pastilla cuadrada
+      ctx.fillRect(xTag, y - 24, anchoTag, 48); // navegadores viejos sin roundRect
     }
     ctx.fillStyle = '#f0c040';
     ctx.fillText(genero, W / 2, y);
     y += 76;
   }
 
-  if (loMejor && y < H - 300) {
-    ctx.fillStyle = '#1a2744';
-    ctx.font = 'italic 400 32px "DM Serif Display", Georgia, serif';
-    const lineasMejor = _envolverTextoCanvas(ctx, `"${loMejor}"`, W - 200).slice(0, 5);
-    y += 20;
-    lineasMejor.forEach(linea => { ctx.fillText(linea, W / 2, y); y += 42; });
+  if (flagsValidas) {
+    ctx.fillStyle = '#b8860b';
+    ctx.font = '600 24px "DM Sans", sans-serif';
+    ctx.fillText(`⚠ ${flagsValidas}`, W / 2, y);
+    y += 46;
   }
 
-  _dibujarPieCanvas(ctx, W, H);
-
-  return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-}
-
-async function generarImagenLista(items) {
-  await _cargarFuentesCanvas();
-
-  const W = 1080, H = 1350;
-  const canvas = document.createElement('canvas');
-  canvas.width = W; canvas.height = H;
-  const ctx = canvas.getContext('2d');
-
-  ctx.fillStyle = '#faf7f1';
-  ctx.fillRect(0, 0, W, H);
-  _dibujarCabeceraCanvas(ctx, W);
-
-  ctx.textAlign = 'center';
-  ctx.fillStyle = '#1a2744';
-  ctx.font = 'italic 700 54px "DM Serif Display", Georgia, serif';
-  ctx.fillText('Mi lista de antojos', W / 2, 210);
-
-  ctx.fillStyle = '#6b7a99';
-  ctx.font = '400 28px "DM Sans", sans-serif';
-  ctx.fillText(`${items.length} libro${items.length !== 1 ? 's' : ''}`, W / 2, 260);
-
-  const maxItems = 9;
-  const mostrados = items.slice(0, maxItems);
-  const anchoLinea = W - 180;
-  let y = 340;
-
-  ctx.textAlign = 'left';
-  mostrados.forEach((libro, i) => {
-    const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
-    const autor  = libro['Autor'] || libro['Author'] || '';
-
-    ctx.fillStyle = '#b8860b';
-    ctx.font = '700 30px "DM Sans", sans-serif';
-    ctx.fillText(`${i + 1}.`, 90, y);
-
+  if (lineasFicha.length) {
+    y += 10;
     ctx.fillStyle = '#1a2744';
-    ctx.font = '700 30px "DM Sans", sans-serif';
-    const prefijo = `${i + 1}. `;
-    const anchoPrefijo = ctx.measureText(prefijo).width;
-    const lineasTitulo = _envolverTextoCanvas(ctx, titulo, anchoLinea - anchoPrefijo).slice(0, 2);
-    ctx.fillText(lineasTitulo[0] || '', 90 + anchoPrefijo, y);
-    y += 40;
-    if (lineasTitulo[1]) { ctx.fillText(lineasTitulo[1], 90 + anchoPrefijo, y); y += 40; }
+    ctx.font = '400 28px "DM Sans", sans-serif';
+    lineasFicha.forEach(linea => { ctx.fillText(linea, W / 2, y); y += 40; });
+    y += 10;
+  }
 
-    if (autor) {
-      ctx.fillStyle = '#6b7a99';
-      ctx.font = '400 26px "DM Sans", sans-serif';
-      ctx.fillText(autor, 90 + anchoPrefijo, y);
-      y += 44;
-    } else {
-      y += 12;
-    }
-  });
+  if (lineasResena.length) {
+    y += 10;
+    ctx.fillStyle = '#3a4a68';
+    ctx.font = 'italic 400 28px "DM Sans", sans-serif';
+    lineasResena.forEach((linea, i) => {
+      const esUltima = i === lineasResena.length - 1;
+      ctx.fillText(esUltima && resenaTruncada ? linea + '…' : linea, W / 2, y);
+      y += 40;
+    });
+    y += 20;
+  }
 
-  if (items.length > maxItems) {
-    ctx.fillStyle = '#6b7a99';
-    ctx.font = 'italic 400 26px "DM Serif Display", Georgia, serif';
-    ctx.fillText(`+ ${items.length - maxItems} más...`, 90, y);
+  if (lineasLoMejor.length) {
+    ctx.fillStyle = '#1a2744';
+    ctx.font = 'italic 400 30px "DM Serif Display", Georgia, serif';
+    lineasLoMejor.forEach(linea => { ctx.fillText(linea, W / 2, y); y += 40; });
   }
 
   _dibujarPieCanvas(ctx, W, H);
@@ -3234,35 +3233,37 @@ function esMobile() {
 }
 
 let _textoCompartir = '';       // versión con emojis, para "Copiar texto"
-let _textoCompartirPlano = '';  // versión sin emojis, para WhatsApp / share nativo
-let _blobImagenActual = null;   // imagen ya generada, para descargar/copiar/adjuntar
+let _textoCompartirPlano = '';  // versión sin emojis, solo para WhatsApp/lista
+let _blobImagenActual = null;   // imagen generada (solo aplica a libros)
 let _previewObjectUrl = null;
+let _modoCompartirActual = 'libro'; // 'libro' | 'lista' — decide qué botones mostrar en el modal
 
-// Intenta compartir imagen + texto plano por el share nativo del sistema
-// (funciona en la mayoría de navegadores móviles). Si no se puede adjuntar
-// imagen, intenta compartir solo texto. Si nada de eso existe (escritorio,
-// o el visitante canceló), cae al modal con vista previa + botones.
-async function _compartir(titulo, generarBlobFn) {
+async function compartirLibro(libro) {
+  _modoCompartirActual = 'libro';
+  _textoCompartir = textoLibro(libro);
+  const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+  const caption = captionLibroImagen(libro);
+
   _blobImagenActual = null;
   let blob = null;
-  try { blob = await generarBlobFn(); } catch (e) { console.error('No se pudo generar la imagen para compartir:', e); }
+  try { blob = await generarImagenLibro(libro); } catch (e) { console.error('No se pudo generar la imagen del libro:', e); }
   _blobImagenActual = blob;
 
   if (blob && esMobile() && navigator.canShare) {
     const archivo = new File([blob], 'bibliofa.png', { type: 'image/png' });
     if (navigator.canShare({ files: [archivo] })) {
       try {
-        await navigator.share({ title, text: _textoCompartirPlano, files: [archivo] });
+        await navigator.share({ title: titulo, text: caption, files: [archivo] });
         return;
       } catch (e) {
-        if (e.name === 'AbortError') return; // el visitante canceló, no insistir
+        if (e.name === 'AbortError') return; // canceló, no insistir con más intentos
       }
     }
   }
 
   if (esMobile() && navigator.share) {
     try {
-      await navigator.share({ title, text: _textoCompartirPlano });
+      await navigator.share({ title: titulo, text: caption });
       return;
     } catch (e) {
       if (e.name === 'AbortError') return;
@@ -3272,37 +3273,51 @@ async function _compartir(titulo, generarBlobFn) {
   mostrarShareModal();
 }
 
-function compartirLibro(libro) {
-  const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
-  _textoCompartir = textoLibro(libro);
-  _textoCompartirPlano = textoLibroPlano(libro);
-  _compartir(titulo, () => generarImagenLibro(libro));
-}
-
-function compartirListaAntojos(items) {
+async function compartirListaAntojos(items) {
+  _modoCompartirActual = 'lista';
+  _blobImagenActual = null; // la lista no lleva imagen
   _textoCompartir = textoLista(items);
   _textoCompartirPlano = textoListaPlano(items);
-  _compartir('Mi lista de antojos', () => generarImagenLista(items));
+
+  if (esMobile() && navigator.share) {
+    try {
+      await navigator.share({ title: 'Mi lista de antojos', text: _textoCompartirPlano });
+      return;
+    } catch (e) {
+      if (e.name === 'AbortError') return;
+    }
+  }
+
+  mostrarShareModal();
 }
 
 function mostrarShareModal() {
-  const preview = document.getElementById('sharePreviewImg');
-  const btnDescargar = document.getElementById('shareDescargarImagen');
-  const btnCopiarImg = document.getElementById('shareCopiarImagen');
+  const preview       = document.getElementById('sharePreviewImg');
+  const btnDescargar   = document.getElementById('shareDescargarImagen');
+  const btnCopiarImg   = document.getElementById('shareCopiarImagen');
+  const btnWhatsapp    = document.getElementById('shareWhatsapp');
+  const hintWhatsapp   = document.getElementById('shareWhatsappHint');
+  const esLibro = _modoCompartirActual === 'libro';
 
   if (_previewObjectUrl) { URL.revokeObjectURL(_previewObjectUrl); _previewObjectUrl = null; }
 
-  if (_blobImagenActual) {
+  if (esLibro && _blobImagenActual) {
     _previewObjectUrl = URL.createObjectURL(_blobImagenActual);
     preview.src = _previewObjectUrl;
     preview.style.display = '';
     btnDescargar.style.display = '';
-    btnCopiarImg.style.display = (window.ClipboardItem) ? '' : 'none';
+    btnCopiarImg.style.display = window.ClipboardItem ? '' : 'none';
   } else {
     preview.style.display = 'none';
     btnDescargar.style.display = 'none';
     btnCopiarImg.style.display = 'none';
   }
+
+  // WhatsApp directo solo tiene sentido para la lista (texto puro); para un
+  // libro no puede llevar la imagen adjunta, así que se omite y en su lugar
+  // se sugiere descargar + adjuntar a mano.
+  btnWhatsapp.style.display = esLibro ? 'none' : '';
+  hintWhatsapp.style.display = esLibro ? '' : 'none';
 
   document.getElementById('shareModal').classList.remove('hidden');
   history.pushState({ tab: _tabActual, overlay: 'share' }, '', '#share');
