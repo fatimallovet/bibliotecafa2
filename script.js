@@ -1,4 +1,14 @@
-// BiblioFa script.js · Actualizado: 2026-08-14
+// BiblioFa script.js · Actualizado: 2026-08-26
+// - v1.39.0: se revirtió el merge de géneros en la pestaña Géneros. Los botones
+//   ya no agrupan géneros parecidos bajo una categoría genérica (ej. "ficción
+//   histórica" y "novela histórica" ya no se fusionaban ambas bajo "Histórico" —
+//   con GRUPOS_GENERO/agruparGenero, ese "Histórico" ni siquiera se mostraba con
+//   ese nombre exacto en el Sheet, así que el género real desaparecía de la
+//   vista). Ahora renderGeneroBtns()/librosFiltradosPorGenero() usan el género
+//   EXACTO tal como está en la columna Género de cada libro (libroTieneGenero()),
+//   sin normalizar ni agrupar. GRUPOS_GENERO, agruparGenero() y libroTieneGrupo()
+//   se conservan tal cual porque la Brújula Lectora (_quizLibroTieneGenero) los
+//   sigue usando para mapear arquetipos a grupos de género — no se tocó nada ahí.
 // - v1.38.0: sistema de compartir ajustado tras feedback. (1) Libro individual: la tarjeta-
 //   imagen ahora lleva la FICHA COMPLETA (antes solo título/autor/estrellas/género/lo mejor;
 //   ahora suma publicado, tono, ritmo, público, flags y reseña), con altura dinámica calculada
@@ -707,14 +717,26 @@ function agruparGenero(genero) {
   return genero; // sin grupo → se muestra tal cual
 }
 
-// --- Filtro de géneros con agrupación ---
-const generosActivos = new Set(); // guarda GRUPOS, no géneros exactos
+// --- Filtro de géneros SIN agrupar (pestaña Géneros) ---
+// Nota: GRUPOS_GENERO / agruparGenero / libroTieneGrupo (arriba) se dejan
+// intactos porque la Brújula Lectora los sigue usando para mapear
+// arquetipos a grupos de género. Aquí, en cambio, la pestaña Géneros
+// muestra y filtra por el valor EXACTO tal como está en el Sheet, sin
+// fusionar nada (ej. "ficción histórica" ya no se agrupa bajo "Histórico").
+const generosActivos = new Set(); // guarda géneros EXACTOS, no grupos
 
 function getGenerosLibro(libro) {
   return (libro['Género'] || libro['Genero'] || libro['Genre'] || '')
     .split(',').map(s => s.trim()).filter(Boolean);
 }
 
+function libroTieneGenero(libro, genero) {
+  return getGenerosLibro(libro).includes(genero);
+}
+
+// Se conserva para la Brújula Lectora (_quizLibroTieneGenero más abajo),
+// que sigue trabajando con GRUPOS_GENERO/agruparGenero. La pestaña Géneros
+// ya no la usa.
 function libroTieneGrupo(libro, grupo) {
   return getGenerosLibro(libro).some(g => agruparGenero(g) === grupo);
 }
@@ -722,7 +744,7 @@ function libroTieneGrupo(libro, grupo) {
 function librosFiltradosPorGenero() {
   if (generosActivos.size === 0) return libros;
   return libros.filter(l =>
-    [...generosActivos].every(g => libroTieneGrupo(l, g))
+    [...generosActivos].every(g => libroTieneGenero(l, g))
   );
 }
 
@@ -730,13 +752,13 @@ function renderGeneroBtns() {
   const cont = document.getElementById('generoBtns'); if(!cont) return;
   const resultado = librosFiltradosPorGenero();
 
-  // Grupos disponibles dado el filtro actual
-  const gruposDisponibles = new Set();
-  resultado.forEach(l => getGenerosLibro(l).forEach(g => gruposDisponibles.add(agruparGenero(g))));
+  // Géneros exactos disponibles dado el filtro actual
+  const generosDisponibles = new Set();
+  resultado.forEach(l => getGenerosLibro(l).forEach(g => generosDisponibles.add(g)));
 
-  // Todos los grupos existentes en la biblioteca
-  const todosGrupos = Array.from(
-    new Set(libros.flatMap(l => getGenerosLibro(l).map(g => agruparGenero(g))))
+  // Todos los géneros exactos existentes en la biblioteca
+  const todosGeneros = Array.from(
+    new Set(libros.flatMap(l => getGenerosLibro(l)))
   ).sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
 
   cont.innerHTML = '';
@@ -751,9 +773,9 @@ function renderGeneroBtns() {
   });
   cont.appendChild(btnTodos);
 
-  todosGrupos.forEach(g => {
+  todosGeneros.forEach(g => {
     const activo = generosActivos.has(g);
-    const disponible = activo || gruposDisponibles.has(g);
+    const disponible = activo || generosDisponibles.has(g);
 
     // Si no hay coincidencias con el filtro actual, ni lo mostramos
     if (!disponible) return;
