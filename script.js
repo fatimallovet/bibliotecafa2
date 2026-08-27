@@ -1,4 +1,11 @@
 // BiblioFa script.js · Actualizado: 2026-08-27
+// - v1.42.0: se quitó la marca/badge "★ favorita" (borde y acento dorado) que
+//   aparecía en libros con 5 estrellas — en las tarjetas de texto, las de
+//   cuadrícula y la ficha de detalle/modal. Hacía ruido visual redundante con
+//   las estrellas y los likes, y podía confundirse con un "favorito" marcado
+//   por el usuario, cuando en realidad solo reflejaba la calificación de
+//   Fátima. Se limpiaron también las clases CSS asociadas (.top-pick,
+//   .top-pick-badge, .grid-badge) que ya no se usan en ningún lado.
 // - v1.41.0: el toggle Texto/Cuadrícula de v1.40.0 (antes solo en Lista) ahora
 //   vive también en Géneros, Colecciones/Mood y los resultados de la Brújula
 //   Lectora — un botón ☰/▦ en cada sección. Es un solo estado global
@@ -227,7 +234,6 @@
 //   duelo_votos + vistas duelo_resultados/personaje_ranking/duelista_ranking en
 //   Supabase (ver duelo_personajes_migracion.sql).
 // - Barra inferior móvil: solo 4 tabs; Random/Wishlist son botones flotantes también en móvil
-// - Acento dorado "favorita" para libros de 5 estrellas
 // - Botón Atrás del navegador: navega entre tabs, resultados de Mood y cierra modales/paneles (historial)
 // - Ficha de detalle rediseñada: header con subtítulo de autor, chips de género, ficha técnica
 //   (tono/ritmo/público) en grid, etiquetas, banner de flags y reseña como cita destacada
@@ -667,7 +673,7 @@ function crearTarjetaTexto(libro) {
   const autor = libro['Autor'] || libro['Author'] || '';
   const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
   const calificacion = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
-  const { texto: textoEstrellas, valor: numEstrellas } = desglosarEstrellas(calificacion);
+  const { texto: textoEstrellas } = desglosarEstrellas(calificacion);
   const resena = libro['Reseña'] || libro['Resena'] || libro['Review'] || '';
   const flags = libro['Flags'] || '';
   const generoChips = genero
@@ -676,13 +682,12 @@ function crearTarjetaTexto(libro) {
   const starsHtml = textoEstrellas
     ? `<span class="lista-stars">${textoEstrellas}</span>`
     : '';
-  const esFavorita = numEstrellas >= 5;
   const div = document.createElement('div');
-  div.className = 'lista-card' + (esFavorita ? ' top-pick' : '');
+  div.className = 'lista-card';
   div.innerHTML = `
     <div class="lista-card-body">
       <div class="lista-card-top">
-        <div class="lista-card-titulo">${escapeHtml(titulo)}${esFavorita ? ' <span class="top-pick-badge">★ favorita</span>' : ''}</div>
+        <div class="lista-card-titulo">${escapeHtml(titulo)}</div>
         ${starsHtml}
       </div>
       <div class="lista-card-autor">${escapeHtml(autor)}</div>
@@ -710,11 +715,10 @@ function crearTarjetaCuadricula(libro) {
   const autor = libro['Autor'] || libro['Author'] || '';
   const imagen = getCampo(libro, 'Imagen', 'Portada', 'Cover', 'Imagen URL', 'Image');
   const calificacion = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
-  const { texto: textoEstrellas, valor: numEstrellas } = desglosarEstrellas(calificacion);
-  const esFavorita = numEstrellas >= 5;
+  const { texto: textoEstrellas } = desglosarEstrellas(calificacion);
 
   const div = document.createElement('div');
-  div.className = 'grid-card' + (esFavorita ? ' top-pick' : '') + (imagen ? '' : ' sin-portada');
+  div.className = 'grid-card' + (imagen ? '' : ' sin-portada');
   div.innerHTML = `
     <div class="grid-card-cover">
       ${imagen ? `<img src="${escapeHtml(imagen)}" alt="Portada de ${escapeHtml(titulo)}" loading="lazy">` : ''}
@@ -722,7 +726,6 @@ function crearTarjetaCuadricula(libro) {
         <span class="grid-card-fallback-titulo">${escapeHtml(titulo)}</span>
         <span class="grid-card-fallback-autor">${escapeHtml(autor)}</span>
       </div>
-      ${esFavorita ? '<span class="top-pick-badge grid-badge">★</span>' : ''}
       <button class="btn-antojo grid-btn-antojo ${antojosContiene(libro) ? 'guardado' : ''}" title="Guardar en antojos">✓</button>
       <button class="btn-like-card grid-btn-like" title="Dar like">👍 <span class="like-count">…</span></button>
     </div>
@@ -1181,8 +1184,7 @@ function construirFichaHTML(libro, extraHeroBtnHtml, idCerrar) {
   const loMejor = getCampo(libro, 'Lo mejor', 'Lo Mejor', 'LoMejor', 'Best');
   const flags = libro['Flags'] || '';
   const calificacion = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
-  const { texto: textoEstrellas, vacias: estrellasVacias, valor: numEstrellas } = desglosarEstrellas(calificacion);
-  const esFavorita = numEstrellas >= 5;
+  const { texto: textoEstrellas, vacias: estrellasVacias } = desglosarEstrellas(calificacion);
 
   const estrellasHtml = textoEstrellas
     ? `<span class="modal-hero-stars">${textoEstrellas}<span class="modal-hero-stars-off">${'★'.repeat(estrellasVacias)}</span></span>`
@@ -1191,7 +1193,6 @@ function construirFichaHTML(libro, extraHeroBtnHtml, idCerrar) {
   const subPartes = [];
   if (autor) subPartes.push('✍️ ' + escapeHtml(autor));
   if (genero) subPartes.push(escapeHtml(genero));
-  if (esFavorita) subPartes.push('★ favorita');
   const subLinea = subPartes.join(' &nbsp;·&nbsp; ');
 
   const etiquetasHtml = etiquetas
