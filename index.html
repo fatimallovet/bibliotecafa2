@@ -22,7 +22,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BiblioFa</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.32.4" />
+  <link rel="stylesheet" href="style.css?v=1.33.0" />
 
   <!-- Supabase (leaderboard de trivia + sugerencias) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -113,6 +113,10 @@
             <option value="publicacion">Año de publicación</option>
           </select>
           <button id="ordenDireccion" class="orden-dir-btn" type="button" aria-label="Cambiar dirección de orden" title="Descendente">↓</button>
+          <div class="vista-toggle" role="group" aria-label="Cambiar tipo de vista">
+            <button id="vistaTexto" class="vista-btn active" type="button" title="Ver como texto">☰</button>
+            <button id="vistaCuadricula" class="vista-btn" type="button" title="Ver como cuadrícula con portadas">▦</button>
+          </div>
         </div>
       </div>
     </div>
@@ -449,7 +453,7 @@
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="script.js?v=1.39.0"></script>
+  <script src="script.js?v=1.40.0"></script>
 
   <!-- Cloudflare Web Analytics -->
   <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "85978fa0985645ffb561da2af953aad6"}'>

@@ -1,4 +1,18 @@
-// BiblioFa script.js · Actualizado: 2026-08-26
+// BiblioFa script.js · Actualizado: 2026-08-27
+// - v1.40.0: pestaña Lista ahora tiene toggle de vista Texto/Cuadrícula (dos
+//   botones ☰/▦ junto al selector de orden). La vista de cuadrícula usa la
+//   nueva columna "Imagen" del Sheet (portada de cada libro, vía getCampo así
+//   que también reconoce Portada/Cover/Image si el nombre cambiara) y muestra
+//   título, autor y estrellas debajo de cada portada; conserva los botones de
+//   antojo y like sobre la imagen. Si un libro no tiene Imagen o el link no
+//   carga (onerror en el <img>), la tarjeta cae a un respaldo con título+autor
+//   sobre fondo navy, sin romper el layout. La preferencia de vista se guarda
+//   en localStorage (bibliofa_vista_lista) así que se mantiene entre visitas.
+//   mostrarTarjetasLista() ahora se dividió en crearTarjetaTexto()/
+//   crearTarjetaCuadricula(); el toggle SOLO afecta el contenedor listaCards
+//   (pestaña Lista) — Géneros, Mood y los resultados de la Brújula siguen
+//   usando siempre la tarjeta de texto de toda la vida, sin cambios ahí. Si
+//   funciona bien, se evaluará llevar el toggle a esas otras secciones.
 // - v1.39.0: se revirtió el merge de géneros en la pestaña Géneros. Los botones
 //   ya no agrupan géneros parecidos bajo una categoría genérica (ej. "ficción
 //   histórica" y "novela histórica" ya no se fusionaban ambas bajo "Histórico" —
@@ -613,55 +627,113 @@ function mostrarTabla(data) {
   actualizarContador(data.length);
 }
 
+// Modo de vista de la pestaña Lista: 'texto' (como hasta ahora) o
+// 'cuadricula' (portadas, usando la columna Imagen del Sheet). Solo aplica
+// al contenedor principal (listaCards) — Géneros, Mood y los resultados de
+// la Brújula siguen usando siempre la tarjeta de texto, sin cambios.
+let vistaLista = localStorage.getItem('bibliofa_vista_lista') === 'cuadricula' ? 'cuadricula' : 'texto';
+
 function mostrarTarjetasLista(data, containerId) {
-  const cont = document.getElementById(containerId || 'listaCards');
+  const idFinal = containerId || 'listaCards';
+  const cont = document.getElementById(idFinal);
   cont.innerHTML = '';
+  const esCuadricula = idFinal === 'listaCards' && vistaLista === 'cuadricula';
+  cont.classList.toggle('vista-cuadricula', esCuadricula);
+
   if (data.length === 0) {
     cont.innerHTML = '<p style="color:var(--muted)">No se encontraron libros.</p>';
     return;
   }
   data.forEach(libro => {
-    const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
-    const autor = libro['Autor'] || libro['Author'] || '';
-    const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
-    const calificacion = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
-    const { texto: textoEstrellas, valor: numEstrellas } = desglosarEstrellas(calificacion);
-    const resena = libro['Reseña'] || libro['Resena'] || libro['Review'] || '';
-    const flags = libro['Flags'] || '';
-    const generoChips = genero
-      ? genero.split(',').map(g => `<span class="genre-chip">${escapeHtml(g.trim())}</span>`).join(' ')
-      : '';
-    const starsHtml = textoEstrellas
-      ? `<span class="lista-stars">${textoEstrellas}</span>`
-      : '';
-    const esFavorita = numEstrellas >= 5;
-    const div = document.createElement('div');
-    div.className = 'lista-card' + (esFavorita ? ' top-pick' : '');
-    div.innerHTML = `
-      <div class="lista-card-body">
-        <div class="lista-card-top">
-          <div class="lista-card-titulo">${escapeHtml(titulo)}${esFavorita ? ' <span class="top-pick-badge">★ favorita</span>' : ''}</div>
-          ${starsHtml}
-        </div>
-        <div class="lista-card-autor">${escapeHtml(autor)}</div>
-        <div class="lista-card-meta">
-          ${generoChips}
-          ${flags && flags.toLowerCase() !== 'ninguno' ? `<span class="flag-tag">${escapeHtml(flags)}</span>` : ''}
-        </div>
-        ${resena ? `<p class="card-resena">${escapeHtml(resena)}</p>` : ''}
-      </div>
-      <button class="btn-antojo ${antojosContiene(libro) ? 'guardado' : ''}" title="Guardar en antojos">✓</button>
-      <button class="btn-like-card" title="Dar like">👍 <span class="like-count">…</span></button>
-    `;
-    div.querySelector('.btn-antojo').addEventListener('click', e => {
-      e.stopPropagation();
-      toggleAntojos(libro);
-      div.querySelector('.btn-antojo').classList.toggle('guardado', antojosContiene(libro));
-    });
-    inicializarBotonLike(div.querySelector('.btn-like-card'), titulo);
-    div.addEventListener('click', () => showDetalle(libro));
-    cont.appendChild(div);
+    cont.appendChild(esCuadricula ? crearTarjetaCuadricula(libro) : crearTarjetaTexto(libro));
   });
+}
+
+function crearTarjetaTexto(libro) {
+  const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+  const autor = libro['Autor'] || libro['Author'] || '';
+  const genero = libro['Género'] || libro['Genero'] || libro['Genre'] || '';
+  const calificacion = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
+  const { texto: textoEstrellas, valor: numEstrellas } = desglosarEstrellas(calificacion);
+  const resena = libro['Reseña'] || libro['Resena'] || libro['Review'] || '';
+  const flags = libro['Flags'] || '';
+  const generoChips = genero
+    ? genero.split(',').map(g => `<span class="genre-chip">${escapeHtml(g.trim())}</span>`).join(' ')
+    : '';
+  const starsHtml = textoEstrellas
+    ? `<span class="lista-stars">${textoEstrellas}</span>`
+    : '';
+  const esFavorita = numEstrellas >= 5;
+  const div = document.createElement('div');
+  div.className = 'lista-card' + (esFavorita ? ' top-pick' : '');
+  div.innerHTML = `
+    <div class="lista-card-body">
+      <div class="lista-card-top">
+        <div class="lista-card-titulo">${escapeHtml(titulo)}${esFavorita ? ' <span class="top-pick-badge">★ favorita</span>' : ''}</div>
+        ${starsHtml}
+      </div>
+      <div class="lista-card-autor">${escapeHtml(autor)}</div>
+      <div class="lista-card-meta">
+        ${generoChips}
+        ${flags && flags.toLowerCase() !== 'ninguno' ? `<span class="flag-tag">${escapeHtml(flags)}</span>` : ''}
+      </div>
+      ${resena ? `<p class="card-resena">${escapeHtml(resena)}</p>` : ''}
+    </div>
+    <button class="btn-antojo ${antojosContiene(libro) ? 'guardado' : ''}" title="Guardar en antojos">✓</button>
+    <button class="btn-like-card" title="Dar like">👍 <span class="like-count">…</span></button>
+  `;
+  div.querySelector('.btn-antojo').addEventListener('click', e => {
+    e.stopPropagation();
+    toggleAntojos(libro);
+    div.querySelector('.btn-antojo').classList.toggle('guardado', antojosContiene(libro));
+  });
+  inicializarBotonLike(div.querySelector('.btn-like-card'), titulo);
+  div.addEventListener('click', () => showDetalle(libro));
+  return div;
+}
+
+function crearTarjetaCuadricula(libro) {
+  const titulo = libro['Título'] || libro['Titulo'] || libro['Title'] || '';
+  const autor = libro['Autor'] || libro['Author'] || '';
+  const imagen = getCampo(libro, 'Imagen', 'Portada', 'Cover', 'Imagen URL', 'Image');
+  const calificacion = getCampo(libro, 'Calificación', 'Estrellas', 'Stars');
+  const { texto: textoEstrellas, valor: numEstrellas } = desglosarEstrellas(calificacion);
+  const esFavorita = numEstrellas >= 5;
+
+  const div = document.createElement('div');
+  div.className = 'grid-card' + (esFavorita ? ' top-pick' : '') + (imagen ? '' : ' sin-portada');
+  div.innerHTML = `
+    <div class="grid-card-cover">
+      ${imagen ? `<img src="${escapeHtml(imagen)}" alt="Portada de ${escapeHtml(titulo)}" loading="lazy">` : ''}
+      <div class="grid-card-fallback">
+        <span class="grid-card-fallback-titulo">${escapeHtml(titulo)}</span>
+        <span class="grid-card-fallback-autor">${escapeHtml(autor)}</span>
+      </div>
+      ${esFavorita ? '<span class="top-pick-badge grid-badge">★</span>' : ''}
+      <button class="btn-antojo grid-btn-antojo ${antojosContiene(libro) ? 'guardado' : ''}" title="Guardar en antojos">✓</button>
+      <button class="btn-like-card grid-btn-like" title="Dar like">👍 <span class="like-count">…</span></button>
+    </div>
+    <div class="grid-card-info">
+      <div class="grid-card-titulo">${escapeHtml(titulo)}</div>
+      <div class="grid-card-autor">${escapeHtml(autor)}</div>
+      ${textoEstrellas ? `<span class="lista-stars">${textoEstrellas}</span>` : ''}
+    </div>
+  `;
+  const img = div.querySelector('img');
+  if (img) {
+    // Si el link de la columna Imagen está roto o vacío en la práctica,
+    // cae automáticamente al bloque de respaldo (título + autor) en vez
+    // de mostrar el ícono de imagen rota del navegador.
+    img.addEventListener('error', () => { div.classList.add('sin-portada'); img.remove(); });
+  }
+  div.querySelector('.grid-btn-antojo').addEventListener('click', e => {
+    e.stopPropagation();
+    toggleAntojos(libro);
+    div.querySelector('.grid-btn-antojo').classList.toggle('guardado', antojosContiene(libro));
+  });
+  inicializarBotonLike(div.querySelector('.grid-btn-like'), titulo);
+  div.addEventListener('click', () => showDetalle(libro));
+  return div;
 }
 
 // Selector de orden (criterio) + botón de dirección
@@ -688,6 +760,25 @@ if (ordenDireccionEl) {
     mostrarTabla(ultimaData);
   });
 }
+
+// --- Toggle de vista: texto vs. cuadrícula con portadas (solo pestaña Lista) ---
+const btnVistaTexto = document.getElementById('vistaTexto');
+const btnVistaCuadricula = document.getElementById('vistaCuadricula');
+function actualizarBotonesVista() {
+  if (!btnVistaTexto || !btnVistaCuadricula) return;
+  btnVistaTexto.classList.toggle('active', vistaLista === 'texto');
+  btnVistaCuadricula.classList.toggle('active', vistaLista === 'cuadricula');
+}
+function cambiarVistaLista(nueva) {
+  if (vistaLista === nueva) return;
+  vistaLista = nueva;
+  localStorage.setItem('bibliofa_vista_lista', vistaLista);
+  actualizarBotonesVista();
+  mostrarTabla(ultimaData);
+}
+if (btnVistaTexto) btnVistaTexto.addEventListener('click', () => cambiarVistaLista('texto'));
+if (btnVistaCuadricula) btnVistaCuadricula.addEventListener('click', () => cambiarVistaLista('cuadricula'));
+actualizarBotonesVista();
 
 // --- Mapa de agrupación de géneros ---
 // Cualquier género que contenga alguna de estas palabras clave se agrupa bajo el nombre del grupo.
