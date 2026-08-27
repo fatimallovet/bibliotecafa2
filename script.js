@@ -1,4 +1,16 @@
 // BiblioFa script.js · Actualizado: 2026-08-27
+// - v1.41.0: el toggle Texto/Cuadrícula de v1.40.0 (antes solo en Lista) ahora
+//   vive también en Géneros, Colecciones/Mood y los resultados de la Brújula
+//   Lectora — un botón ☰/▦ en cada sección. Es un solo estado global
+//   (vistaLista): cambiarlo desde cualquier sección lo cambia en todas (los
+//   botones ya no tienen id único, comparten clase .vista-btn + data-vista,
+//   así puede haber varias copias del control en la página). Default ahora
+//   es "cuadricula" (antes "texto") — así la pestaña Lista abre con portadas.
+//   mostrarTarjetasLista() ya no restringe el modo a listaCards, aplica a
+//   cualquier contenedor. Se agregó reRenderTarjetasVisibles(), que se llama
+//   al cambiar el toggle: re-dibuja Lista (con ultimaData), Géneros (con el
+//   filtro activo), y Mood/Brújula solo si ya tenían algo mostrado (_moodActual
+//   / _quizArquetipoMostrado, nuevas variables para saber qué re-pintar).
 // - v1.40.0: pestaña Lista ahora tiene toggle de vista Texto/Cuadrícula (dos
 //   botones ☰/▦ junto al selector de orden). La vista de cuadrícula usa la
 //   nueva columna "Imagen" del Sheet (portada de cada libro, vía getCampo así
@@ -627,17 +639,18 @@ function mostrarTabla(data) {
   actualizarContador(data.length);
 }
 
-// Modo de vista de la pestaña Lista: 'texto' (como hasta ahora) o
-// 'cuadricula' (portadas, usando la columna Imagen del Sheet). Solo aplica
-// al contenedor principal (listaCards) — Géneros, Mood y los resultados de
-// la Brújula siguen usando siempre la tarjeta de texto, sin cambios.
-let vistaLista = localStorage.getItem('bibliofa_vista_lista') === 'cuadricula' ? 'cuadricula' : 'texto';
+// Modo de vista para TODAS las secciones que muestran tarjetas de libro
+// (Lista, Géneros, Colecciones/Mood, resultados de la Brújula): 'texto' o
+// 'cuadricula' (portadas, usando la columna Imagen del Sheet). Es un único
+// estado global — cambiarlo desde cualquier sección lo refleja en todas.
+// Default: cuadricula.
+let vistaLista = localStorage.getItem('bibliofa_vista_lista') === 'texto' ? 'texto' : 'cuadricula';
 
 function mostrarTarjetasLista(data, containerId) {
   const idFinal = containerId || 'listaCards';
   const cont = document.getElementById(idFinal);
   cont.innerHTML = '';
-  const esCuadricula = idFinal === 'listaCards' && vistaLista === 'cuadricula';
+  const esCuadricula = vistaLista === 'cuadricula';
   cont.classList.toggle('vista-cuadricula', esCuadricula);
 
   if (data.length === 0) {
@@ -761,24 +774,54 @@ if (ordenDireccionEl) {
   });
 }
 
-// --- Toggle de vista: texto vs. cuadrícula con portadas (solo pestaña Lista) ---
-const btnVistaTexto = document.getElementById('vistaTexto');
-const btnVistaCuadricula = document.getElementById('vistaCuadricula');
+// --- Toggle de vista: texto vs. cuadrícula con portadas (todas las secciones) ---
+// Cada sección (Lista, Géneros, Mood, Brújula) tiene su propio par de botones
+// en el HTML/plantilla, todos con clase .vista-btn y data-vista="texto"/
+// "cuadricula" — no IDs únicos, para poder repetir el control donde haga
+// falta. Togglear cualquiera de ellos cambia el estado global y se refleja
+// en todos los demás (botones + tarjetas ya renderizadas).
 function actualizarBotonesVista() {
-  if (!btnVistaTexto || !btnVistaCuadricula) return;
-  btnVistaTexto.classList.toggle('active', vistaLista === 'texto');
-  btnVistaCuadricula.classList.toggle('active', vistaLista === 'cuadricula');
+  document.querySelectorAll('.vista-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.vista === vistaLista);
+  });
 }
+
 function cambiarVistaLista(nueva) {
   if (vistaLista === nueva) return;
   vistaLista = nueva;
   localStorage.setItem('bibliofa_vista_lista', vistaLista);
   actualizarBotonesVista();
-  mostrarTabla(ultimaData);
+  reRenderTarjetasVisibles();
 }
-if (btnVistaTexto) btnVistaTexto.addEventListener('click', () => cambiarVistaLista('texto'));
-if (btnVistaCuadricula) btnVistaCuadricula.addEventListener('click', () => cambiarVistaLista('cuadricula'));
+
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.vista-btn');
+  if (btn) cambiarVistaLista(btn.dataset.vista);
+});
 actualizarBotonesVista();
+
+// Re-renderiza las tarjetas de cada sección con el modo de vista actual.
+// Cada sección se re-dibuja con sus propios datos "en memoria" (los que ya
+// tenía mostrados), y se salta con seguridad las que aún no se han abierto
+// o no tienen nada que mostrar todavía.
+function reRenderTarjetasVisibles() {
+  if (typeof libros !== 'undefined' && libros.length) {
+    // Lista
+    if (typeof ultimaData !== 'undefined') mostrarTabla(ultimaData);
+    // Géneros
+    if (document.getElementById('tarjetasLibros')) {
+      mostrarTarjetasLista(librosFiltradosPorGenero(), 'tarjetasLibros');
+    }
+  }
+  // Mood: solo si ya se mostró el resultado de algún estado de ánimo
+  if (typeof _moodActual !== 'undefined' && _moodActual) {
+    mostrarResultadoMood(_moodActual, false);
+  }
+  // Brújula: solo si la pantalla de resultados ya está armada
+  if (document.getElementById('quizResultCards') && typeof _quizArquetipoMostrado !== 'undefined' && _quizArquetipoMostrado) {
+    _quizMostrarRecomendacionesDe(_quizArquetipoMostrado);
+  }
+}
 
 // --- Mapa de agrupación de géneros ---
 // Cualquier género que contenga alguna de estas palabras clave se agrupa bajo el nombre del grupo.
@@ -2342,6 +2385,11 @@ function mostrarTarjetasMood(data) {
     `${data.length} libro${data.length !== 1 ? 's' : ''} para este momento`;
 }
 
+// Mood actualmente mostrado en pantalla (null si estamos en la cuadrícula
+// de selección) — se usa para poder re-renderizar sus tarjetas si el
+// visitante cambia el modo de vista (texto/cuadrícula) estando aquí.
+let _moodActual = null;
+
 // Muestra los resultados de un mood. push=false se usa al restaurar desde el historial.
 function mostrarResultadoMood(mood, push) {
   if (push === undefined) push = true;
@@ -2351,6 +2399,7 @@ function mostrarResultadoMood(mood, push) {
     if (push) alert('No encontré libros para ese estado de ánimo 😔');
     return false;
   }
+  _moodActual = mood;
   mostrarTarjetasLista(resultado, 'sentimientoTarjetas');
   document.getElementById('sentimientoTitulo').innerHTML =
     `<span class="sentimiento-titulo-icono">${regla.icono}</span> ${escapeHtml(regla.titulo)}`;
@@ -2365,6 +2414,7 @@ function mostrarResultadoMood(mood, push) {
 // Muestra la cuadrícula de moods. push=false se usa al restaurar desde el historial.
 function mostrarGridMood(push) {
   if (push === undefined) push = true;
+  _moodActual = null;
   document.getElementById('sentimientoResultado').style.display = 'none';
   document.getElementById('sentimientoGrid').style.display = '';
   if (push) history.pushState({ tab: 'tabSentimiento' }, '', '#tabSentimiento');
@@ -2785,6 +2835,9 @@ function _quizDesglosePorcentajes() {
 // resultado (arranca en el ganador, pero cambia si el visitante hace clic
 // en otra fila de "Tu mezcla lectora de hoy" — ver _quizSeleccionarFilaMezcla)
 let _quizArquetipoGanador = null;
+// Igual que arriba, pero es el que se usa para saber qué re-renderizar si
+// se cambia el modo de vista (texto/cuadrícula) estando en esta pantalla.
+let _quizArquetipoMostrado = null;
 
 function _mostrarResultadoQuiz() {
   const cont = document.getElementById('quizContainer');
@@ -2814,6 +2867,10 @@ function _mostrarResultadoQuiz() {
       <p class="quiz-pct-hint">Desliza y toca otro perfil para ver sus recomendaciones</p>
     </div>
     <p class="quiz-resultado-libros-titulo" id="quizLibrosTitulo">De mi biblioteca te recomendaría</p>
+    <div class="vista-toggle vista-toggle-center" role="group" aria-label="Cambiar tipo de vista">
+      <button class="vista-btn" data-vista="texto" type="button" title="Ver como texto">☰</button>
+      <button class="vista-btn" data-vista="cuadricula" type="button" title="Ver como cuadrícula con portadas">▦</button>
+    </div>
     <div id="quizResultCards" class="lista-cards"></div>
     <button id="btnQuizReiniciar" class="quiz-btn-reiniciar">🔄 Volver a hacer el quiz</button>
   `;
@@ -2822,6 +2879,7 @@ function _mostrarResultadoQuiz() {
     chip.addEventListener('click', () => _quizSeleccionarFilaMezcla(chip.dataset.arquetipo));
   });
 
+  actualizarBotonesVista();
   _quizMostrarRecomendacionesDe(_quizArquetipoGanador);
 
   document.getElementById('btnQuizReiniciar').addEventListener('click', iniciarQuiz);
@@ -2845,6 +2903,7 @@ function _quizSeleccionarFilaMezcla(arquetipoId) {
 function _quizMostrarRecomendacionesDe(arquetipoId) {
   const arq = QUIZ_ARQUETIPOS[arquetipoId];
   const recomendados = _quizElegirRecomendaciones(arquetipoId);
+  _quizArquetipoMostrado = arquetipoId;
 
   const titulo = document.getElementById('quizLibrosTitulo');
   titulo.textContent = arquetipoId === _quizArquetipoGanador

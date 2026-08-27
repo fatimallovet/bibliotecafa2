@@ -497,6 +497,25 @@ main {
   margin-top: 12px;
 }
 
+/* ── Fila de título + controles (ej. header de Géneros) ── */
+.section-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.section-title-row h2 { margin: 0; }
+
+/* Toggle de vista centrado (usado en el resultado de la Brújula, donde el
+   título de arriba ya está centrado) */
+.vista-toggle-center {
+  display: flex;
+  justify-content: center;
+  margin: -6px 0 18px;
+}
+
 /* ── Toggle de vista: texto vs. cuadrícula con portadas ── */
 .vista-toggle {
   display: inline-flex;
@@ -524,8 +543,9 @@ main {
 .vista-btn:hover:not(.active) { color: var(--navy); }
 .vista-btn.active { background: var(--navy); color: var(--gold); }
 
-/* ── Vista de cuadrícula con portadas (pestaña Lista) ── */
-.lista-cards.vista-cuadricula {
+/* ── Vista de cuadrícula con portadas (Lista, Géneros, Mood, Brújula) ── */
+.lista-cards.vista-cuadricula,
+.tarjetas.vista-cuadricula {
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 24px 16px;
 }
