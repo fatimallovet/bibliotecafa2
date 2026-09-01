@@ -66,7 +66,10 @@
 
       <p class="sidebar-nav-label">Curiosidades</p>
       <button class="sidebar-link" data-tab="tabReto"><span class="sidebar-link-icon">🦉</span> Reto Literario</button>
-      <button class="sidebar-link" data-tab="tabDuelo"><span class="sidebar-link-icon">⚔️</span> Duelo de Personajes</button>
+      <!-- Duelo de Personajes: pausado por ahora (no encantó cómo quedó visualmente).
+           Para reactivarlo, descomenta este botón Y la sección <section id="tabDuelo">
+           más abajo — el JS (funciones _du*) se dejó intacto y no requiere cambios. -->
+      <!-- <button class="sidebar-link" data-tab="tabDuelo"><span class="sidebar-link-icon">⚔️</span> Duelo de Personajes</button> -->
       <button class="sidebar-link" data-tab="tabQuiz"><span class="sidebar-link-icon">🧭</span> Brújula Lectora</button>
       <button id="randomFab" class="sidebar-link" aria-label="Libro al azar">
         <span class="sidebar-link-icon">🎲</span> Libro al azar
@@ -198,6 +201,7 @@
 </section>
 
 
+<!-- Duelo de Personajes: pausado por ahora, ver nota junto al botón del sidebar.
 <section id="tabDuelo" class="tab">
   <div id="duEntrada" class="reto-entrada du-ancho">
     <div class="du-hero">
@@ -258,6 +262,8 @@
     </div>
   </div>
 </section>
+-->
+
 
 
 <section id="tabQuiz" class="tab">
